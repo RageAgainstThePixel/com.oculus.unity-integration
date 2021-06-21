@@ -1,8 +1,8 @@
-# Unity-Integration
+# Oculus Unity-Integration
 
 [![openupm](https://img.shields.io/npm/v/com.oculus.unity-integration?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.oculus.unity-integration/)
 
-A PackageName package for the [Unity](https://unity.com/) Game Engine.
+A Mirrior of the Oculus Unity-Integration as a UPM package for the [Unity](https://unity.com/) Game Engine.
 
 ## Installing
 
@@ -10,7 +10,7 @@ A PackageName package for the [Unity](https://unity.com/) Game Engine.
 
 - Open your Unity project settings
 - Select the `Package Manager`
-![scoped-registries](Documentation~/images/package-manager-scopes.png)
+![scoped-registries](Unity-Integration/Packages/com.oculus.unity-integration/Documentation~/images/package-manager-scopes.png)
 - Add the OpenUPM package registry:
   - `Name: OpenUPM`
   - `URL: https://package.openupm.com`
@@ -23,7 +23,7 @@ A PackageName package for the [Unity](https://unity.com/) Game Engine.
 ### Via Unity Package Manager and Git url
 
 - Open your Unity Package Manager
-- Add package from git url: `https://github.com/Stephen Hodgson.oculus.unity-integration.git#upm`
+- Add package from git url: `https://github.com/RageAgainstThePixel/com.oculus.unity-integration.git#upm`
 
 ## Getting Started
 
