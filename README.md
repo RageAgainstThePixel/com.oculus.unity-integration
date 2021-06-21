@@ -10,7 +10,7 @@ A Mirrior of the [Oculus Unity-Integration](https://developer.oculus.com/downloa
 
 - Open your Unity project settings
 - Select the `Package Manager`
-![scoped-registries](Unity-Integration/Packages/com.oculus.unity-integration/Documentation~/images/package-manager-scopes.png)
+![scoped-registries](Oculus%20Unity-Integration/Packages/com.oculus.unity-integration/Documentation~/images/package-manager-scopes.png)
 - Add the OpenUPM package registry:
   - `Name: OpenUPM`
   - `URL: https://package.openupm.com`
