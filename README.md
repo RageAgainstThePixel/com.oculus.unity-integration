@@ -2,7 +2,7 @@
 
 [![openupm](https://img.shields.io/npm/v/com.oculus.unity-integration?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.oculus.unity-integration/)
 
-A Mirrior of the Oculus Unity-Integration as a UPM package for the [Unity](https://unity.com/) Game Engine.
+A Mirrior of the [Oculus Unity-Integration](https://developer.oculus.com/downloads/package/unity-integration/) as a UPM package for the [Unity](https://unity.com/) Game Engine.
 
 ## Installing
 
