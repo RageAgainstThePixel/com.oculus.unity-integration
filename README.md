@@ -1,11 +1,34 @@
-# upm-template
+# Unity-Integration
 
-A Unity package manager repository template for quickly creating and setting up new UPM package projects in Unity.
+[![openupm](https://img.shields.io/npm/v/com.oculus.unity-integration?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.oculus.unity-integration/)
+
+A PackageName package for the [Unity](https://unity.com/) Game Engine.
+
+## Installing
+
+### Via Unity Package Manager and OpenUPM
+
+- Open your Unity project settings
+- Select the `Package Manager`
+![scoped-registries](Documentation~/images/package-manager-scopes.png)
+- Add the OpenUPM package registry:
+  - `Name: OpenUPM`
+  - `URL: https://package.openupm.com`
+  - `Scope(s):`
+    - `com.oculus`
+- Open the Unity Package Manager window
+- Change the Registry from Unity to `My Registries`
+- Add the `PackageName` package
+
+### Via Unity Package Manager and Git url
+
+- Open your Unity Package Manager
+- Add package from git url: `https://github.com/Stephen Hodgson.oculus.unity-integration.git#upm`
 
 ## Getting Started
 
-1. Create a new repository in GitHub using this template
-2. Clone to your local machine
-3. Run the `InitializeTemplate.ps1` script from powershell, a command line, or terminal
-4. ???
-5. Profit
+### Project Setup
+
+```csharp
+// TODO
+```
