@@ -9,5 +9,6 @@
   "repository": {
     "type": "git"
   },
-  "author": "Stephen Hodgson"
+  "author": "Stephen Hodgson",
+  "dependencies": { "com.unity.xr.oculus": "1.9.1" }
 }
