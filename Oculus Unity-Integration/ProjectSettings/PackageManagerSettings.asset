@@ -20,26 +20,19 @@ MonoBehaviour:
     m_Url: https://packages.unity.com
     m_Scopes: []
     m_IsDefault: 1
-  - m_Id: scoped:xrtk
-    m_Name: xrtk
-    m_Url: http://upm.xrtk.io:4873
-    m_Scopes:
-    - com.xrtk
-    m_IsDefault: 0
-  m_UserSelectedRegistryName: xrtk
+  m_UserSelectedRegistryName: 
   m_UserAddingNewScopedRegistry: 0
   m_RegistryInfoDraft:
     m_ErrorMessage: 
     m_Original:
-      m_Id: scoped:xrtk
-      m_Name: xrtk
-      m_Url: http://upm.xrtk.io:4873
-      m_Scopes:
-      - com.xrtk
+      m_Id: 
+      m_Name: 
+      m_Url: 
+      m_Scopes: []
       m_IsDefault: 0
     m_Modified: 0
-    m_Name: xrtk
-    m_Url: http://upm.xrtk.io:4873
+    m_Name: 
+    m_Url: 
     m_Scopes:
-    - com.xrtk
+    - 
     m_SelectedScopeIndex: 0
