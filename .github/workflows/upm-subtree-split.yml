@@ -13,5 +13,5 @@ jobs:
         fetch-depth: 0
     - name: upm subtree split
       run: |
-        git subtree split --prefix="Unity-Integration/Packages/com.oculus.unity-integration" -b upm
+        git subtree split --prefix="Oculus Unity-Integration/Packages/com.oculus.unity-integration" -b upm
         git push -u origin upm --force
