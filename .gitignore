@@ -75,7 +75,4 @@ artifacts/
 ThirdParty/
 ThirdParty.meta
 --Version/
-
-# ====================== #
-# Project Symbolic Links #
-# ====================== #
+Oculus Unity-Integration/Assets/Oculus

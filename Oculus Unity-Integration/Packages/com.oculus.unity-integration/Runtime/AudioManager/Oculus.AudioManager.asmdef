@@ -1,0 +1,15 @@
+{
+    "name": "Oculus.AudioManager",
+    "references": [
+        "GUID:3f6f3fa6552c04b47ae0f7b28fecaa9e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
