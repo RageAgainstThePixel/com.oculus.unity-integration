@@ -4,7 +4,7 @@
 
 A Non-Official Mirror of the [Oculus Unity-Integration](https://developer.oculus.com/downloads/package/unity-integration/) as a UPM package for the [Unity](https://unity.com/) Game Engine.
 
-***All copyrights, trademarks, logoes, and assets are the property of their respective owners.***
+***All copyrights, trademarks, logos, and assets are the property of their respective owners.***
 
 ## Installing
 
