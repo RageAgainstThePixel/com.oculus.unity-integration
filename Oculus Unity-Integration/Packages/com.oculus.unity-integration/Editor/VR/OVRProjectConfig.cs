@@ -97,7 +97,7 @@ public class OVRProjectConfig : ScriptableObject
 
 		if (OVRPluginUpdaterStub.IsInsidePackageDistribution())
 		{
-			oculusDir = Path.GetFullPath(Path.Combine(Application.dataPath, "Oculus"));
+			oculusDir = Path.GetFullPath(Path.Combine(Application.dataPath, "Resources"));
 			if (!Directory.Exists(oculusDir))
 			{
 				Directory.CreateDirectory(oculusDir);

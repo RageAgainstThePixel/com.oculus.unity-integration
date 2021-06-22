@@ -3,7 +3,8 @@
 [![openupm](https://img.shields.io/npm/v/com.oculus.unity-integration?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.oculus.unity-integration/)
 
 A Non-Official Mirror of the [Oculus Unity-Integration](https://developer.oculus.com/downloads/package/unity-integration/) as a UPM package for the [Unity](https://unity.com/) Game Engine.
-All copyrights, trademarks, logoes, and assets are the property of their respective owners.
+
+***All copyrights, trademarks, logoes, and assets are the property of their respective owners.***
 
 ## Installing
 
