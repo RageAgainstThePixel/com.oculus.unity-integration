@@ -72,7 +72,7 @@ _ReSharper.Caches
 # Project Specific List #
 # ===================== #
 artifacts/
-ThirdParty/
-ThirdParty.meta
+Assets/ThirdParty/
+Assets/ThirdParty.meta
 --Version/
 Oculus Unity-Integration/Assets/Oculus
