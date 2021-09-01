@@ -3,12 +3,15 @@
     "references": [
         "Oculus.Platform"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
     "versionDefines": [
         {
             "name": "com.unity.xr.management",
@@ -20,6 +23,6 @@
             "expression": "",
             "define": "USING_XR_SDK_OCULUS"
         }
-    ]
+    ],
+    "noEngineReferences": false
 }
-
