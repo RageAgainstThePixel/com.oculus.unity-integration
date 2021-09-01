@@ -26,7 +26,6 @@ namespace Oculus.Platform
       Colocation_ShareMap                           = 0x186DC4DD,
       GraphAPI_Get                                  = 0x30FF006E,
       GraphAPI_Post                                 = 0x76A5A7C4,
-      GroupPresence_LaunchInvitePanel               = 0x0F9ECF9F,
       HTTP_Get                                      = 0x6FB63223,
       HTTP_GetToFile                                = 0x4E81DC59,
       HTTP_MultiPartPost                            = 0x5842D210,
@@ -129,10 +128,6 @@ namespace Oculus.Platform
 
         case MessageTypeInternal.Application_GetInstalledApplications:
           message = new MessageWithInstalledApplicationList(messageHandle);
-          break;
-
-        case MessageTypeInternal.GroupPresence_LaunchInvitePanel:
-          message = new MessageWithInvitePanelResultInfo(messageHandle);
           break;
 
         case MessageTypeInternal.User_LaunchBlockFlow:
