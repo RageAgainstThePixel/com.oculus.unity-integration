@@ -65,7 +65,9 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 
 #if OVR_ANDROID_MRC
 		if (!OVRPlugin.Media.GetInitialized())
-			return;
+        {
+            return;
+        }
 #else
 		if (!OVRPlugin.IsMixedRealityInitialized())
         {
@@ -190,17 +192,31 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 		if (Mathf.Abs(axis.y) > 0.2f)
 		{
 			elevation = elevation + axis.y * 0.5f;
-			if (elevation < -90.0f + elevationLimit) elevation = -90.0f + elevationLimit;
-			if (elevation > 90.0f) elevation = 90.0f;
-		}
+			if (elevation < -90.0f + elevationLimit)
+            {
+                elevation = -90.0f + elevationLimit;
+            }
+
+            if (elevation > 90.0f)
+            {
+                elevation = 90.0f;
+            }
+        }
 
 		axis = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick);
 		if (Mathf.Abs(axis.y) > 0.1f)
 		{
 			distance = axis.y * 0.05f + distance;
-			if (distance > distance_far) distance = distance_far;
-			if (distance < distance_near) distance = distance_near;
-		}
+			if (distance > distance_far)
+            {
+                distance = distance_far;
+            }
+
+            if (distance < distance_near)
+            {
+                distance = distance_near;
+            }
+        }
 
 		SpectatorCamera.position = SpectatorCameraDomePosition(SpectatorAnchor.position, distance, elevation, polar);
 		SpectatorCamera.rotation = Quaternion.LookRotation(SpectatorCamera.position - SpectatorAnchor.position);

@@ -238,7 +238,9 @@ public class OVROverlay : MonoBehaviour
 		get {
 #if UNITY_ANDROID && !UNITY_EDITOR
 			if (textures.Length == 2 && textures[1] != null && textures[1] != textures[0])
-				return OVRPlugin.LayerLayout.Stereo;
+            {
+                return OVRPlugin.LayerLayout.Stereo;
+            }
 #endif
 			return OVRPlugin.LayerLayout.Mono;
 		}
