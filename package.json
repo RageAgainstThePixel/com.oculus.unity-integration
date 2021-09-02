@@ -3,7 +3,7 @@
   "displayName": "Oculus Unity-Integration",
   "description": "A Non-Official Mirror of the Oculus Unity-Integration as a UPM package for the Unity Game Engine.\r\n\r\nAll copyrights, trademarks, logos, and assets are the property of their respective owners.",
   "keywords": [],
-  "version": "32.0.0-preview.2",
+  "version": "32.0.0",
   "unity": "2019.4",
   "license": "MIT",
   "repository": {
