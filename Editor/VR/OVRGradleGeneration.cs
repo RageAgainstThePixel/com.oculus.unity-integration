@@ -43,54 +43,54 @@ using UnityEditor.Android;
 
 [InitializeOnLoad]
 public class OVRGradleGeneration
-	: IPreprocessBuildWithReport, IPostprocessBuildWithReport
+    : IPreprocessBuildWithReport, IPostprocessBuildWithReport
 #if UNITY_ANDROID
-	, IPostGenerateGradleAndroidProject
+    , IPostGenerateGradleAndroidProject
 #endif
 {
-	public OVRADBTool adbTool;
-	public Process adbProcess;
+    public OVRADBTool adbTool;
+    public Process adbProcess;
 
-	public int callbackOrder { get { return 3; } }
-	static private System.DateTime buildStartTime;
-	static private System.Guid buildGuid;
+    public int callbackOrder { get { return 3; } }
+    static private System.DateTime buildStartTime;
+    static private System.Guid buildGuid;
 
 #if UNITY_ANDROID
-	private const string prefName = "OVRAutoIncrementVersionCode_Enabled";
-	private const string menuItemAutoIncVersion = "Oculus/Tools/Auto Increment Version Code";
+    private const string prefName = "OVRAutoIncrementVersionCode_Enabled";
+    private const string menuItemAutoIncVersion = "Oculus/Tools/Auto Increment Version Code";
     private static bool autoIncrementVersion = false;
 #endif
 
-	static OVRGradleGeneration()
-	{
-		EditorApplication.delayCall += OnDelayCall;
-	}
+    static OVRGradleGeneration()
+    {
+        EditorApplication.delayCall += OnDelayCall;
+    }
 
     private static void OnDelayCall()
-	{
+    {
 #if UNITY_ANDROID
-		autoIncrementVersion = PlayerPrefs.GetInt(prefName, 0) != 0;
-		Menu.SetChecked(menuItemAutoIncVersion, autoIncrementVersion);
+        autoIncrementVersion = PlayerPrefs.GetInt(prefName, 0) != 0;
+        Menu.SetChecked(menuItemAutoIncVersion, autoIncrementVersion);
 #endif
-	}
+    }
 
 #if UNITY_ANDROID
-	[MenuItem(menuItemAutoIncVersion)]
+    [MenuItem(menuItemAutoIncVersion)]
     private static void ToggleUtilities()
-	{
-		autoIncrementVersion = !autoIncrementVersion;
-		Menu.SetChecked(menuItemAutoIncVersion, autoIncrementVersion);
+    {
+        autoIncrementVersion = !autoIncrementVersion;
+        Menu.SetChecked(menuItemAutoIncVersion, autoIncrementVersion);
 
-		int newValue = (autoIncrementVersion) ? 1 : 0;
-		PlayerPrefs.SetInt(prefName, newValue);
-		PlayerPrefs.Save();
+        int newValue = (autoIncrementVersion) ? 1 : 0;
+        PlayerPrefs.SetInt(prefName, newValue);
+        PlayerPrefs.Save();
 
-		UnityEngine.Debug.Log("Auto Increment Version Code: " + autoIncrementVersion);
-	}
+        UnityEngine.Debug.Log("Auto Increment Version Code: " + autoIncrementVersion);
+    }
 #endif
 
-	public void OnPreprocessBuild(BuildReport report)
-	{
+    public void OnPreprocessBuild(BuildReport report)
+    {
 #if UNITY_ANDROID && !(USING_XR_SDK && UNITY_2019_3_OR_NEWER)
 		// Generate error when Vulkan is selected as the perferred graphics API, which is not currently supported in Unity XR
 		if (!PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android))
@@ -104,17 +104,17 @@ public class OVRGradleGeneration
 #endif
 
 #if UNITY_ANDROID
-		bool useOpenXR = OVRPluginUpdater.IsOVRPluginOpenXRActivated();
+        bool useOpenXR = OVRPluginUpdater.IsOVRPluginOpenXRActivated();
 #if USING_XR_SDK
-		if (useOpenXR)
-		{
-			UnityEngine.Debug.LogWarning("Oculus Utilities Plugin with OpenXR is being used, which is under experimental status");
+        if (useOpenXR)
+        {
+            UnityEngine.Debug.LogWarning("Oculus Utilities Plugin with OpenXR is being used, which is under experimental status");
 
-			if (PlayerSettings.colorSpace != ColorSpace.Linear)
-			{
-				throw new BuildFailedException("Oculus Utilities Plugin with OpenXR only supports linear lighting. Please set 'Rendering/Color Space' to 'Linear' in Player Settings");
-			}
-		}
+            if (PlayerSettings.colorSpace != ColorSpace.Linear)
+            {
+                throw new BuildFailedException("Oculus Utilities Plugin with OpenXR only supports linear lighting. Please set 'Rendering/Color Space' to 'Linear' in Player Settings");
+            }
+        }
 #else
 		if (useOpenXR)
 		{
@@ -129,316 +129,315 @@ public class OVRGradleGeneration
 				", you must first \"Remove\" the Oculus XR Plugin package, and then \"Install\" the package at the verified version. Be sure to remove, then install, not just upgrade.");
 #endif
 
-		buildStartTime = System.DateTime.Now;
-		buildGuid = System.Guid.NewGuid();
+        buildStartTime = System.DateTime.Now;
+        buildGuid = System.Guid.NewGuid();
 
-		if (OculusBuildApp.GetBuildTelemetryEnabled())
-		{
-			if (!report.summary.outputPath.Contains("OVRGradleTempExport"))
-			{
-				OVRPlugin.SetDeveloperMode(OVRPlugin.Bool.True);
-				OVRPlugin.AddCustomMetadata("build_type", "standard");
-			}
+        if (OculusBuildApp.GetBuildTelemetryEnabled())
+        {
+            if (!report.summary.outputPath.Contains("OVRGradleTempExport"))
+            {
+                OVRPlugin.SetDeveloperMode(OVRPlugin.Bool.True);
+                OVRPlugin.AddCustomMetadata("build_type", "standard");
+            }
 
-			OVRPlugin.AddCustomMetadata("build_guid", buildGuid.ToString());
-			OVRPlugin.AddCustomMetadata("target_platform", report.summary.platform.ToString());
+            OVRPlugin.AddCustomMetadata("build_guid", buildGuid.ToString());
+            OVRPlugin.AddCustomMetadata("target_platform", report.summary.platform.ToString());
 #if !UNITY_2019_3_OR_NEWER
 			OVRPlugin.AddCustomMetadata("scripting_runtime_version", UnityEditor.PlayerSettings.scriptingRuntimeVersion.ToString());
 #endif
-			if (report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows
-				|| report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows64)
-			{
-				OVRPlugin.AddCustomMetadata("target_oculus_platform", "rift");
-			}
-		}
+            if (report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows
+                || report.summary.platform == UnityEditor.BuildTarget.StandaloneWindows64)
+            {
+                OVRPlugin.AddCustomMetadata("target_oculus_platform", "rift");
+            }
+        }
 #if BUILDSESSION
 		StreamWriter writer = new StreamWriter("build_session", false);
 		UnityEngine.Debug.LogFormat("Build Session: {0}", buildGuid.ToString());
 		writer.WriteLine(buildGuid.ToString());
 		writer.Close();
 #endif
-	}
+    }
 
-	public void OnPostGenerateGradleAndroidProject(string path)
-	{
-		UnityEngine.Debug.Log("OVRGradleGeneration triggered.");
+    public void OnPostGenerateGradleAndroidProject(string path)
+    {
+        UnityEngine.Debug.Log("OVRGradleGeneration triggered.");
 
-		var targetOculusPlatform = new List<string>();
-		if (OVRDeviceSelector.isTargetDeviceQuestFamily)
-		{
-			targetOculusPlatform.Add("quest");
-		}
-		OVRPlugin.AddCustomMetadata("target_oculus_platform", String.Join("_", targetOculusPlatform.ToArray()));
-		UnityEngine.Debug.LogFormat("QuestFamily = {0}: Quest = {1}, Quest2 = {2}",
-			OVRDeviceSelector.isTargetDeviceQuestFamily,
-			OVRDeviceSelector.isTargetDeviceQuest,
-			OVRDeviceSelector.isTargetDeviceQuest2);
+        var targetOculusPlatform = new List<string>();
+        if (OVRDeviceSelector.isTargetDeviceQuestFamily)
+        {
+            targetOculusPlatform.Add("quest");
+        }
+        OVRPlugin.AddCustomMetadata("target_oculus_platform", String.Join("_", targetOculusPlatform.ToArray()));
+        UnityEngine.Debug.LogFormat("QuestFamily = {0}: Quest = {1}, Quest2 = {2}",
+            OVRDeviceSelector.isTargetDeviceQuestFamily,
+            OVRDeviceSelector.isTargetDeviceQuest,
+            OVRDeviceSelector.isTargetDeviceQuest2);
 
-		OVRProjectConfig projectConfig = OVRProjectConfig.GetProjectConfig();
-		if (projectConfig != null && projectConfig.systemSplashScreen != null)
-		{
-			if (PlayerSettings.virtualRealitySplashScreen != null)
-			{
-				UnityEngine.Debug.LogWarning("Virtual Reality Splash Screen (in Player Settings) is active. It would be displayed after the system splash screen, before the first game frame be rendered.");
-			}
-			string splashScreenAssetPath = AssetDatabase.GetAssetPath(projectConfig.systemSplashScreen);
-			if (Path.GetExtension(splashScreenAssetPath).ToLower() != ".png")
-			{
-				throw new BuildFailedException("Invalid file format of System Splash Screen. It has to be a PNG file to be used by the Quest OS. The asset path: " + splashScreenAssetPath);
-			}
-			else
-			{
-				string sourcePath = splashScreenAssetPath;
-				string targetFolder = Path.Combine(path, "src/main/assets");
-				string targetPath = targetFolder + "/vr_splash.png";
-				UnityEngine.Debug.LogFormat("Copy splash screen asset from {0} to {1}", sourcePath, targetPath);
-				try
-				{
-					File.Copy(sourcePath, targetPath, true);
-				}
-				catch(Exception e)
-				{
-					throw new BuildFailedException(e.Message);
-				}
-			}
-		}
+        OVRProjectConfig projectConfig = OVRProjectConfig.GetProjectConfig();
+        if (projectConfig != null && projectConfig.systemSplashScreen != null)
+        {
+            if (PlayerSettings.virtualRealitySplashScreen != null)
+            {
+                UnityEngine.Debug.LogWarning("Virtual Reality Splash Screen (in Player Settings) is active. It would be displayed after the system splash screen, before the first game frame be rendered.");
+            }
+            string splashScreenAssetPath = AssetDatabase.GetAssetPath(projectConfig.systemSplashScreen);
+            if (Path.GetExtension(splashScreenAssetPath).ToLower() != ".png")
+            {
+                throw new BuildFailedException("Invalid file format of System Splash Screen. It has to be a PNG file to be used by the Quest OS. The asset path: " + splashScreenAssetPath);
+            }
+            else
+            {
+                string sourcePath = splashScreenAssetPath;
+                string targetFolder = Path.Combine(path, "src/main/assets");
+                string targetPath = targetFolder + "/vr_splash.png";
+                UnityEngine.Debug.LogFormat("Copy splash screen asset from {0} to {1}", sourcePath, targetPath);
+                try
+                {
+                    File.Copy(sourcePath, targetPath, true);
+                }
+                catch (Exception e)
+                {
+                    throw new BuildFailedException(e.Message);
+                }
+            }
+        }
 
-		PatchAndroidManifest(path);
-	}
+        PatchAndroidManifest(path);
+    }
 
-	public void PatchAndroidManifest(string path)
-	{
-		string manifestFolder = Path.Combine(path, "src/main");
-		string file = manifestFolder + "/AndroidManifest.xml";
+    public void PatchAndroidManifest(string path)
+    {
+        string manifestFolder = Path.Combine(path, "src/main");
+        string file = manifestFolder + "/AndroidManifest.xml";
 
-		bool patchedSecurityConfig = false;
-		// If Enable NSC Config, copy XML file into gradle project
-		OVRProjectConfig projectConfig = OVRProjectConfig.GetProjectConfig();
-		if (projectConfig != null)
-		{
-			if (projectConfig.enableNSCConfig)
-			{
-				// If no custom xml security path is specified, look for the default location in the integrations package.
-				string securityConfigFile = projectConfig.securityXmlPath;
-				if (string.IsNullOrEmpty(securityConfigFile))
-				{
-					securityConfigFile = GetOculusProjectNetworkSecConfigPath();
-				}
-				else
-				{
-					Uri configUri = new Uri(Path.GetFullPath(securityConfigFile));
-					Uri projectUri = new Uri(Application.dataPath);
-					Uri relativeUri = projectUri.MakeRelativeUri(configUri);
-					securityConfigFile = relativeUri.ToString();
-				}
+        bool patchedSecurityConfig = false;
+        // If Enable NSC Config, copy XML file into gradle project
+        OVRProjectConfig projectConfig = OVRProjectConfig.GetProjectConfig();
+        if (projectConfig != null)
+        {
+            if (projectConfig.enableNSCConfig)
+            {
+                // If no custom xml security path is specified, look for the default location in the integrations package.
+                string securityConfigFile = projectConfig.securityXmlPath;
 
-				string xmlDirectory = Path.Combine(path, "src/main/res/xml");
-				try
-				{
-					if (!Directory.Exists(xmlDirectory))
-					{
-						Directory.CreateDirectory(xmlDirectory);
-					}
-					File.Copy(securityConfigFile, Path.Combine(xmlDirectory, "network_sec_config.xml"), true);
-					patchedSecurityConfig = true;
-				}
-				catch (Exception e)
-				{
-					UnityEngine.Debug.LogError(e.Message);
-				}
-			}
-		}
+                if (string.IsNullOrEmpty(securityConfigFile))
+                {
+                    securityConfigFile = GetOculusProjectNetworkSecConfigPath();
+                }
+                else
+                {
+                    securityConfigFile = Path.GetFullPath(securityConfigFile);
+                }
 
-		OVRManifestPreprocessor.PatchAndroidManifest(file, enableSecurity: patchedSecurityConfig);
-	}
+                string xmlDirectory = Path.Combine(path, "src/main/res/xml");
 
-	private static string GetOculusProjectNetworkSecConfigPath()
-	{
-		var so = ScriptableObject.CreateInstance(typeof(OVRPluginUpdaterStub));
-		var script = MonoScript.FromScriptableObject(so);
-		string assetPath = AssetDatabase.GetAssetPath(script);
-		string editorDir = Directory.GetParent(assetPath).FullName;
-		string configAssetPath = Path.GetFullPath(Path.Combine(editorDir, "network_sec_config.xml"));
-		Uri configUri = new Uri(configAssetPath);
-		Uri projectUri = new Uri(Application.dataPath);
-		Uri relativeUri = projectUri.MakeRelativeUri(configUri);
+                try
+                {
+                    if (!Directory.Exists(xmlDirectory))
+                    {
+                        Directory.CreateDirectory(xmlDirectory);
+                    }
 
-		return relativeUri.ToString();
-	}
+                    UnityEngine.Debug.Assert(File.Exists(securityConfigFile));
 
-	public void OnPostprocessBuild(BuildReport report)
-	{
+                    File.Copy(securityConfigFile, Path.Combine(xmlDirectory, "network_sec_config.xml"), true);
+                    patchedSecurityConfig = true;
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogError(e.Message);
+                }
+            }
+        }
+
+        OVRManifestPreprocessor.PatchAndroidManifest(file, enableSecurity: patchedSecurityConfig);
+    }
+
+    private static string GetOculusProjectNetworkSecConfigPath()
+    {
+        var so = ScriptableObject.CreateInstance(typeof(OVRPluginUpdaterStub));
+        var script = MonoScript.FromScriptableObject(so);
+        string assetPath = AssetDatabase.GetAssetPath(script);
+        string editorDir = Directory.GetParent(assetPath).FullName;
+        string configAssetPath = Path.GetFullPath(Path.Combine(editorDir, "network_sec_config.xml"));
+        UnityEngine.Debug.Assert(File.Exists(configAssetPath));
+        return configAssetPath;
+    }
+
+    public void OnPostprocessBuild(BuildReport report)
+    {
 #if UNITY_ANDROID
-		if(autoIncrementVersion)
-		{
-			if((report.summary.options & BuildOptions.Development) == 0)
-			{
-				PlayerSettings.Android.bundleVersionCode++;
-				UnityEngine.Debug.Log("Incrementing version code to " + PlayerSettings.Android.bundleVersionCode);
-			}
-		}
+        if (autoIncrementVersion)
+        {
+            if ((report.summary.options & BuildOptions.Development) == 0)
+            {
+                PlayerSettings.Android.bundleVersionCode++;
+                UnityEngine.Debug.Log("Incrementing version code to " + PlayerSettings.Android.bundleVersionCode);
+            }
+        }
 
-		bool isExporting = true;
-		foreach (var step in report.steps)
-		{
-			if (step.name.Contains("Compile scripts")
-				|| step.name.Contains("Building scenes")
-				|| step.name.Contains("Writing asset files")
-				|| step.name.Contains("Preparing APK resources")
-				|| step.name.Contains("Creating Android manifest")
-				|| step.name.Contains("Processing plugins")
-				|| step.name.Contains("Exporting project")
-				|| step.name.Contains("Building Gradle project"))
-			{
-				OculusBuildApp.SendBuildEvent("build_step_" + step.name.ToLower().Replace(' ', '_'),
-					step.duration.TotalSeconds.ToString(), "ovrbuild");
+        bool isExporting = true;
+        foreach (var step in report.steps)
+        {
+            if (step.name.Contains("Compile scripts")
+                || step.name.Contains("Building scenes")
+                || step.name.Contains("Writing asset files")
+                || step.name.Contains("Preparing APK resources")
+                || step.name.Contains("Creating Android manifest")
+                || step.name.Contains("Processing plugins")
+                || step.name.Contains("Exporting project")
+                || step.name.Contains("Building Gradle project"))
+            {
+                OculusBuildApp.SendBuildEvent("build_step_" + step.name.ToLower().Replace(' ', '_'),
+                    step.duration.TotalSeconds.ToString(), "ovrbuild");
 #if BUILDSESSION
 				UnityEngine.Debug.LogFormat("build_step_" + step.name.ToLower().Replace(' ', '_') + ": {0}", step.duration.TotalSeconds.ToString());
 #endif
-				if(step.name.Contains("Building Gradle project"))
-				{
-					isExporting = false;
-				}
-			}
-		}
-		OVRPlugin.AddCustomMetadata("build_step_count", report.steps.Length.ToString());
-		if (report.summary.outputPath.Contains("apk")) // Exclude Gradle Project Output
-		{
-			var fileInfo = new System.IO.FileInfo(report.summary.outputPath);
-			OVRPlugin.AddCustomMetadata("build_output_size", fileInfo.Length.ToString());
-		}
+                if (step.name.Contains("Building Gradle project"))
+                {
+                    isExporting = false;
+                }
+            }
+        }
+        OVRPlugin.AddCustomMetadata("build_step_count", report.steps.Length.ToString());
+        if (report.summary.outputPath.Contains("apk")) // Exclude Gradle Project Output
+        {
+            var fileInfo = new System.IO.FileInfo(report.summary.outputPath);
+            OVRPlugin.AddCustomMetadata("build_output_size", fileInfo.Length.ToString());
+        }
 #endif
-		if (!report.summary.outputPath.Contains("OVRGradleTempExport"))
-		{
-			OculusBuildApp.SendBuildEvent("build_complete", (System.DateTime.Now - buildStartTime).TotalSeconds.ToString(), "ovrbuild");
+        if (!report.summary.outputPath.Contains("OVRGradleTempExport"))
+        {
+            OculusBuildApp.SendBuildEvent("build_complete", (System.DateTime.Now - buildStartTime).TotalSeconds.ToString(), "ovrbuild");
 #if BUILDSESSION
 			UnityEngine.Debug.LogFormat("build_complete: {0}", (System.DateTime.Now - buildStartTime).TotalSeconds.ToString());
 #endif
-		}
+        }
 
 #if UNITY_ANDROID
-		if (!isExporting && !Application.isBatchMode)
-		{
-			// Get the hosts path to Android SDK
-			if (adbTool == null)
-			{
-				adbTool = new OVRADBTool(OVRConfig.Instance.GetAndroidSDKPath(false));
-			}
+        if (!isExporting && !Application.isBatchMode)
+        {
+            // Get the hosts path to Android SDK
+            if (adbTool == null)
+            {
+                adbTool = new OVRADBTool(OVRConfig.Instance.GetAndroidSDKPath(false));
+            }
 
-			if (adbTool.isReady)
-			{
-				// Check to see if there are any ADB devices connected before continuing.
-				List<string> devices = adbTool.GetDevices();
-				if(devices.Count == 0)
-				{
-					return;
-				}
+            if (adbTool.isReady)
+            {
+                // Check to see if there are any ADB devices connected before continuing.
+                List<string> devices = adbTool.GetDevices();
+                if (devices.Count == 0)
+                {
+                    return;
+                }
 
-				// Clear current logs on device
-				Process adbClearProcess;
-				adbClearProcess = adbTool.RunCommandAsync(new string[] { "logcat --clear" }, null);
+                // Clear current logs on device
+                Process adbClearProcess;
+                adbClearProcess = adbTool.RunCommandAsync(new string[] { "logcat --clear" }, null);
 
-				// Add a timeout if we cannot get a response from adb logcat --clear in time.
-				Stopwatch timeout = new Stopwatch();
-				timeout.Start();
-				while (!adbClearProcess.WaitForExit(100))
-				{
-					if (timeout.ElapsedMilliseconds > 2000)
-					{
-						adbClearProcess.Kill();
-						return;
-					}
-				}
+                // Add a timeout if we cannot get a response from adb logcat --clear in time.
+                Stopwatch timeout = new Stopwatch();
+                timeout.Start();
+                while (!adbClearProcess.WaitForExit(100))
+                {
+                    if (timeout.ElapsedMilliseconds > 2000)
+                    {
+                        adbClearProcess.Kill();
+                        return;
+                    }
+                }
 
-				// Check if existing ADB process is still running, kill if needed
-				if (adbProcess != null && !adbProcess.HasExited)
-				{
-					adbProcess.Kill();
-				}
+                // Check if existing ADB process is still running, kill if needed
+                if (adbProcess != null && !adbProcess.HasExited)
+                {
+                    adbProcess.Kill();
+                }
 
-				// Begin thread to time upload and install
-				var thread = new Thread(delegate ()
-				{
-					TimeDeploy();
-				});
-				thread.Start();
-			}
-		}
+                // Begin thread to time upload and install
+                var thread = new Thread(delegate ()
+                {
+                    TimeDeploy();
+                });
+                thread.Start();
+            }
+        }
 #endif
-	}
+    }
 
 #if UNITY_ANDROID
-	public bool WaitForProcess;
-	public bool TransferStarted;
-	public DateTime UploadStart;
-	public DateTime UploadEnd;
-	public DateTime InstallEnd;
+    public bool WaitForProcess;
+    public bool TransferStarted;
+    public DateTime UploadStart;
+    public DateTime UploadEnd;
+    public DateTime InstallEnd;
 
-	public void TimeDeploy()
-	{
-		if (adbTool != null)
-		{
-			TransferStarted = false;
-			DataReceivedEventHandler outputRecieved = new DataReceivedEventHandler(
-				(s, e) =>
-				{
-					if (e.Data != null && e.Data.Length != 0 && !e.Data.Contains("\u001b"))
-					{
-						if (e.Data.Contains("free_cache"))
-						{
-							// Device recieved install command and is starting upload
-							UploadStart = System.DateTime.Now;
-							TransferStarted = true;
-						}
-						else if (e.Data.Contains("Running dexopt"))
-						{
-							// Upload has finished and Package Manager is starting install
-							UploadEnd = System.DateTime.Now;
-						}
-						else if (e.Data.Contains("dex2oat took"))
-						{
-							// Package Manager finished install
-							InstallEnd = System.DateTime.Now;
-							WaitForProcess = false;
-						}
-						else if (e.Data.Contains("W PackageManager"))
-						{
-							// Warning from Package Manager is a failure in the install process
-							WaitForProcess = false;
-						}
-					}
-				}
-			);
+    public void TimeDeploy()
+    {
+        if (adbTool != null)
+        {
+            TransferStarted = false;
+            DataReceivedEventHandler outputRecieved = new DataReceivedEventHandler(
+                (s, e) =>
+                {
+                    if (e.Data != null && e.Data.Length != 0 && !e.Data.Contains("\u001b"))
+                    {
+                        if (e.Data.Contains("free_cache"))
+                        {
+                            // Device recieved install command and is starting upload
+                            UploadStart = System.DateTime.Now;
+                            TransferStarted = true;
+                        }
+                        else if (e.Data.Contains("Running dexopt"))
+                        {
+                            // Upload has finished and Package Manager is starting install
+                            UploadEnd = System.DateTime.Now;
+                        }
+                        else if (e.Data.Contains("dex2oat took"))
+                        {
+                            // Package Manager finished install
+                            InstallEnd = System.DateTime.Now;
+                            WaitForProcess = false;
+                        }
+                        else if (e.Data.Contains("W PackageManager"))
+                        {
+                            // Warning from Package Manager is a failure in the install process
+                            WaitForProcess = false;
+                        }
+                    }
+                }
+            );
 
-			WaitForProcess = true;
-			adbProcess = adbTool.RunCommandAsync(new string[] { "logcat" }, outputRecieved);
+            WaitForProcess = true;
+            adbProcess = adbTool.RunCommandAsync(new string[] { "logcat" }, outputRecieved);
 
-			Stopwatch transferTimeout = new Stopwatch();
-			transferTimeout.Start();
-			while (adbProcess != null && !adbProcess.WaitForExit(100))
-			{
-				if (!WaitForProcess)
-				{
-					adbProcess.Kill();
-					float UploadTime = (float)(UploadEnd - UploadStart).TotalMilliseconds / 1000f;
-					float InstallTime = (float)(InstallEnd - UploadEnd).TotalMilliseconds / 1000f;
+            Stopwatch transferTimeout = new Stopwatch();
+            transferTimeout.Start();
+            while (adbProcess != null && !adbProcess.WaitForExit(100))
+            {
+                if (!WaitForProcess)
+                {
+                    adbProcess.Kill();
+                    float UploadTime = (float)(UploadEnd - UploadStart).TotalMilliseconds / 1000f;
+                    float InstallTime = (float)(InstallEnd - UploadEnd).TotalMilliseconds / 1000f;
 
-					if (UploadTime > 0f)
-					{
-						OculusBuildApp.SendBuildEvent("deploy_task", UploadTime.ToString(), "ovrbuild");
-					}
-					if (InstallTime > 0f)
-					{
-						OculusBuildApp.SendBuildEvent("install_task", InstallTime.ToString(), "ovrbuild");
-					}
-				}
+                    if (UploadTime > 0f)
+                    {
+                        OculusBuildApp.SendBuildEvent("deploy_task", UploadTime.ToString(), "ovrbuild");
+                    }
+                    if (InstallTime > 0f)
+                    {
+                        OculusBuildApp.SendBuildEvent("install_task", InstallTime.ToString(), "ovrbuild");
+                    }
+                }
 
-				if (!TransferStarted && transferTimeout.ElapsedMilliseconds > 5000)
-				{
-					adbProcess.Kill();
-				}
-			}
-		}
-	}
+                if (!TransferStarted && transferTimeout.ElapsedMilliseconds > 5000)
+                {
+                    adbProcess.Kill();
+                }
+            }
+        }
+    }
 #endif
 }
