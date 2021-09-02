@@ -49,7 +49,9 @@ public class OVRMixedRealityCaptureTest : MonoBehaviour {
 
 #if OVR_ANDROID_MRC
 		if (!OVRPlugin.Media.GetInitialized())
-			return;
+        {
+            return;
+        }
 #else
 		if (!OVRPlugin.IsMixedRealityInitialized())
         {

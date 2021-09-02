@@ -838,7 +838,10 @@ namespace UnityEngine.EventSystems
             {
                 Vector2 delta =  (Vector2)Input.mousePosition - pointerEvent.GetSwipeStart();
                 if (InvertSwipeXAxis)
+                {
                     delta.x *= -1;
+                }
+
                 return originalPosition + delta * swipeDragScale;
             }
 #endif
