@@ -36,418 +36,306 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 [InitializeOnLoad]
 internal class OVRPluginUpdater
 {
     private enum PluginPlatform
-	{
-		Android,
-		AndroidUniversal,
-		AndroidOpenXR,
-		OSXUniversal,
-		Win,
-		Win64,
-		Win64OpenXR,
-	}
+    {
+        Android,
+        AndroidUniversal,
+        AndroidOpenXR,
+        OSXUniversal,
+        Win,
+        Win64,
+        Win64OpenXR,
+    }
 
     private class PluginPackage
-	{
-		public string RootPath;
-		public System.Version Version;
-		public Dictionary<PluginPlatform, string> Plugins = new Dictionary<PluginPlatform, string>();
+    {
+        public string RootPath;
+        public Version Version;
+        public Dictionary<PluginPlatform, string> Plugins = new Dictionary<PluginPlatform, string>();
 
-		public bool IsBundledPluginPackage()
-		{
-			return (RootPath == GetBundledPluginRootPath());
-		}
+        public bool IsEnabled()
+        {
+            return Plugins.Any(pair =>
+            {
+                GetPluginPaths(pair.Value, out _, out var enabledPath);
+                return File.Exists(enabledPath);
+            });
+        }
 
-		public bool IsEnabled()
-		{
-			// TODO: Check each individual platform rather than using the Win64 DLL status for the overall package status.
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.Win64, out path))
-			{
-				return File.Exists(path);
-			}
+        public bool IsPlatformPresent(PluginPlatform platform)
+        {
+            if (Plugins.TryGetValue(platform, out var path))
+            {
+                GetPluginPaths(path, out var disabledPath, out var enabledPath);
 
-			return false;
-		}
+                if (File.Exists(enabledPath) ||
+                    File.Exists(disabledPath))
+                {
+                    return true;
+                }
+            }
 
-		public bool IsWin64Enabled()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.Win64, out path))
-			{
-				if (File.Exists(path))
-				{
-					string basePath = GetCurrentProjectPath();
-					string relPath = path.Substring(basePath.Length + 1);
+            return false;
+        }
 
-					PluginImporter pi = PluginImporter.GetAtPath(relPath) as PluginImporter;
-					if (pi != null)
-					{
-						return pi.GetCompatibleWithPlatform(BuildTarget.StandaloneWindows64) && pi.GetCompatibleWithEditor();
-					}
-				}
-			}
+        public bool IsPlatformEnabled(PluginPlatform platform)
+        {
+            if (Plugins.TryGetValue(platform, out var path))
+            {
+                GetPluginPaths(path, out _, out var relPath);
 
-			return false;
-		}
+                if (File.Exists(relPath))
+                {
+                    PluginImporter pi = AssetImporter.GetAtPath(relPath) as PluginImporter;
 
-		public bool IsWin64Present()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.Win64, out path))
-			{
-				string disabledPath = path + GetDisabledPluginSuffix();
+                    if (pi != null)
+                    {
+                        return pi.GetCompatibleWithPlatform(GetBuildTarget(platform)) && pi.GetCompatibleWithEditor();
+                    }
+                }
+            }
 
-				if (File.Exists(path) || File.Exists(disabledPath))
-				{
-					return true;
-				}
-			}
+            return false;
+        }
 
-			return false;
-		}
+        private BuildTarget GetBuildTarget(PluginPlatform platform)
+        {
+            switch (platform)
+            {
+                case PluginPlatform.Android:
+                case PluginPlatform.AndroidUniversal:
+                case PluginPlatform.AndroidOpenXR:
+                    return BuildTarget.Android;
+                case PluginPlatform.OSXUniversal:
+                    return BuildTarget.StandaloneOSX;
+                case PluginPlatform.Win:
+                    return BuildTarget.StandaloneWindows;
+                case PluginPlatform.Win64:
+                case PluginPlatform.Win64OpenXR:
+                    return BuildTarget.StandaloneWindows64;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(platform), platform, null);
+            }
+        }
+    }
 
-		public bool IsWin64OpenXREnabled()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.Win64OpenXR, out path))
-			{
-				if (File.Exists(path))
-				{
-					string basePath = GetCurrentProjectPath();
-					string relPath = path.Substring(basePath.Length + 1);
+    private static bool restartPending = false;
+    private static bool unityRunningInBatchmode = false;
+    private static bool unityVersionSupportsAndroidUniversal = true;
+    private static bool enableAndroidUniversalSupport = true;
 
-					PluginImporter pi = PluginImporter.GetAtPath(relPath) as PluginImporter;
-					if (pi != null)
-					{
-						return pi.GetCompatibleWithPlatform(BuildTarget.StandaloneWindows64) && pi.GetCompatibleWithEditor();
-					}
-				}
-			}
-
-			return false;
-		}
-
-		public bool IsWin64OpenXRPresent()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.Win64OpenXR, out path))
-			{
-				string disabledPath = path + GetDisabledPluginSuffix();
-
-				if (File.Exists(path) || File.Exists(disabledPath))
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}
+    private static Version invalidVersion = new Version("0.0.0");
+    private static Version minimalProductionVersionForOpenXR = new Version(1, 63, 0);
 
 
-		public bool IsAndroidUniversalEnabled()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.AndroidUniversal, out path))
-			{
-				if (File.Exists(path))
-				{
-					string basePath = GetCurrentProjectPath();
-					string relPath = path.Substring(basePath.Length + 1);
-
-					PluginImporter pi = PluginImporter.GetAtPath(relPath) as PluginImporter;
-					if (pi != null)
-					{
-						return pi.GetCompatibleWithPlatform(BuildTarget.Android);
-					}
-				}
-			}
-
-			return false;
-		}
-
-		public bool IsAndroidUniversalPresent()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.AndroidUniversal, out path))
-			{
-				string disabledPath = path + GetDisabledPluginSuffix();
-
-				if (File.Exists(path) || File.Exists(disabledPath))
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		public bool IsAndroidOpenXREnabled()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.AndroidOpenXR, out path))
-			{
-				if (File.Exists(path))
-				{
-					string basePath = GetCurrentProjectPath();
-					string relPath = path.Substring(basePath.Length + 1);
-
-					PluginImporter pi = PluginImporter.GetAtPath(relPath) as PluginImporter;
-					if (pi != null)
-					{
-						return pi.GetCompatibleWithPlatform(BuildTarget.Android);
-					}
-				}
-			}
-
-			return false;
-		}
-
-		public bool IsAndroidOpenXRPresent()
-		{
-			string path = "";
-			if (Plugins.TryGetValue(PluginPlatform.AndroidOpenXR, out path))
-			{
-				string disabledPath = path + GetDisabledPluginSuffix();
-
-				if (File.Exists(path) || File.Exists(disabledPath))
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}
-	}
-
-	private static bool restartPending = false;
-	private static bool unityRunningInBatchmode = false;
-	private static bool unityVersionSupportsAndroidUniversal = true;
-	private static bool enableAndroidUniversalSupport = true;
-
-	private static System.Version invalidVersion = new System.Version("0.0.0");
-	private static System.Version minimalProductionVersionForOpenXR = new Version(1, 63, 0);
-
-
-	static OVRPluginUpdater()
-	{
-		EditorApplication.delayCall += OnDelayCall;
-	}
+    static OVRPluginUpdater()
+    {
+        EditorApplication.delayCall += OnDelayCall;
+    }
 
     private static void OnDelayCall()
-	{
-		if (System.Environment.CommandLine.Contains("-batchmode"))
-		{
-			unityRunningInBatchmode = true;
-		}
- 
-		if (enableAndroidUniversalSupport)
-		{
-			unityVersionSupportsAndroidUniversal = true;
-		}
+    {
+        if (Environment.CommandLine.Contains("-batchmode"))
+        {
+            unityRunningInBatchmode = true;
+        }
 
-		if (ShouldAttemptPluginUpdate())
-		{
-			AttemptPluginUpdate(true);
-		}
-	}
+        if (enableAndroidUniversalSupport)
+        {
+            unityVersionSupportsAndroidUniversal = true;
+        }
 
-	private static PluginPackage GetPluginPackage(string rootPath)
-	{
-		return new PluginPackage()
-		{
-			RootPath = rootPath,
-			Version = GetPluginVersion(rootPath),
-			Plugins = new Dictionary<PluginPlatform, string>()
-			{
-				{ PluginPlatform.Android,          rootPath + GetPluginBuildTargetSubPath(PluginPlatform.Android)          },
-				{ PluginPlatform.AndroidUniversal, rootPath + GetPluginBuildTargetSubPath(PluginPlatform.AndroidUniversal) },
-				{ PluginPlatform.AndroidOpenXR,	   rootPath + GetPluginBuildTargetSubPath(PluginPlatform.AndroidOpenXR)    },
-				{ PluginPlatform.OSXUniversal,     rootPath + GetPluginBuildTargetSubPath(PluginPlatform.OSXUniversal)     },
-				{ PluginPlatform.Win,              rootPath + GetPluginBuildTargetSubPath(PluginPlatform.Win)              },
-				{ PluginPlatform.Win64,            rootPath + GetPluginBuildTargetSubPath(PluginPlatform.Win64)            },
-				{ PluginPlatform.Win64OpenXR,      rootPath + GetPluginBuildTargetSubPath(PluginPlatform.Win64OpenXR)      },
-			}
-		};
-	}
+        if (ShouldAttemptPluginUpdate())
+        {
+            AttemptPluginUpdate(true);
+        }
+    }
 
-	private static PluginPackage GetBundledPluginPackage()
-	{
-		return GetPluginPackage(GetBundledPluginRootPath());
-	}
+    private static PluginPackage GetPluginPackage(string rootPath)
+    {
+        return new PluginPackage
+        {
+            RootPath = rootPath,
+            Version = GetPluginVersion(rootPath),
+            Plugins = new Dictionary<PluginPlatform, string>
+            {
+                { PluginPlatform.Android,          $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.Android)         }"},
+                { PluginPlatform.AndroidUniversal, $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.AndroidUniversal)}"},
+                { PluginPlatform.AndroidOpenXR,    $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.AndroidOpenXR)   }"},
+                { PluginPlatform.OSXUniversal,     $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.OSXUniversal)    }"},
+                { PluginPlatform.Win,              $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.Win)             }"},
+                { PluginPlatform.Win64,            $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.Win64)           }"},
+                { PluginPlatform.Win64OpenXR,      $"{rootPath}{GetPluginBuildTargetSubPath(PluginPlatform.Win64OpenXR)     }"},
+            }
+        };
+    }
 
-	private static List<PluginPackage> GetAllUtilitiesPluginPackages()
-	{
-		string pluginRootPath = GetUtilitiesPluginRootPath();
-		List<PluginPackage> packages = new List<PluginPackage>();
+    private static List<PluginPackage> GetAllUtilitiesPluginPackages()
+    {
+        var pluginRootPath = GetUtilitiesPluginRootPath();
+        List<PluginPackage> packages = new List<PluginPackage>();
 
-		if (Directory.Exists(pluginRootPath))
-		{
-			var dirs = Directory.GetDirectories(pluginRootPath);
+        if (Directory.Exists(pluginRootPath))
+        {
+            var dirs = Directory.GetDirectories(pluginRootPath);
+            packages.AddRange(dirs.Select(GetPluginPackage));
+        }
 
-			foreach(string dir in dirs)
-			{
-				packages.Add(GetPluginPackage(dir));
-			}
-		}
+        return packages;
+    }
 
-		return packages;
-	}
+    private static string GetCurrentProjectPath()
+    {
+        return Directory.GetParent(Application.dataPath).FullName;
+    }
 
-	private static string GetCurrentProjectPath()
-	{
-		return Directory.GetParent(Application.dataPath).FullName;
-	}
+    private static string GetUtilitiesPluginRootPath()
+    {
+        return GetUtilitiesRootPath() + @"/Runtime/VR/Plugins";
+    }
 
-	private static string GetUtilitiesPluginRootPath()
-	{
-		return GetUtilitiesRootPath() + @"/Plugins";
-	}
+    private static string GetUtilitiesRootPath()
+    {
+        var so = ScriptableObject.CreateInstance(typeof(OVRPluginUpdaterStub));
+        var script = MonoScript.FromScriptableObject(so);
+        string assetPath = AssetDatabase.GetAssetPath(script);
+        string editorVrPath = Directory.GetParent(assetPath).FullName;
+        string editorPath = Directory.GetParent(editorVrPath).FullName;
+        return Directory.GetParent(editorPath).FullName;
+    }
 
-	private static string GetUtilitiesRootPath()
-	{
-		var so = ScriptableObject.CreateInstance(typeof(OVRPluginUpdaterStub));
-		var script = MonoScript.FromScriptableObject(so);
-		string assetPath = AssetDatabase.GetAssetPath(script);
-		string editorDir = Directory.GetParent(assetPath).FullName;
-		string ovrDir = Directory.GetParent(editorDir).FullName;
+    private static string GetPluginBuildTargetSubPath(PluginPlatform target)
+    {
+        string path;
 
-		return ovrDir;
-	}
+        switch (target)
+        {
+            case PluginPlatform.Android:
+                path = @"/Android/OVRPlugin.aar";
+                break;
+            case PluginPlatform.AndroidUniversal:
+                path = @"/AndroidUniversal/OVRPlugin.aar";
+                break;
+            case PluginPlatform.AndroidOpenXR:
+                path = @"/AndroidOpenXR/OVRPlugin.aar";
+                break;
+            case PluginPlatform.OSXUniversal:
+                path = @"/OSXUniversal/OVRPlugin.bundle";
+                break;
+            case PluginPlatform.Win:
+                path = @"/Win/OVRPlugin.dll";
+                break;
+            case PluginPlatform.Win64:
+                path = @"/Win64/OVRPlugin.dll";
+                break;
+            case PluginPlatform.Win64OpenXR:
+                path = @"/Win64OpenXR/OVRPlugin.dll";
+                break;
+            default:
+                throw new ArgumentException("Attempted GetPluginBuildTargetSubPath() for unsupported BuildTarget: " + target);
+        }
 
-	private static string GetBundledPluginRootPath()
-	{
-		string basePath = EditorApplication.applicationContentsPath;
-		string pluginPath = @"/UnityExtensions/Unity/VR";
+        return path;
+    }
 
-		return basePath + pluginPath;
-	}
+    private static string GetDisabledPluginSuffix()
+    {
+        return @".disabled";
+    }
 
-	private static string GetPluginBuildTargetSubPath(PluginPlatform target)
-	{
-		string path = string.Empty;
+    private static Version GetPluginVersion(string path)
+    {
+        Version pluginVersion;
 
-		switch (target)
-		{
-			case PluginPlatform.Android:
-				path = @"/Android/OVRPlugin.aar";
-				break;
-			case PluginPlatform.AndroidUniversal:
-				path = @"/AndroidUniversal/OVRPlugin.aar";
-				break;
-			case PluginPlatform.AndroidOpenXR:
-				path = @"/AndroidOpenXR/OVRPlugin.aar";
-				break;
-			case PluginPlatform.OSXUniversal:
-				path = @"/OSXUniversal/OVRPlugin.bundle";
-				break;
-			case PluginPlatform.Win:
-				path = @"/Win/OVRPlugin.dll";
-				break;
-			case PluginPlatform.Win64:
-				path = @"/Win64/OVRPlugin.dll";
-				break;
-			case PluginPlatform.Win64OpenXR:
-				path = @"/Win64OpenXR/OVRPlugin.dll";
-				break;
-			default:
-				throw new ArgumentException("Attempted GetPluginBuildTargetSubPath() for unsupported BuildTarget: " + target);
-		}
+        try
+        {
+            pluginVersion = new Version(Path.GetFileName(path));
+        }
+        catch
+        {
+            pluginVersion = invalidVersion;
+        }
 
-		return path;
-	}
+        if (pluginVersion == invalidVersion)
+        {
+            //Unable to determine version from path, fallback to Win64 DLL meta data
+            path += GetPluginBuildTargetSubPath(PluginPlatform.Win64);
+            if (!File.Exists(path))
+            {
+                path += GetDisabledPluginSuffix();
+                if (!File.Exists(path))
+                {
+                    return invalidVersion;
+                }
+            }
 
-	private static string GetDisabledPluginSuffix()
-	{
-		return @".disabled";
-	}
+            FileVersionInfo pluginVersionInfo = FileVersionInfo.GetVersionInfo(path);
 
-	private static System.Version GetPluginVersion(string path)
-	{
-		System.Version pluginVersion = invalidVersion;
+            if (string.IsNullOrEmpty(pluginVersionInfo.ProductVersion))
+            {
+                return invalidVersion;
+            }
 
-		try
-		{
-			pluginVersion = new System.Version(Path.GetFileName(path));
-		}
-		catch
-		{
-			pluginVersion = invalidVersion;
-		}
+            pluginVersion = new Version(pluginVersionInfo.ProductVersion);
+        }
 
-		if (pluginVersion == invalidVersion)
-		{
-			//Unable to determine version from path, fallback to Win64 DLL meta data
-			path += GetPluginBuildTargetSubPath(PluginPlatform.Win64);
-			if (!File.Exists(path))
-			{
-				path += GetDisabledPluginSuffix();
-				if (!File.Exists(path))
-				{
-					return invalidVersion;
-				}
-			}
+        return pluginVersion;
+    }
 
-			FileVersionInfo pluginVersionInfo = FileVersionInfo.GetVersionInfo(path);
-			if (pluginVersionInfo == null || pluginVersionInfo.ProductVersion == null || pluginVersionInfo.ProductVersion == "")
-			{
-				return invalidVersion;
-			}
+    public static string GetVersionDescription(Version version)
+    {
+        bool isVersionValid = version != invalidVersion;
+        return isVersionValid ? version.ToString() : "(Unknown)";
+    }
 
-			pluginVersion = new System.Version(pluginVersionInfo.ProductVersion);
-		}
+    private static bool ShouldAttemptPluginUpdate()
+    {
+        if (unityRunningInBatchmode)
+        {
+            return false;
+        }
 
-		return pluginVersion;
-	}
+        return !UnitySupportsEnabledAndroidPlugin() || autoUpdateEnabled && !restartPending && !Application.isPlaying;
+    }
 
-	public static string GetVersionDescription(System.Version version)
-	{
-		bool isVersionValid = (version != invalidVersion);
-		return isVersionValid ? version.ToString() : "(Unknown)";
-	}
+    private static void DisableAllUtilitiesPluginPackages()
+    {
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-	private static bool ShouldAttemptPluginUpdate()
-	{
-		if (unityRunningInBatchmode || OVRPluginUpdaterStub.IsInsidePackageDistribution())
-		{
-			return false;
-		}
-		else
-		{
-			return !UnitySupportsEnabledAndroidPlugin() || (autoUpdateEnabled && !restartPending && !Application.isPlaying);
-		}
-	}
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            foreach (var path in pluginPkg.Plugins.Values)
+            {
+                GetPluginPaths(path, out _, out var pluginPath);
 
-	private static void DisableAllUtilitiesPluginPackages()
-	{
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+                if (Directory.Exists(pluginPath) ||
+                    File.Exists(pluginPath))
+                {
+                    AssetDatabase.DeleteAsset(pluginPath);
+                }
+            }
+        }
 
-		foreach(PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			foreach(string path in pluginPkg.Plugins.Values)
-			{
-				if ((Directory.Exists(path)) || (File.Exists(path)))
-				{
-					string basePath = GetCurrentProjectPath();
-					string relPath = path.Substring(basePath.Length + 1);
-					string relDisabledPath = relPath + GetDisabledPluginSuffix();
+        AssetDatabase.Refresh();
+        AssetDatabase.SaveAssets();
+    }
 
-					AssetDatabase.MoveAsset(relPath, relDisabledPath);
-					AssetDatabase.ImportAsset(relDisabledPath, ImportAssetOptions.ForceUpdate);
-				}
-			}
-		}
+    private static void GetPluginPaths(string path, out string disabledPath, out string enabledPath)
+    {
+        string basePath = GetCurrentProjectPath();
+        string relPath = path.Substring(basePath.Length + 1).Replace("\\", "/");
+        disabledPath = relPath + GetDisabledPluginSuffix();
+        relPath = relPath.Replace("Packages/com.oculus.unity-integration/Runtime/VR/Plugins/", "");
+        enabledPath = $"Assets/Plugins/OVR/{relPath}";
+    }
 
-		AssetDatabase.Refresh();
-		AssetDatabase.SaveAssets();
-	}
-
-	private static void EnablePluginPackage(PluginPackage pluginPkg)
-	{
+    private static void EnablePluginPackage(PluginPackage pluginPkg)
+    {
 #if UNITY_2020_1_OR_NEWER
 		bool activateOpenXRPlugin = pluginPkg.Version >= minimalProductionVersionForOpenXR;
 		if (activateOpenXRPlugin && !unityRunningInBatchmode)
@@ -478,750 +366,720 @@ internal class OVRPluginUpdater
 			}
 		}
 #else
-		bool activateOpenXRPlugin = false;
+        bool activateOpenXRPlugin = false;
 #endif
-		if (activateOpenXRPlugin)
-		{
-			UnityEngine.Debug.Log("OVRPlugin with OpenXR backend is activated by default");
-			if (!unityRunningInBatchmode)
-			{
-				EditorUtility.DisplayDialog("OVRPlugin", "OVRPlugin with OpenXR backend will be activated by default", "Ok");
-			}
-		}
-		else
-		{
-			UnityEngine.Debug.Log("OVRPlugin with LibOVR/VRAPI backend is activated by default");
-			if (!unityRunningInBatchmode)
-			{
-				EditorUtility.DisplayDialog("OVRPlugin", "OVRPlugin with LibOVR/VRAPI backend will be activated by default", "Ok");
-			}
-		}
+        if (activateOpenXRPlugin)
+        {
+            UnityEngine.Debug.Log("OVRPlugin with OpenXR backend is activated by default");
+            if (!unityRunningInBatchmode)
+            {
+                EditorUtility.DisplayDialog("OVRPlugin", "OVRPlugin with OpenXR backend will be activated by default", "Ok");
+            }
+        }
+        else
+        {
+            UnityEngine.Debug.Log("OVRPlugin with LibOVR/VRAPI backend is activated by default");
+            if (!unityRunningInBatchmode)
+            {
+                EditorUtility.DisplayDialog("OVRPlugin", "OVRPlugin with LibOVR/VRAPI backend will be activated by default", "Ok");
+            }
+        }
 
-		foreach (var kvp in pluginPkg.Plugins)
-		{
-			PluginPlatform platform = kvp.Key;
-			string path = kvp.Value;
+        foreach (var kvp in pluginPkg.Plugins)
+        {
+            PluginPlatform platform = kvp.Key;
+            string path = kvp.Value;
 
-			if ((Directory.Exists(path + GetDisabledPluginSuffix())) || (File.Exists(path + GetDisabledPluginSuffix())))
-			{
-				string basePath = GetCurrentProjectPath();
-				string relPath = path.Substring(basePath.Length + 1);
-				string relDisabledPath = relPath + GetDisabledPluginSuffix();
+            if (Directory.Exists($"{path}{GetDisabledPluginSuffix()}") ||
+                File.Exists($"{path}{GetDisabledPluginSuffix()}"))
+            {
+                GetPluginPaths(path, out var relDisabledPath, out var pluginPath);
+                string pluginDirectory = Directory.GetParent($"{GetCurrentProjectPath()}/{pluginPath}").FullName;
 
-				AssetDatabase.MoveAsset(relDisabledPath, relPath);
-				AssetDatabase.ImportAsset(relPath, ImportAssetOptions.ForceUpdate);
+                if (!Directory.Exists(pluginDirectory))
+                {
+                    Directory.CreateDirectory(pluginDirectory);
+                }
 
-				PluginImporter pi = PluginImporter.GetAtPath(relPath) as PluginImporter;
-				if (pi == null)
-				{
-					continue;
-				}
+                File.Copy(Path.GetFullPath(relDisabledPath), Path.GetFullPath(pluginPath));
+                AssetDatabase.ImportAsset(pluginPath, ImportAssetOptions.ForceUpdate);
 
-				// Disable support for all platforms, then conditionally enable desired support below
-				pi.SetCompatibleWithEditor(false);
-				pi.SetCompatibleWithAnyPlatform(false);
-				pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
-				pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, false);
-				pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, false);
-				pi.SetCompatibleWithPlatform(BuildTarget.StandaloneOSX, false);
+                PluginImporter pi = AssetImporter.GetAtPath(pluginPath) as PluginImporter;
 
-				switch (platform)
-				{
-					case PluginPlatform.Android:
-						pi.SetCompatibleWithPlatform(BuildTarget.Android, !unityVersionSupportsAndroidUniversal);
-						if (!unityVersionSupportsAndroidUniversal)
-						{
-							pi.SetPlatformData(BuildTarget.Android, "CPU", "ARMv7");
-						}
-						break;
-					case PluginPlatform.AndroidUniversal:
-						if (!activateOpenXRPlugin)
-						{
-							pi.SetCompatibleWithPlatform(BuildTarget.Android, unityVersionSupportsAndroidUniversal);
-						}
-						break;
-					case PluginPlatform.AndroidOpenXR:
-						if (activateOpenXRPlugin)
-						{
-							pi.SetCompatibleWithPlatform(BuildTarget.Android, unityVersionSupportsAndroidUniversal);
-						}
-						break;
-					case PluginPlatform.OSXUniversal:
-						pi.SetCompatibleWithPlatform(BuildTarget.StandaloneOSX, true);
-						pi.SetCompatibleWithEditor(true);
-						pi.SetEditorData("CPU", "AnyCPU");
-						pi.SetEditorData("OS", "OSX");
-						pi.SetPlatformData("Editor", "CPU", "AnyCPU");
-						pi.SetPlatformData("Editor", "OS", "OSX");
-						break;
-					case PluginPlatform.Win:
-						pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, true);
-						pi.SetCompatibleWithEditor(true);
-						pi.SetEditorData("CPU", "X86");
-						pi.SetEditorData("OS", "Windows");
-						pi.SetPlatformData("Editor", "CPU", "X86");
-						pi.SetPlatformData("Editor", "OS", "Windows");
-						break;
-					case PluginPlatform.Win64:
-						if (!activateOpenXRPlugin)
-						{
-							pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
-							pi.SetCompatibleWithEditor(true);
-							pi.SetEditorData("CPU", "X86_64");
-							pi.SetEditorData("OS", "Windows");
-							pi.SetPlatformData("Editor", "CPU", "X86_64");
-							pi.SetPlatformData("Editor", "OS", "Windows");
-						}
-						break;
-					case PluginPlatform.Win64OpenXR:
-						if (activateOpenXRPlugin)
-						{
-							pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
-							pi.SetCompatibleWithEditor(true);
-							pi.SetEditorData("CPU", "X86_64");
-							pi.SetEditorData("OS", "Windows");
-							pi.SetPlatformData("Editor", "CPU", "X86_64");
-							pi.SetPlatformData("Editor", "OS", "Windows");
-						}
-						break;
-					default:
-						throw new ArgumentException("Attempted EnablePluginPackage() for unsupported BuildTarget: " + platform);
-				}
+                if (pi == null)
+                {
+                    continue;
+                }
 
-				AssetDatabase.ImportAsset(relPath, ImportAssetOptions.ForceUpdate);
-			}
-		}
+                // Disable support for all platforms, then conditionally enable desired support below
+                pi.SetCompatibleWithEditor(false);
+                pi.SetCompatibleWithAnyPlatform(false);
+                pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
+                pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, false);
+                pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, false);
+                pi.SetCompatibleWithPlatform(BuildTarget.StandaloneOSX, false);
 
-		AssetDatabase.Refresh();
-		AssetDatabase.SaveAssets();
-	}
+                switch (platform)
+                {
+                    case PluginPlatform.Android:
+                        pi.SetCompatibleWithPlatform(BuildTarget.Android, !unityVersionSupportsAndroidUniversal);
+                        if (!unityVersionSupportsAndroidUniversal)
+                        {
+                            pi.SetPlatformData(BuildTarget.Android, "CPU", "ARMv7");
+                        }
+                        break;
+                    case PluginPlatform.AndroidUniversal:
+                        if (!activateOpenXRPlugin)
+                        {
+                            pi.SetCompatibleWithPlatform(BuildTarget.Android, unityVersionSupportsAndroidUniversal);
+                        }
+                        break;
+                    case PluginPlatform.AndroidOpenXR:
+                        if (activateOpenXRPlugin)
+                        {
+                            pi.SetCompatibleWithPlatform(BuildTarget.Android, unityVersionSupportsAndroidUniversal);
+                        }
+                        break;
+                    case PluginPlatform.OSXUniversal:
+                        pi.SetCompatibleWithPlatform(BuildTarget.StandaloneOSX, true);
+                        pi.SetCompatibleWithEditor(true);
+                        pi.SetEditorData("CPU", "AnyCPU");
+                        pi.SetEditorData("OS", "OSX");
+                        pi.SetPlatformData("Editor", "CPU", "AnyCPU");
+                        pi.SetPlatformData("Editor", "OS", "OSX");
+                        break;
+                    case PluginPlatform.Win:
+                        pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, true);
+                        pi.SetCompatibleWithEditor(true);
+                        pi.SetEditorData("CPU", "X86");
+                        pi.SetEditorData("OS", "Windows");
+                        break;
+                    case PluginPlatform.Win64:
+                        if (!activateOpenXRPlugin)
+                        {
+                            pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
+                            pi.SetCompatibleWithEditor(true);
+                            pi.SetEditorData("CPU", "X86_64");
+                            pi.SetEditorData("OS", "Windows");
+                            pi.SetPlatformData("Editor", "CPU", "X86_64");
+                            pi.SetPlatformData("Editor", "OS", "Windows");
+                        }
+                        break;
+                    case PluginPlatform.Win64OpenXR:
+                        if (activateOpenXRPlugin)
+                        {
+                            pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
+                            pi.SetCompatibleWithEditor(true);
+                            pi.SetEditorData("CPU", "X86_64");
+                            pi.SetEditorData("OS", "Windows");
+                            pi.SetPlatformData("Editor", "CPU", "X86_64");
+                            pi.SetPlatformData("Editor", "OS", "Windows");
+                        }
+                        break;
+                    default:
+                        throw new ArgumentException("Attempted EnablePluginPackage() for unsupported BuildTarget: " + platform);
+                }
 
-	private static readonly string autoUpdateEnabledKey = "Oculus_Utilities_OVRPluginUpdater_AutoUpdate_" + OVRManager.utilitiesVersion;
-	private static bool autoUpdateEnabled
-	{
-		get {
-			return PlayerPrefs.GetInt(autoUpdateEnabledKey, 1) == 1;
-		}
+                AssetDatabase.ImportAsset(pluginPath, ImportAssetOptions.ForceUpdate);
+            }
+        }
 
-		set {
-			PlayerPrefs.SetInt(autoUpdateEnabledKey, value ? 1 : 0);
-		}
-	}
+        AssetDatabase.Refresh();
+        AssetDatabase.SaveAssets();
 
-	[MenuItem("Oculus/Tools/Disable OVR Utilities Plugin")]
-	private static void AttemptPluginDisable()
-	{
-		if (OVRPluginUpdaterStub.IsInsidePackageDistribution())
-		{
-			UnityEngine.Debug.LogError("Unable to change plugin when using package distribution");
-			return;
-		}
+    }
 
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+    private static readonly string autoUpdateEnabledKey = "Oculus_Utilities_OVRPluginUpdater_AutoUpdate_" + OVRManager.utilitiesVersion;
+    private static bool autoUpdateEnabled
+    {
+        get => PlayerPrefs.GetInt(autoUpdateEnabledKey, 1) == 1;
+        set => PlayerPrefs.SetInt(autoUpdateEnabledKey, value ? 1 : 0);
+    }
 
-		PluginPackage enabledUtilsPluginPkg = null;
+    [MenuItem("Oculus/Tools/Disable OVR Utilities Plugin")]
+    private static void AttemptPluginDisable()
+    {
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-		foreach(PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if (pluginPkg.IsEnabled())
-			{
-				if ((enabledUtilsPluginPkg == null) || (pluginPkg.Version > enabledUtilsPluginPkg.Version))
-				{
-					enabledUtilsPluginPkg = pluginPkg;
-				}
-			}
-		}
+        PluginPackage enabledUtilsPluginPkg = null;
 
-		if (enabledUtilsPluginPkg == null)
-		{
-			if (unityRunningInBatchmode
-				|| EditorUtility.DisplayDialog("Disable Oculus Utilities Plugin",
-					"The OVRPlugin included with Oculus Utilities is already disabled."
-						+ " The OVRPlugin installed through the Package Manager will continue to be used.\n",
-					"Ok",
-					""))
-			{
-				return;
-			}
-		}
-		else
-		{
-			if (unityRunningInBatchmode
-				|| EditorUtility.DisplayDialog("Disable Oculus Utilities Plugin",
-					"Do you want to disable the OVRPlugin included with Oculus Utilities and revert to the OVRPlugin installed through the Package Manager?\n\n"
-						+ "Current version: " + GetVersionDescription(enabledUtilsPluginPkg.Version),
-					"Yes",
-					"No"))
-			{
-				DisableAllUtilitiesPluginPackages();
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (pluginPkg.IsEnabled())
+            {
+                if (enabledUtilsPluginPkg == null || pluginPkg.Version > enabledUtilsPluginPkg.Version)
+                {
+                    enabledUtilsPluginPkg = pluginPkg;
+                }
+            }
+        }
 
-				if (unityRunningInBatchmode
-					|| EditorUtility.DisplayDialog("Restart Unity",
-						"Now you will be using the OVRPlugin installed through Package Manager."
-							+ "\n\nPlease restart the Unity Editor to complete the update process.",
-						"Restart",
-						"Not Now"))
-				{
-					RestartUnityEditor();
-				}
-			}
-		}
-	}
+        if (enabledUtilsPluginPkg == null)
+        {
+            if (unityRunningInBatchmode
+                || EditorUtility.DisplayDialog("Disable Oculus Utilities Plugin",
+                    "The OVRPlugin included with Oculus Utilities is already disabled."
+                        + " The OVRPlugin installed through the Package Manager will continue to be used.\n",
+                    "Ok",
+                    ""))
+            {
+                return;
+            }
+        }
+        else
+        {
+            if (unityRunningInBatchmode
+                || EditorUtility.DisplayDialog("Disable Oculus Utilities Plugin",
+                    "Do you want to disable the OVRPlugin included with Oculus Utilities and revert to the OVRPlugin installed through the Package Manager?\n\n"
+                        + "Current version: " + GetVersionDescription(enabledUtilsPluginPkg.Version),
+                    "Yes",
+                    "No"))
+            {
+                DisableAllUtilitiesPluginPackages();
 
-	[MenuItem("Oculus/Tools/Update OVR Utilities Plugin")]
-	private static void RunPluginUpdate()
-	{
-		if (OVRPluginUpdaterStub.IsInsidePackageDistribution())
-		{
-			UnityEngine.Debug.LogError("Unable to change plugin when using package distribution");
-			return;
-		}
+                if (unityRunningInBatchmode
+                    || EditorUtility.DisplayDialog("Restart Unity",
+                        "Now you will be using the OVRPlugin installed through Package Manager."
+                            + "\n\nPlease restart the Unity Editor to complete the update process.",
+                        "Restart",
+                        "Not Now"))
+                {
+                    RestartUnityEditor();
+                }
+            }
+        }
+    }
 
-		autoUpdateEnabled = true;
-		AttemptPluginUpdate(false);
-	}
+    [MenuItem("Oculus/Tools/Update OVR Utilities Plugin")]
+    private static void RunPluginUpdate()
+    {
+        autoUpdateEnabled = true;
+        AttemptPluginUpdate(false);
+    }
 
-	private static void BatchmodeActivateOVRPluginOpenXR()
-	{
-		OnDelayCall(); // manually invoke when running editor in batchmode
-		ActivateOVRPluginOpenXR();
-	}
+    private static void BatchmodeActivateOVRPluginOpenXR()
+    {
+        OnDelayCall(); // manually invoke when running editor in batchmode
+        ActivateOVRPluginOpenXR();
+    }
 
-	[MenuItem("Oculus/Tools/OpenXR/Switch to OVRPlugin with OpenXR backend", true)]
-	private static bool IsActivateOVRPluginOpenXRMenuEnabled()
-	{
+    [MenuItem("Oculus/Tools/OpenXR/Switch to OVRPlugin with OpenXR backend", true)]
+    private static bool IsActivateOVRPluginOpenXRMenuEnabled()
+    {
 #if !USING_XR_SDK && !REQUIRES_XR_SDK
 		return false;
 #else
-		return true;
+        return true;
 #endif
-	}
+    }
 
-	[MenuItem("Oculus/Tools/OpenXR/Switch to OVRPlugin with OpenXR backend")]
-	private static void ActivateOVRPluginOpenXR()
-	{
-		if (!unityVersionSupportsAndroidUniversal)
-		{
-			UnityEngine.Debug.LogError("Unexpected error: Unity must support AndroidUniversal version of Oculus Utilities Plugin for accessing OpenXR");
-			return;
-		}
-
-		if (OVRPluginUpdaterStub.IsInsidePackageDistribution())
-		{
-			UnityEngine.Debug.LogError("Unable to change plugin when using package distribution");
-			return;
-		}
+    [MenuItem("Oculus/Tools/OpenXR/Switch to OVRPlugin with OpenXR backend")]
+    private static void ActivateOVRPluginOpenXR()
+    {
+        if (!unityVersionSupportsAndroidUniversal)
+        {
+            UnityEngine.Debug.LogError("Unexpected error: Unity must support AndroidUniversal version of Oculus Utilities Plugin for accessing OpenXR");
+            return;
+        }
 
 #if !USING_XR_SDK && !REQUIRES_XR_SDK
 		UnityEngine.Debug.LogError("Oculus Utilities Plugin with OpenXR only supports XR Plug-in Managmenent with Oculus XR Plugin");
 		return;
 #else
 
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-		PluginPackage enabledUtilsPluginPkg = null;
+        PluginPackage enabledUtilsPluginPkg = null;
 
-		foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if (pluginPkg.IsEnabled())
-			{
-				enabledUtilsPluginPkg = pluginPkg;
-				break;
-			}
-		}
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (pluginPkg.IsEnabled())
+            {
+                enabledUtilsPluginPkg = pluginPkg;
+                break;
+            }
+        }
 
-		if (enabledUtilsPluginPkg == null)
-		{
-			UnityEngine.Debug.LogError("Unable to Activate OVRPlugin with OpenXR: Oculus Utilities Plugin package not activated");
-			return;
-		}
+        if (enabledUtilsPluginPkg == null)
+        {
+            UnityEngine.Debug.LogError("Unable to Activate OVRPlugin with OpenXR: Oculus Utilities Plugin package not activated");
+            return;
+        }
 
-		if (!enabledUtilsPluginPkg.IsAndroidOpenXRPresent() && !enabledUtilsPluginPkg.IsWin64OpenXRPresent())
-		{
-			UnityEngine.Debug.LogError("Unable to Activate OVRPlugin with OpenXR: Both AndroidOpenXR/OVRPlugin.aar or Win64OpenXR/OVRPlugin.dll does not exist");
-			return;
-		}
+        if (!enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.AndroidOpenXR) &&
+            !enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.Win64OpenXR))
+        {
+            UnityEngine.Debug.LogError("Unable to Activate OVRPlugin with OpenXR: Both AndroidOpenXR/OVRPlugin.aar or Win64OpenXR/OVRPlugin.dll does not exist");
+            return;
+        }
 
-		if (enabledUtilsPluginPkg.IsAndroidOpenXREnabled() && enabledUtilsPluginPkg.IsWin64OpenXREnabled())
-		{
-			if (!unityRunningInBatchmode)
-			{
-				EditorUtility.DisplayDialog("Unable to Activate OVRPlugin with OpenXR", "Both AndroidOpenXR/OVRPlugin.aar and Win64OpenXR/OVRPlugin.dll already enabled", "Ok");
-			}
-			return;
-		}
+        if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR) &&
+            enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.Win64OpenXR))
+        {
+            if (!unityRunningInBatchmode)
+            {
+                EditorUtility.DisplayDialog("Unable to Activate OVRPlugin with OpenXR", "Both AndroidOpenXR/OVRPlugin.aar and Win64OpenXR/OVRPlugin.dll already enabled", "Ok");
+            }
+            return;
+        }
 
-		if (enabledUtilsPluginPkg.Version < minimalProductionVersionForOpenXR)
-		{
-			if (!unityRunningInBatchmode)
-			{
-				bool accepted = EditorUtility.DisplayDialog("Warning",
-					"OVRPlugin with OpenXR backend is experimental before v31. You may expect to encounter stability issues and/or missing functionalities, " +
-					"including but not limited to, fixed foveated rendering / composition layer / display refresh rates / etc." +
-					"\n\n" +
-					"Also, OVRPlugin with OpenXR backend only supports XR Plug-in Managmenent with Oculus XR Plugin on Quest",
-					"Continue", "Cancel");
+        if (enabledUtilsPluginPkg.Version < minimalProductionVersionForOpenXR)
+        {
+            if (!unityRunningInBatchmode)
+            {
+                bool accepted = EditorUtility.DisplayDialog("Warning",
+                    "OVRPlugin with OpenXR backend is experimental before v31. You may expect to encounter stability issues and/or missing functionalities, " +
+                    "including but not limited to, fixed foveated rendering / composition layer / display refresh rates / etc." +
+                    "\n\n" +
+                    "Also, OVRPlugin with OpenXR backend only supports XR Plug-in Managmenent with Oculus XR Plugin on Quest",
+                    "Continue", "Cancel");
 
-				if (!accepted)
-				{
-					return;
-				}
-			}
-		}
+                if (!accepted)
+                {
+                    return;
+                }
+            }
+        }
 
-		if (enabledUtilsPluginPkg.IsAndroidOpenXRPresent() && !enabledUtilsPluginPkg.IsAndroidOpenXREnabled())
-		{
-			if (enabledUtilsPluginPkg.IsAndroidUniversalEnabled())
-			{
-				string androidUniveralPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidUniversal];
-				string androidUniveralPluginBasePath = GetCurrentProjectPath();
-				string androidUniveralPluginRelPath = androidUniveralPluginPath.Substring(androidUniveralPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(androidUniveralPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
-					AssetDatabase.ImportAsset(androidUniveralPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidUniveralPluginRelPath);
-				}
-			}
+        if (enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.AndroidOpenXR) &&
+            !enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR))
+        {
+            if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidUniversal))
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidUniversal], out _, out var androidUniversalPath);
+                PluginImporter pi = AssetImporter.GetAtPath(androidUniversalPath) as PluginImporter;
 
-			{
-				string androidOpenXRPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidOpenXR];
-				string androidOpenXRPluginBasePath = GetCurrentProjectPath();
-				string androidOpenXRPluginRelPath = androidOpenXRPluginPath.Substring(androidOpenXRPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(androidOpenXRPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.Android, true);
-					AssetDatabase.ImportAsset(androidOpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidOpenXRPluginRelPath);
-				}
-			}
-		}
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
+                    AssetDatabase.ImportAsset(androidUniversalPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidUniversalPath);
+                }
+            }
+
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidOpenXR], out _, out var androidOpenXRPluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(androidOpenXRPluginRelPath) as PluginImporter;
+
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.Android, true);
+                    AssetDatabase.ImportAsset(androidOpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidOpenXRPluginRelPath);
+                }
+            }
+        }
 
 
-		bool win64PluginUpdated = false;
+        bool win64PluginUpdated = false;
 
-		if (enabledUtilsPluginPkg.IsWin64OpenXRPresent() && !enabledUtilsPluginPkg.IsWin64OpenXREnabled())
-		{
-			if (enabledUtilsPluginPkg.IsWin64Enabled())
-			{
-				string win64PluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64];
-				string win64PluginBasePath = GetCurrentProjectPath();
-				string win64PluginRelPath = win64PluginPath.Substring(win64PluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(win64PluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.ClearSettings();
-					pi.SetCompatibleWithEditor(false);
-					pi.SetCompatibleWithAnyPlatform(false);
-					AssetDatabase.ImportAsset(win64PluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64PluginRelPath);
-				}
-			}
+        if (enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.Win64OpenXR) &&
+            !enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.Win64OpenXR))
+        {
+            if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.Win64))
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64], out _, out var win64PluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(win64PluginRelPath) as PluginImporter;
 
-			{
-				string win64OpenXRPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64OpenXR];
-				string win64OpenXRPluginBasePath = GetCurrentProjectPath();
-				string win64OpenXRPluginRelPath = win64OpenXRPluginPath.Substring(win64OpenXRPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(win64OpenXRPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
-					pi.SetCompatibleWithEditor(true);
-					pi.SetEditorData("CPU", "X86_64");
-					pi.SetEditorData("OS", "Windows");
-					pi.SetPlatformData("Editor", "CPU", "X86_64");
-					pi.SetPlatformData("Editor", "OS", "Windows");
-					AssetDatabase.ImportAsset(win64OpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64OpenXRPluginRelPath);
-				}
-			}
+                if (pi != null)
+                {
+                    pi.ClearSettings();
+                    pi.SetCompatibleWithEditor(false);
+                    pi.SetCompatibleWithAnyPlatform(false);
+                    AssetDatabase.ImportAsset(win64PluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64PluginRelPath);
+                }
+            }
 
-			win64PluginUpdated = true;
-		}
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64OpenXR], out _, out var win64OpenXRPluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(win64OpenXRPluginRelPath) as PluginImporter;
 
-		AssetDatabase.Refresh();
-		AssetDatabase.SaveAssets();
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
+                    pi.SetCompatibleWithEditor(true);
+                    pi.SetEditorData("CPU", "X86_64");
+                    pi.SetEditorData("OS", "Windows");
+                    pi.SetPlatformData("Editor", "CPU", "X86_64");
+                    pi.SetPlatformData("Editor", "OS", "Windows");
+                    AssetDatabase.ImportAsset(win64OpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64OpenXRPluginRelPath);
+                }
+            }
 
-		if (!unityRunningInBatchmode)
-		{
-			EditorUtility.DisplayDialog("Activate OVRPlugin with OpenXR", "Oculus Utilities Plugin with OpenXR has been enabled on Android", "Ok");
-			if (win64PluginUpdated && EditorUtility.DisplayDialog("Restart Unity",
-									"Win64 plugin updated. Do you want to restart Unity editor?",
-									"Restart",
-									"Not Now"))
-			{
-				RestartUnityEditor();
-			}
-		}
+            win64PluginUpdated = true;
+        }
+
+        AssetDatabase.Refresh();
+        AssetDatabase.SaveAssets();
+
+        if (!unityRunningInBatchmode)
+        {
+            EditorUtility.DisplayDialog("Activate OVRPlugin with OpenXR", "Oculus Utilities Plugin with OpenXR has been enabled on Android", "Ok");
+            if (win64PluginUpdated && EditorUtility.DisplayDialog("Restart Unity",
+                                    "Win64 plugin updated. Do you want to restart Unity editor?",
+                                    "Restart",
+                                    "Not Now"))
+            {
+                RestartUnityEditor();
+            }
+        }
 #endif // !USING_XR_SDK
-	}
+    }
 
-	[MenuItem("Oculus/Tools/OpenXR/Switch to Legacy OVRPlugin (with LibOVR and VRAPI backends)")]
-	private static void RestoreStandardOVRPlugin()
-	{
-		if (!unityVersionSupportsAndroidUniversal) // sanity check
-		{
-			UnityEngine.Debug.LogError("Unexpected error: Unity must support AndroidUniversal version of Oculus Utilities Plugin for accessing OpenXR");
-			return;
-		}
+    [MenuItem("Oculus/Tools/OpenXR/Switch to Legacy OVRPlugin (with LibOVR and VRAPI backends)")]
+    private static void RestoreStandardOVRPlugin()
+    {
+        if (!unityVersionSupportsAndroidUniversal) // sanity check
+        {
+            UnityEngine.Debug.LogError("Unexpected error: Unity must support AndroidUniversal version of Oculus Utilities Plugin for accessing OpenXR");
+            return;
+        }
 
-		if (OVRPluginUpdaterStub.IsInsidePackageDistribution())
-		{
-			UnityEngine.Debug.LogError("Unable to change plugin when using package distribution");
-			return;
-		}
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+        PluginPackage enabledUtilsPluginPkg = null;
 
-		PluginPackage enabledUtilsPluginPkg = null;
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (pluginPkg.IsEnabled())
+            {
+                enabledUtilsPluginPkg = pluginPkg;
+                break;
+            }
+        }
 
-		foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if (pluginPkg.IsEnabled())
-			{
-				enabledUtilsPluginPkg = pluginPkg;
-				break;
-			}
-		}
+        if (enabledUtilsPluginPkg == null)
+        {
+            UnityEngine.Debug.LogError("Unable to Restore Standard Oculus Utilities Plugin: Oculus Utilities Plugin package not activated");
+            return;
+        }
 
-		if (enabledUtilsPluginPkg == null)
-		{
-			UnityEngine.Debug.LogError("Unable to Restore Standard Oculus Utilities Plugin: Oculus Utilities Plugin package not activated");
-			return;
-		}
+        if (!enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.AndroidUniversal) &&
+            !enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.Win64))
+        {
+            UnityEngine.Debug.LogError("Unable to Restore Standard Oculus Utilities Plugin: Both AndroidOpenXR/OVRPlugin.aar and Win64/OVRPlugin.dll does not exist");
+            return;
+        }
 
-		if (!enabledUtilsPluginPkg.IsAndroidUniversalPresent() && !enabledUtilsPluginPkg.IsWin64Present())
-		{
-			UnityEngine.Debug.LogError("Unable to Restore Standard Oculus Utilities Plugin: Both AndroidOpenXR/OVRPlugin.aar and Win64/OVRPlugin.dll does not exist");
-			return;
-		}
+        if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidUniversal) &&
+            enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.Win64))
+        {
+            if (!unityRunningInBatchmode)
+            {
+                EditorUtility.DisplayDialog("Unable to Restore Standard Oculus Utilities Plugin", "Both AndroidUniversal/OVRPlugin.aar and Win64/OVRPlugin.dll already enabled", "Ok");
+            }
+            return;
+        }
 
-		if (enabledUtilsPluginPkg.IsAndroidUniversalEnabled() && enabledUtilsPluginPkg.IsWin64Enabled())
-		{
-			if (!unityRunningInBatchmode)
-			{
-				EditorUtility.DisplayDialog("Unable to Restore Standard Oculus Utilities Plugin", "Both AndroidUniversal/OVRPlugin.aar and Win64/OVRPlugin.dll already enabled", "Ok");
-			}
-			return;
-		}
+        if (enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.AndroidUniversal) &&
+            !enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidUniversal))
+        {
+            if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR))
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidOpenXR], out _, out var androidOpenXRPluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(androidOpenXRPluginRelPath) as PluginImporter;
 
-		if (enabledUtilsPluginPkg.IsAndroidUniversalPresent() && !enabledUtilsPluginPkg.IsAndroidUniversalEnabled())
-		{
-			if (enabledUtilsPluginPkg.IsAndroidOpenXREnabled())
-			{
-				string androidOpenXRPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidOpenXR];
-				string androidOpenXRPluginBasePath = GetCurrentProjectPath();
-				string androidOpenXRPluginRelPath = androidOpenXRPluginPath.Substring(androidOpenXRPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(androidOpenXRPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
-					AssetDatabase.ImportAsset(androidOpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidOpenXRPluginRelPath);
-				}
-			}
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.Android, false);
+                    AssetDatabase.ImportAsset(androidOpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidOpenXRPluginRelPath);
+                }
+            }
 
-			{
-				string androidUniveralPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidUniversal];
-				string androidUniveralPluginBasePath = GetCurrentProjectPath();
-				string androidUniveralPluginRelPath = androidUniveralPluginPath.Substring(androidUniveralPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(androidUniveralPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.Android, true);
-					AssetDatabase.ImportAsset(androidUniveralPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidUniveralPluginRelPath);
-				}
-			}
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.AndroidUniversal], out _, out var androidUniversalPath);
+                PluginImporter pi = AssetImporter.GetAtPath(androidUniversalPath) as PluginImporter;
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.Android, true);
+                    AssetDatabase.ImportAsset(androidUniversalPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + androidUniversalPath);
+                }
+            }
 
-		}
+        }
 
-		bool win64PluginUpdated = false;
-		if (enabledUtilsPluginPkg.IsWin64Present() && !enabledUtilsPluginPkg.IsWin64Enabled())
-		{
-			if (enabledUtilsPluginPkg.IsWin64OpenXREnabled())
-			{
-				string win64OpenXRPluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64OpenXR];
-				string win64OpenXRPluginBasePath = GetCurrentProjectPath();
-				string win64OpenXRPluginRelPath = win64OpenXRPluginPath.Substring(win64OpenXRPluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(win64OpenXRPluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.ClearSettings();
-					pi.SetCompatibleWithEditor(false);
-					pi.SetCompatibleWithAnyPlatform(false);
-					AssetDatabase.ImportAsset(win64OpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64OpenXRPluginRelPath);
-				}
-			}
+        bool win64PluginUpdated = false;
+        if (enabledUtilsPluginPkg.IsPlatformPresent(PluginPlatform.Win64) &&
+            !enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.Win64))
+        {
+            if (enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR))
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64OpenXR], out _, out var win64OpenXRPluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(win64OpenXRPluginRelPath) as PluginImporter;
 
-			{
-				string win64PluginPath = enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64];
-				string win64PluginBasePath = GetCurrentProjectPath();
-				string win64PluginRelPath = win64PluginPath.Substring(win64PluginBasePath.Length + 1);
-				PluginImporter pi = PluginImporter.GetAtPath(win64PluginRelPath) as PluginImporter;
-				if (pi != null)
-				{
-					pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
-					pi.SetCompatibleWithEditor(true);
-					pi.SetEditorData("CPU", "X86_64");
-					pi.SetEditorData("OS", "Windows");
-					pi.SetPlatformData("Editor", "CPU", "X86_64");
-					pi.SetPlatformData("Editor", "OS", "Windows");
-					AssetDatabase.ImportAsset(win64PluginRelPath, ImportAssetOptions.ForceUpdate);
-				}
-				else
-				{
-					UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64PluginRelPath);
-				}
-			}
+                if (pi != null)
+                {
+                    pi.ClearSettings();
+                    pi.SetCompatibleWithEditor(false);
+                    pi.SetCompatibleWithAnyPlatform(false);
+                    AssetDatabase.ImportAsset(win64OpenXRPluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64OpenXRPluginRelPath);
+                }
+            }
 
-			win64PluginUpdated = true;
-		}
+            {
+                GetPluginPaths(enabledUtilsPluginPkg.Plugins[PluginPlatform.Win64], out _, out var win64PluginRelPath);
+                PluginImporter pi = AssetImporter.GetAtPath(win64PluginRelPath) as PluginImporter;
 
-		AssetDatabase.Refresh();
-		AssetDatabase.SaveAssets();
+                if (pi != null)
+                {
+                    pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, true);
+                    pi.SetCompatibleWithEditor(true);
+                    pi.SetEditorData("CPU", "X86_64");
+                    pi.SetEditorData("OS", "Windows");
+                    pi.SetPlatformData("Editor", "CPU", "X86_64");
+                    pi.SetPlatformData("Editor", "OS", "Windows");
+                    AssetDatabase.ImportAsset(win64PluginRelPath, ImportAssetOptions.ForceUpdate);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unable to find PluginImporter: " + win64PluginRelPath);
+                }
+            }
 
-		if (!unityRunningInBatchmode)
-		{
-			EditorUtility.DisplayDialog("Restore Standard OVRPlugin", "Standard version of Oculus Utilities Plugin has been enabled on Android", "Ok");
-			if (win64PluginUpdated && EditorUtility.DisplayDialog("Restart Unity",
-									"Win64 plugin updated. Do you want to restart Unity editor?",
-									"Restart",
-									"Not Now"))
-			{
-				RestartUnityEditor();
-			}
-		}
-	}
+            win64PluginUpdated = true;
+        }
 
-	// Test if the OVRPlugin/OpenXR plugin is currently activated, used by other editor utilities
-	public static bool IsOVRPluginOpenXRActivated()
-	{
-		if (!unityVersionSupportsAndroidUniversal) // sanity check
-		{
-			return false;
-		}
+        AssetDatabase.Refresh();
+        AssetDatabase.SaveAssets();
 
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+        if (!unityRunningInBatchmode)
+        {
+            EditorUtility.DisplayDialog("Restore Standard OVRPlugin", "Standard version of Oculus Utilities Plugin has been enabled on Android", "Ok");
+            if (win64PluginUpdated && EditorUtility.DisplayDialog("Restart Unity",
+                                    "Win64 plugin updated. Do you want to restart Unity editor?",
+                                    "Restart",
+                                    "Not Now"))
+            {
+                RestartUnityEditor();
+            }
+        }
+    }
 
-		PluginPackage enabledUtilsPluginPkg = null;
+    // Test if the OVRPlugin/OpenXR plugin is currently activated, used by other editor utilities
+    public static bool IsOVRPluginOpenXRActivated()
+    {
+        if (!unityVersionSupportsAndroidUniversal) // sanity check
+        {
+            return false;
+        }
 
-		foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if (pluginPkg.IsEnabled())
-			{
-				enabledUtilsPluginPkg = pluginPkg;
-				break;
-			}
-		}
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-		if (enabledUtilsPluginPkg == null)
-		{
-			return false;
-		}
+        PluginPackage enabledUtilsPluginPkg = null;
 
-		return enabledUtilsPluginPkg.IsAndroidOpenXREnabled();
-	}
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (pluginPkg.IsEnabled())
+            {
+                enabledUtilsPluginPkg = pluginPkg;
+                break;
+            }
+        }
 
-	// Separate entry point needed since "-executeMethod" does not support parameters or default parameter values
-	private static void BatchmodePluginUpdate()
-	{
-		OnDelayCall(); // manually invoke when running editor in batchmode
-		AttemptPluginUpdate(false);
-	}
+        if (enabledUtilsPluginPkg == null)
+        {
+            return false;
+        }
 
-	private static void AttemptPluginUpdate(bool triggeredByAutoUpdate)
-	{
-		OVRPlugin.SendEvent("attempt_plugin_update_auto", triggeredByAutoUpdate.ToString());
+        return enabledUtilsPluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR);
+    }
 
-		PluginPackage bundledPluginPkg = GetBundledPluginPackage();
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+    // Separate entry point needed since "-executeMethod" does not support parameters or default parameter values
+    private static void BatchmodePluginUpdate()
+    {
+        OnDelayCall(); // manually invoke when running editor in batchmode
+        AttemptPluginUpdate(false);
+    }
 
-		PluginPackage enabledUtilsPluginPkg = null;
-		PluginPackage newestUtilsPluginPkg = null;
+    private static void AttemptPluginUpdate(bool triggeredByAutoUpdate)
+    {
+        OVRPlugin.SendEvent("attempt_plugin_update_auto", triggeredByAutoUpdate.ToString());
 
-		foreach(PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if ((newestUtilsPluginPkg == null) || (pluginPkg.Version > newestUtilsPluginPkg.Version))
-			{
-				newestUtilsPluginPkg = pluginPkg;
-			}
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-			if (pluginPkg.IsEnabled())
-			{
-				if ((enabledUtilsPluginPkg == null) || (pluginPkg.Version > enabledUtilsPluginPkg.Version))
-				{
-					enabledUtilsPluginPkg = pluginPkg;
-				}
-			}
-		}
+        PluginPackage enabledUtilsPluginPkg = null;
+        PluginPackage newestUtilsPluginPkg = null;
 
-		bool reenableCurrentPluginPkg = false;
-		PluginPackage targetPluginPkg = null;
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (newestUtilsPluginPkg == null || pluginPkg.Version > newestUtilsPluginPkg.Version)
+            {
+                newestUtilsPluginPkg = pluginPkg;
+            }
 
-		if ((newestUtilsPluginPkg != null) && (newestUtilsPluginPkg.Version > bundledPluginPkg.Version))
-		{
-			if ((enabledUtilsPluginPkg == null) || (enabledUtilsPluginPkg.Version != newestUtilsPluginPkg.Version))
-			{
-				targetPluginPkg = newestUtilsPluginPkg;
-			}
-		}
-		else if ((enabledUtilsPluginPkg != null) && (enabledUtilsPluginPkg.Version < bundledPluginPkg.Version))
-		{
-			targetPluginPkg = bundledPluginPkg;
-		}
+            if (pluginPkg.IsEnabled())
+            {
+                if (enabledUtilsPluginPkg == null || pluginPkg.Version > enabledUtilsPluginPkg.Version)
+                {
+                    enabledUtilsPluginPkg = pluginPkg;
+                }
+            }
+        }
 
-		PluginPackage currentPluginPkg = (enabledUtilsPluginPkg != null) ? enabledUtilsPluginPkg : bundledPluginPkg;
+        bool reenableCurrentPluginPkg = false;
+        PluginPackage targetPluginPkg = null;
 
-		if ((targetPluginPkg == null) && !UnitySupportsEnabledAndroidPlugin())
-		{
-			// Force reenabling the current package to configure the correct android plugin for this unity version.
-			reenableCurrentPluginPkg = true;
-			targetPluginPkg = currentPluginPkg;
-		}
+        if (newestUtilsPluginPkg != null)
+        {
+            if (enabledUtilsPluginPkg == null || enabledUtilsPluginPkg.Version != newestUtilsPluginPkg.Version)
+            {
+                targetPluginPkg = newestUtilsPluginPkg;
+            }
+        }
 
-		if (targetPluginPkg == null)
-		{
-			if (!triggeredByAutoUpdate && !unityRunningInBatchmode)
-			{
-				EditorUtility.DisplayDialog("Update Oculus Utilities Plugin",
-					"OVRPlugin is already up to date.\n\nCurrent version: "
-						+ GetVersionDescription(currentPluginPkg.Version),
-					"Ok",
-					"");
-			}
+        PluginPackage currentPluginPkg = enabledUtilsPluginPkg;
 
-			return; // No update necessary.
-		}
+        if ((targetPluginPkg == null) && !UnitySupportsEnabledAndroidPlugin())
+        {
+            // Force reenabling the current package to configure the correct android plugin for this unity version.
+            reenableCurrentPluginPkg = true;
+            targetPluginPkg = currentPluginPkg;
+        }
 
-		System.Version targetVersion = targetPluginPkg.Version;
+        if (currentPluginPkg != null && targetPluginPkg == null)
+        {
+            if (!triggeredByAutoUpdate && !unityRunningInBatchmode)
+            {
+                EditorUtility.DisplayDialog("Update Oculus Utilities Plugin",
+                    "OVRPlugin is already up to date.\n\nCurrent version: "
+                        + GetVersionDescription(currentPluginPkg.Version),
+                    "Ok",
+                    "");
+            }
 
-		bool userAcceptsUpdate = false;
+            return; // No update necessary.
+        }
 
-		if (unityRunningInBatchmode)
-		{
-			userAcceptsUpdate = true;
-		}
-		else
-		{
-			string dialogBody = "Oculus Utilities has detected that a newer OVRPlugin is available."
-				+ " Using the newest version is recommended. Do you want to enable it?\n\n"
-				+ "Current version: "
-				+ GetVersionDescription(currentPluginPkg.Version)
-				+ "\nAvailable version: "
-				+ targetVersion;
 
-			if (reenableCurrentPluginPkg)
-			{
-				dialogBody = "Oculus Utilities has detected a configuration change that requires re-enabling the current OVRPlugin."
-					+ " Do you want to proceed?\n\nCurrent version: "
-					+ GetVersionDescription(currentPluginPkg.Version);
-			}
+        bool userAcceptsUpdate = false;
 
-			int dialogResult = EditorUtility.DisplayDialogComplex("Update Oculus Utilities Plugin", dialogBody, "Yes", "No, Don't Ask Again", "No");
+        if (unityRunningInBatchmode || currentPluginPkg == null)
+        {
+            userAcceptsUpdate = true;
+        }
+        else
+        {
+            Version targetVersion = targetPluginPkg.Version;
+            string dialogBody = "Oculus Utilities has detected that a newer OVRPlugin is available."
+                + " Using the newest version is recommended. Do you want to enable it?\n\n"
+                + "Current version: "
+                + GetVersionDescription(currentPluginPkg.Version)
+                + "\nAvailable version: "
+                + targetVersion;
 
-			switch (dialogResult)
-			{
-				case 0: // "Yes"
-					userAcceptsUpdate = true;
-					break;
-				case 1: // "No, Don't Ask Again"
-					autoUpdateEnabled = false;
+            if (reenableCurrentPluginPkg)
+            {
+                dialogBody = "Oculus Utilities has detected a configuration change that requires re-enabling the current OVRPlugin."
+                    + " Do you want to proceed?\n\nCurrent version: "
+                    + GetVersionDescription(currentPluginPkg.Version);
+            }
 
-					EditorUtility.DisplayDialog("Oculus Utilities OVRPlugin",
-						"To manually update in the future, use the following menu option:\n\n"
-							+ "[Oculus -> Tools -> Update OVR Utilities Plugin]",
-						"Ok",
-						"");
-					return;
-				case 2: // "No"
-					return;
-			}
-		}
+            int dialogResult = EditorUtility.DisplayDialogComplex("Update Oculus Utilities Plugin", dialogBody, "Yes", "No, Don't Ask Again", "No");
 
-		if (userAcceptsUpdate)
-		{
-			DisableAllUtilitiesPluginPackages();
+            switch (dialogResult)
+            {
+                case 0: // "Yes"
+                    userAcceptsUpdate = true;
+                    break;
+                case 1: // "No, Don't Ask Again"
+                    autoUpdateEnabled = false;
 
-			if (!targetPluginPkg.IsBundledPluginPackage())
-			{
-				EnablePluginPackage(targetPluginPkg);
-			}
+                    EditorUtility.DisplayDialog("Oculus Utilities OVRPlugin",
+                        "To manually update in the future, use the following menu option:\n\n"
+                            + "[Oculus -> Tools -> Update OVR Utilities Plugin]",
+                        "Ok",
+                        "");
+                    return;
+                case 2: // "No"
+                    return;
+            }
+        }
 
-			if (unityRunningInBatchmode
-				|| EditorUtility.DisplayDialog("Restart Unity",
-					"OVRPlugin has been updated to "
-						+ GetVersionDescription(targetPluginPkg.Version)
-						+ ".\n\nPlease restart the Unity Editor to complete the update process."
-						,
-					"Restart",
-					"Not Now"))
-			{
-				RestartUnityEditor();
-			}
-		}
-	}
+        if (userAcceptsUpdate)
+        {
+            DisableAllUtilitiesPluginPackages();
+            EnablePluginPackage(targetPluginPkg);
 
-	private static bool UnitySupportsEnabledAndroidPlugin()
-	{
-		List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
+            if (unityRunningInBatchmode
+                || EditorUtility.DisplayDialog("Restart Unity",
+                    "OVRPlugin has been updated to "
+                        + GetVersionDescription(targetPluginPkg.Version)
+                        + ".\n\nPlease restart the Unity Editor to complete the update process."
+                        ,
+                    "Restart",
+                    "Not Now"))
+            {
+                RestartUnityEditor();
+            }
+        }
+    }
 
-		foreach(PluginPackage pluginPkg in allUtilsPluginPkgs)
-		{
-			if (pluginPkg.IsEnabled())
-			{
-				if ((pluginPkg.IsAndroidUniversalEnabled() || pluginPkg.IsAndroidOpenXREnabled()) && !unityVersionSupportsAndroidUniversal)
-				{
-					// Android Universal should only be enabled on supported Unity versions since it can prevent app launch.
-					return false;
-				}
-				else if (!pluginPkg.IsAndroidUniversalEnabled() && pluginPkg.IsAndroidUniversalPresent() && 
-					!pluginPkg.IsAndroidOpenXREnabled() && pluginPkg.IsAndroidOpenXRPresent() && 
-					unityVersionSupportsAndroidUniversal)
-				{
-					// Android Universal is present and should be enabled on supported Unity versions since ARM64 config will fail otherwise.
-					return false;
-				}
-			}
-		}
+    private static bool UnitySupportsEnabledAndroidPlugin()
+    {
+        List<PluginPackage> allUtilsPluginPkgs = GetAllUtilitiesPluginPackages();
 
-		return true;
-	}
+        foreach (PluginPackage pluginPkg in allUtilsPluginPkgs)
+        {
+            if (pluginPkg.IsEnabled())
+            {
+                if ((pluginPkg.IsPlatformEnabled(PluginPlatform.AndroidUniversal) ||
+                     pluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR)) &&
+                    !unityVersionSupportsAndroidUniversal)
+                {
+                    // Android Universal should only be enabled on supported Unity versions since it can prevent app launch.
+                    return false;
+                }
+                else if (!pluginPkg.IsPlatformEnabled(PluginPlatform.AndroidUniversal) &&
+                         pluginPkg.IsPlatformPresent(PluginPlatform.AndroidUniversal) &&
+                         !pluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR) &&
+                         pluginPkg.IsPlatformEnabled(PluginPlatform.AndroidOpenXR) &&
+                    unityVersionSupportsAndroidUniversal)
+                {
+                    // Android Universal is present and should be enabled on supported Unity versions since ARM64 config will fail otherwise.
+                    return false;
+                }
+            }
+        }
 
-	private static void RestartUnityEditor()
-	{
-		if (unityRunningInBatchmode)
-		{
-			EditorApplication.Exit(0);
-		}
-		else
-		{
-			restartPending = true;
-			EditorApplication.OpenProject(GetCurrentProjectPath());
-		}
-	}
+        return true;
+    }
+
+    private static void RestartUnityEditor()
+    {
+        if (unityRunningInBatchmode)
+        {
+            EditorApplication.Exit(0);
+        }
+        else
+        {
+            restartPending = true;
+            EditorApplication.OpenProject(GetCurrentProjectPath());
+        }
+    }
 }
