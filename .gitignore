@@ -76,3 +76,6 @@ Assets/ThirdParty/
 Assets/ThirdParty.meta
 --Version/
 Oculus Unity-Integration/Assets/Oculus
+Oculus Unity-Integration/Assets/Plugins/OVR
+Oculus Unity-Integration/Assets/Plugins/OVR.meta
+Oculus Unity-Integration/Assets/Plugins.meta
