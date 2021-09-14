@@ -327,11 +327,12 @@ internal class OVRPluginUpdater
 
     private static void GetPluginPaths(string path, out string disabledPath, out string enabledPath)
     {
-        string basePath = GetCurrentProjectPath();
-        string relPath = path.Substring(basePath.Length + 1).Replace("\\", "/");
-        disabledPath = relPath + GetDisabledPluginSuffix();
-        relPath = relPath.Replace("Packages/com.oculus.unity-integration/Runtime/VR/Plugins/", "");
-        enabledPath = $"Assets/Plugins/OVR/{relPath}";
+        var sourcePluginPath = path.Replace($"{GetCurrentProjectPath()}\\", string.Empty);
+        disabledPath = $"{sourcePluginPath}{GetDisabledPluginSuffix()}".Replace("\\", "/");
+        var rootPath = Path.GetFullPath(GetUtilitiesPluginRootPath());
+        sourcePluginPath = Path.GetFullPath(sourcePluginPath);
+        var enabledPluginPath = sourcePluginPath.Replace($"{rootPath}\\", string.Empty);
+        enabledPath = $"Assets/Plugins/OVR/{enabledPluginPath}".Replace("\\", "/");
     }
 
     private static void EnablePluginPackage(PluginPackage pluginPkg)
@@ -450,7 +451,7 @@ internal class OVRPluginUpdater
                         break;
                     case PluginPlatform.Win:
                         pi.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, true);
-                        pi.SetCompatibleWithEditor(true);
+                        pi.SetCompatibleWithEditor(false);
                         pi.SetEditorData("CPU", "X86");
                         pi.SetEditorData("OS", "Windows");
                         break;
