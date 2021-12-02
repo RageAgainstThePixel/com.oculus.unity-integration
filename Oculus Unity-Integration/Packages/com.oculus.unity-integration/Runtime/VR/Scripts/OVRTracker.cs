@@ -75,7 +75,7 @@ public class OVRTracker
             }
 
             return OVRPlugin.position;
-        }
+		}
 
 		set {
 			if (!OVRManager.isHmdPresent)
