@@ -302,7 +302,7 @@ public class FastList<T>
         return default(T);
     }
 
-    //Allocate more space to internal array.
+    //Allocate more space to internal array. 
     private void Allocate()
     {
         T[] newArray;
