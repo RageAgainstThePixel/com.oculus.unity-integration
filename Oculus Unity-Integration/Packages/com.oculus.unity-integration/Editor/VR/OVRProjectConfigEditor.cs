@@ -153,6 +153,9 @@ public class OVRProjectConfigEditor : Editor
 					"If checked, this application can use experimental features. Note that such features are for developer use only. This option must be disabled when submitting to the Oculus Store."),
 					ref projectConfig.experimentalFeaturesEnabled, ref hasModified);
 
+				// Spatial Anchors Support
+				OVREditorUtil.SetupEnumField(projectConfig, "Spatial Anchors Support", ref projectConfig.spatialAnchorsSupport, ref hasModified);
+
 				break;
 
 		}

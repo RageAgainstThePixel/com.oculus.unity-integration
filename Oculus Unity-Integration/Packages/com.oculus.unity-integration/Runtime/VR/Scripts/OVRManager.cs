@@ -249,6 +249,35 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     /// </summary>
     public static event Action<float, float> DisplayRefreshRateChanged;
 
+    /// <summary>
+    /// Occurs when attempting to enable a component on a spatial entity
+    /// @params (UInt64 requestId, bool result, OVRPlugin.SpatialEntityComponentType componentType, UInt64 space)
+    /// </summary>
+    public static event Action<UInt64, bool, OVRPlugin.SpatialEntityComponentType, UInt64> SpatialEntitySetComponentEnabled;
+
+    /// <summary>
+    /// Occurs when a spatial entity is found during query
+    /// @params (UInt64 requestId, OVRPlugin.SpatialEntityQueryResult[], int numResults)
+    /// </summary>
+    public static event Action<UInt64, int, OVRPlugin.SpatialEntityQueryResult[]> SpatialEntityQueryResults;
+
+    /// <summary>
+    /// Occurs when querying for a spatial entity completes
+    /// @params (UInt64 requestId, bool result, int numFound)
+    /// </summary>
+    public static event Action<UInt64, bool, int> SpatialEntityQueryComplete;
+
+    /// <summary>
+    /// Occurs when saving a spatial entity
+    /// @params (UInt64 requestId, UInt64 space, bool result, OVRPlugin.SpatialEntityUuid uuid)
+    /// </summary>
+    public static event Action<UInt64, UInt64, bool, OVRPlugin.SpatialEntityUuid> SpatialEntityStorageSave;
+
+    /// <summary>
+    /// Occurs when erasing a spatial entity
+    /// @params (UInt64 requestId, bool result, OVRPlugin.SpatialEntityUuid uuid, SpatialEntityStorageLocation location)
+    /// </summary>
+    public static event Action<UInt64, bool, OVRPlugin.SpatialEntityUuid, OVRPlugin.SpatialEntityStorageLocation> SpatialEntityStorageErase;
 
     /// <summary>
     /// Occurs when Health & Safety Warning is dismissed.
@@ -564,6 +593,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     /// If premultipled alpha blending is used for the eye fov layer.
     /// Useful for changing how the eye fov layer blends with underlays.
     /// </summary>
+    [HideInInspector]
     public static bool eyeFovPremultipliedAlphaModeEnabled
     {
         get
@@ -2116,6 +2146,73 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
                         DisplayRefreshRateChanged(FromRefreshRate, ToRefreshRate);
                     }
                     break;
+                case OVRPlugin.EventType.SpatialEntitySetComponentEnabledResult:
+                    if (SpatialEntitySetComponentEnabled != null)
+                    {
+                        UInt64 requestId = BitConverter.ToUInt64(eventDataBuffer.EventData, 0);
+                        int result = BitConverter.ToInt32(eventDataBuffer.EventData, 8);
+                        OVRPlugin.SpatialEntityComponentType componentType = (OVRPlugin.SpatialEntityComponentType)BitConverter.ToInt32(eventDataBuffer.EventData, 12);
+                        UInt64 space = BitConverter.ToUInt64(eventDataBuffer.EventData, 16);
+                        SpatialEntitySetComponentEnabled(requestId, result >= 0, componentType, space);
+                    }
+                    break;
+                case OVRPlugin.EventType.SpatialEntityQueryResults:
+                    if (SpatialEntityQueryResults != null)
+                    {
+                        const int sizeOfUInt64 = 8;
+                        int offset = 0;
+                        UInt64 requestId = BitConverter.ToUInt64(eventDataBuffer.EventData, 0);
+                        offset += sizeOfUInt64;
+                        int numResults = BitConverter.ToInt32(eventDataBuffer.EventData, offset);
+                        offset += sizeOfUInt64; // This is intentional because of how the eventData is structured in memory.
+                        OVRPlugin.SpatialEntityQueryResult[] results = new OVRPlugin.SpatialEntityQueryResult[OVRPlugin.SpatialEntityMaxQueryResultsPerEvent];
+                        for (int i = 0; i < numResults; i++)
+                        {
+                            results[i] = new OVRPlugin.SpatialEntityQueryResult();
+                            results[i].space = BitConverter.ToUInt64(eventDataBuffer.EventData, offset);
+                            offset += sizeOfUInt64;
+                            results[i].uuid = new OVRPlugin.SpatialEntityUuid();
+                            results[i].uuid.Value_0 = BitConverter.ToUInt64(eventDataBuffer.EventData, offset);
+                            offset += sizeOfUInt64;
+                            results[i].uuid.Value_1 = BitConverter.ToUInt64(eventDataBuffer.EventData, offset);
+                            offset += sizeOfUInt64;
+                        }
+                        SpatialEntityQueryResults(requestId, numResults, results);
+                    }
+                    break;
+                case OVRPlugin.EventType.SpatialEntityQueryComplete:
+                    if (SpatialEntityQueryComplete != null)
+                    {
+                        UInt64 requestId = BitConverter.ToUInt64(eventDataBuffer.EventData, 0);
+                        int result = BitConverter.ToInt32(eventDataBuffer.EventData, 8);
+                        int found = BitConverter.ToInt32(eventDataBuffer.EventData, 12);
+                        SpatialEntityQueryComplete(requestId, result >= 0, found);
+                    }
+                    break;
+                case OVRPlugin.EventType.SpatialEntityStorageSaveResult:
+                    if (SpatialEntityStorageSave != null)
+                    {
+                        UInt64 requestId = BitConverter.ToUInt64(eventDataBuffer.EventData, 0);
+                        UInt64 space = BitConverter.ToUInt64(eventDataBuffer.EventData, 8);
+                        int result = BitConverter.ToInt32(eventDataBuffer.EventData, 16);
+                        OVRPlugin.SpatialEntityUuid uuid;
+                        uuid.Value_0 = BitConverter.ToUInt64(eventDataBuffer.EventData, 24);
+                        uuid.Value_1 = BitConverter.ToUInt64(eventDataBuffer.EventData, 32);
+                        SpatialEntityStorageSave(requestId, space, result >= 0, uuid);
+                    }
+                    break;
+                case OVRPlugin.EventType.SpatialEntityStorageEraseResult:
+                    if (SpatialEntityStorageErase != null)
+                    {
+                        UInt64 requestId = BitConverter.ToUInt64(eventDataBuffer.EventData, 0);
+                        int result = BitConverter.ToInt32(eventDataBuffer.EventData, 8);
+                        OVRPlugin.SpatialEntityUuid uuid;
+                        uuid.Value_0 = BitConverter.ToUInt64(eventDataBuffer.EventData, 16);
+                        uuid.Value_1 = BitConverter.ToUInt64(eventDataBuffer.EventData, 24);
+                        OVRPlugin.SpatialEntityStorageLocation location = (OVRPlugin.SpatialEntityStorageLocation)BitConverter.ToInt32(eventDataBuffer.EventData, 32);
+                        SpatialEntityStorageErase(requestId, result >= 0, uuid, location);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -2418,7 +2515,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 
         bool passthroughResult = OVRPlugin.InitializeInsightPassthrough();
         OVRPlugin.Result result = OVRPlugin.GetInsightPassthroughInitializationState();
-        if (!passthroughResult)
+        if (result < 0)
         {
             _passthroughInitializationState = PassthroughInitializationState.Failed;
             Debug.LogError("Failed to initialize Insight Passthrough. Passthrough will be unavailable. Error " + result.ToString() + ".");
