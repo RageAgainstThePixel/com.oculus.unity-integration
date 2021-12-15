@@ -262,7 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logText: {fileID: 903985438}
-  buzzSound: {fileID: 0}
+  buzzSound: {fileID: 8300000, guid: 33a0d552717ab4c2e87a77c856d9aaf3, type: 3}
 --- !u!1 &294821956
 GameObject:
   m_ObjectHideFlags: 0
@@ -834,6 +834,12 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+    OnAborted:
+      m_PersistentCalls:
+        m_Calls: []
+    OnRequestCompleted:
+      m_PersistentCalls:
+        m_Calls: []
     OnMicLevelChanged:
       m_PersistentCalls:
         m_Calls: []

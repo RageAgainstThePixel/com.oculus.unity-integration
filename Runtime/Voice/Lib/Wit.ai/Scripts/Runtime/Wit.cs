@@ -107,9 +107,9 @@ namespace Facebook.WitAi
             }
         }
 
-        public override bool MicActive => micInput.IsRecording;
+        public override bool MicActive => null != micInput && micInput.IsRecording;
 
-        public override bool ShouldSendMicData => runtimeConfiguration.sendAudioToWit ||
+        protected override bool ShouldSendMicData => runtimeConfiguration.sendAudioToWit ||
                                                   null == activeTranscriptionProvider;
 
         private void Awake()
@@ -184,7 +184,7 @@ namespace Facebook.WitAi
 
                     // Flush the marker buffer to catch up
                     int read;
-                    while ((read = lastSampleMarker.Read(writeBuffer, 0, writeBuffer.Length)) > 0)
+                    while ((read = lastSampleMarker.Read(writeBuffer, 0, writeBuffer.Length, true)) > 0)
                     {
                         activeRequest.Write(writeBuffer, 0, read);
                     }
@@ -213,10 +213,6 @@ namespace Facebook.WitAi
                     DeactivateRequest();
                     events.OnStoppedListeningDueToInactivity?.Invoke();
                 }
-            }
-            else if (!isSoundWakeActive)
-            {
-                DeactivateRequest();
             }
             else if (isSoundWakeActive && levelMax > runtimeConfiguration.soundWakeThreshold)
             {
@@ -416,7 +412,20 @@ namespace Facebook.WitAi
             }
         }
 
-        private void DeactivateRequest()
+        /// <summary>
+        /// Stop listening and abort any requests that may be active without waiting for a response.
+        /// </summary>
+        public override void DeactivateAndAbortRequest()
+        {
+            var recording = micInput.IsRecording;
+            DeactivateRequest(true);
+            if (recording)
+            {
+                events.OnStoppedListeningDueToDeactivation?.Invoke();
+            }
+        }
+
+        private void DeactivateRequest(bool abort = false)
         {
             if (null != timeLimitCoroutine)
             {
@@ -440,22 +449,24 @@ namespace Facebook.WitAi
 
             activeTranscriptionProvider?.Deactivate();
 
-            if (isActive)
+            if (IsRequestActive)
             {
-                if (IsRequestActive)
+                if (abort)
                 {
-
-                    activeRequest.CloseRequestStream();
-                    if (minKeepAliveWasHit)
-                    {
-                        events.OnMicDataSent?.Invoke();
-                    }
+                    activeRequest.AbortRequest();
                 }
                 else
                 {
-                    isActive = false;
+                    activeRequest.CloseRequestStream();
+                }
+
+                if (minKeepAliveWasHit)
+                {
+                    events.OnMicDataSent?.Invoke();
                 }
             }
+
+            isActive = false;
         }
 
         private byte[] Convert(float[] samples)
@@ -542,9 +553,19 @@ namespace Facebook.WitAi
             }
             else
             {
-                events?.OnError?.Invoke("HTTP Error " + request.StatusCode, request.StatusDescription);
                 DeactivateRequest();
+                if (request.StatusCode != WitRequest.ERROR_CODE_ABORTED)
+                {
+                    events?.OnError?.Invoke("HTTP Error " + request.StatusCode,
+                        request.StatusDescription);
+                }
+                else
+                {
+                    events?.OnAborted?.Invoke();
+                }
             }
+
+            events?.OnRequestCompleted?.Invoke();
 
             activeRequest = null;
         }

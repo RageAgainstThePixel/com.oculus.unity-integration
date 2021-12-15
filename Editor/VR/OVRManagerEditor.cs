@@ -157,7 +157,7 @@ public class OVRManagerEditor : Editor
 		EditorGUILayout.LabelField("Insight Passthrough", EditorStyles.boldLabel);
 #if UNITY_ANDROID
 		if (!passthroughCapabilityEnabled) {
-			EditorGUILayout.LabelField("Requires Experimental Features and Passthrough Capability to be enabled in the Experimental section.", EditorStyles.wordWrappedLabel);
+			EditorGUILayout.LabelField("Requires Passthrough Capability to be enabled in the General section of the Quest features.", EditorStyles.wordWrappedLabel);
 		}
 #endif
 		OVREditorUtil.SetupBoolField(target, enablePassthroughContent, ref manager.isInsightPassthroughEnabled, ref modified);

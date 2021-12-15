@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Facebook.WitAi.Configuration;
 using Facebook.WitAi.Data.Entities;
 using Facebook.WitAi.Data.Intents;
 using Facebook.WitAi.Data.Traits;
@@ -58,16 +59,18 @@ namespace Facebook.WitAi.Data.Configuration
         private bool initialized = false;
         public bool drawHeader = true;
         private string currentToken;
+        private bool endpointConfigurationFoldout;
 
         private bool IsTokenValid => !string.IsNullOrEmpty(configuration.clientAccessToken) &&
                                      configuration.clientAccessToken.Length == 32;
 
         public void Initialize()
         {
-        WitAuthUtility.InitEditorTokens();
-        configuration = target as WitConfiguration;
-        currentToken = WitAuthUtility.GetAppServerToken(configuration);
-        if (WitAuthUtility.IsServerTokenValid(currentToken) && !string.IsNullOrEmpty(configuration?.clientAccessToken))
+            WitAuthUtility.InitEditorTokens();
+            configuration = target as WitConfiguration;
+            currentToken = WitAuthUtility.GetAppServerToken(configuration);
+            if (WitAuthUtility.IsServerTokenValid(currentToken) &&
+                !string.IsNullOrEmpty(configuration?.clientAccessToken))
             {
                 configuration?.UpdateData(() =>
                 {
@@ -97,10 +100,13 @@ namespace Facebook.WitAi.Data.Configuration
             }
 
             GUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(16);
+            GUILayout.BeginVertical();
 
             GUILayout.BeginHorizontal();
             appConfigurationFoldout = EditorGUILayout.Foldout(appConfigurationFoldout,
-                "Application Configuration");
+                "Application Configuration", true);
             if (!string.IsNullOrEmpty(configuration?.application?.name))
             {
                 GUILayout.FlexibleSpace();
@@ -144,9 +150,46 @@ namespace Facebook.WitAi.Data.Configuration
                         configuration.clientAccessToken = clientToken;
                         EditorUtility.SetDirty(configuration);
                     }
+
+                    var timeout = EditorGUILayout.IntField(new GUIContent("Request Timeout (ms)", "The amount of time a server request can take to respond to voice."), configuration.timeoutMS);
+                    if (timeout != configuration.timeoutMS)
+                    {
+                        configuration.timeoutMS = timeout;
+                        EditorUtility.SetDirty(configuration);
+                    }
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(16);
+                    GUILayout.BeginVertical();
+                    endpointConfigurationFoldout = EditorGUILayout.Foldout(endpointConfigurationFoldout,
+                        "Endpoint Configuration", true);
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(16);
+                    GUILayout.BeginVertical();
+                    if (endpointConfigurationFoldout)
+                    {
+                        if (null == configuration.endpointConfiguration)
+                        {
+                            configuration.endpointConfiguration = new WitEndpointConfig();
+                            EditorUtility.SetDirty(configuration);
+                        }
+                        var confSerializedObject = new SerializedObject(configuration);
+                        var epConfProp = confSerializedObject.FindProperty("endpointConfiguration");
+                        EditorGUILayout.PropertyField(epConfProp);
+                        confSerializedObject.ApplyModifiedProperties();
+                    }
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
                 }
             }
             GUILayout.EndVertical();
+
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
 
             if (hasApplicationInfo)
             {
