@@ -2241,11 +2241,15 @@ public static class OVRPlugin
                 }
                 else
 #else
-				if (shape == OverlayShape.Cubemap && version >= OVRP_1_10_0.version)
-					flags |= (uint)(shape) << OverlayShapeFlagShift;
-				else if (shape == OverlayShape.Cylinder && version >= OVRP_1_16_0.version)
-					flags |= (uint)(shape) << OverlayShapeFlagShift;
-				else
+                if (shape == OverlayShape.Cubemap && version >= OVRP_1_10_0.version)
+                {
+                    flags |= (uint)(shape) << OverlayShapeFlagShift;
+                }
+                else if (shape == OverlayShape.Cylinder && version >= OVRP_1_16_0.version)
+                {
+                    flags |= (uint)(shape) << OverlayShapeFlagShift;
+                }
+                else
 #endif
                 {
                     return false;
@@ -2486,7 +2490,7 @@ public static class OVRPlugin
     public static Vector3f GetNodeVelocity(Node nodeId, Step stepId)
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
-		return new Vector3f();
+        return new Vector3f();
 #else
         if (nativeXrApi == XrApi.OpenXR && stepId == Step.Physics)
         {

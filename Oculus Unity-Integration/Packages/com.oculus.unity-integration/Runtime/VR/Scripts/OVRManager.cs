@@ -400,10 +400,10 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
     }
 
-    [Header("Performance/Quality")]
     /// <summary>
     /// If true, Unity will use the optimal antialiasing level for quality/performance on the current hardware.
     /// </summary>
+    [Header("Performance/Quality")]
     [Tooltip("If true, Unity will use the optimal antialiasing level for quality/performance on the current hardware.")]
     public bool useRecommendedMSAALevel = true;
 
@@ -593,7 +593,6 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     /// If premultipled alpha blending is used for the eye fov layer.
     /// Useful for changing how the eye fov layer blends with underlays.
     /// </summary>
-    [HideInInspector]
     public static bool eyeFovPremultipliedAlphaModeEnabled
     {
         get
