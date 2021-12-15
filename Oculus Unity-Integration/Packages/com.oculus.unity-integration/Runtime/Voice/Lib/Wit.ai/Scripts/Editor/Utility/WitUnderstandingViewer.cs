@@ -31,6 +31,7 @@ namespace Facebook.WitAi.Utilities
         private string status;
         private VoiceService wit;
         private int responseCode;
+        private WitRequest request;
 
         public bool HasWit => null != wit;
 
@@ -55,7 +56,17 @@ namespace Facebook.WitAi.Utilities
 
         private static void Init()
         {
-            if (WitAuthUtility.IsServerTokenValid())
+            BaseWitWindow.RefreshConfigList();
+            bool hasConfig = false;
+            for (int i = 0; i < witConfigs.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(witConfigs[i].clientAccessToken))
+                {
+                    hasConfig = true;
+                    break;
+                }
+            }
+            if (hasConfig)
             {
                 WitUnderstandingViewer window =
                     EditorWindow.GetWindow(
@@ -79,6 +90,8 @@ namespace Facebook.WitAi.Utilities
             {
                 response = WitResponseNode.Parse(responseText);
             }
+
+            status = "Enter an utterance and hit Send to see what your app will return.";
         }
 
         protected override void OnDisable()
@@ -121,9 +134,16 @@ namespace Facebook.WitAi.Utilities
                 wit.events.OnResponse.AddListener(ShowResponse);
                 wit.events.OnFullTranscription.AddListener(ShowTranscription);
                 wit.events.OnPartialTranscription.AddListener(ShowTranscription);
-                status = "Enter an utterance and hit Send to see what your app will return.";
+                // We will be measuring perceived request time since the actual request starts
+                // as soon as the mic goes active and the user says something.
+                wit.events.OnStoppedListening.AddListener(ResetStartTime);
                 Repaint();
             }
+        }
+
+        private void ResetStartTime()
+        {
+            submitStart = System.DateTime.Now;
         }
 
         private void OnError(string title, string message)
@@ -133,7 +153,8 @@ namespace Facebook.WitAi.Utilities
 
         private void OnRequestCreated(WitRequest request)
         {
-            submitStart = System.DateTime.Now;
+            this.request = request;
+            ResetStartTime();
         }
 
         private void ShowTranscription(string transcription)
@@ -172,7 +193,7 @@ namespace Facebook.WitAi.Utilities
             utterance = EditorGUILayout.TextField("Utterance", utterance);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Send", GUILayout.Width(75)) && !wit.IsRequestActive)
+            if (GUILayout.Button("Send", GUILayout.Width(75)) && (null == request || !request.IsActive))
             {
                 responseText = "";
                 if (!string.IsNullOrEmpty(utterance))
@@ -195,6 +216,11 @@ namespace Facebook.WitAi.Utilities
                 if (wit.Active && GUILayout.Button("Deactivate", GUILayout.Width(75)))
                 {
                     wit.Deactivate();
+                }
+
+                if (wit.Active && GUILayout.Button("Abort", GUILayout.Width(75)))
+                {
+                    wit.DeactivateAndAbortRequest();
                 }
             }
 
@@ -240,11 +266,6 @@ namespace Facebook.WitAi.Utilities
 
         private void SubmitUtterance()
         {
-            // Hack to watch for loading to complete. Response does not
-            // come back on the main thread so Repaint in onResponse in
-            // the editor does nothing.
-            EditorApplication.update += WatchForResponse;
-
             if (Application.isPlaying && !HasWit)
             {
                 SetDefaultWit();
@@ -253,11 +274,20 @@ namespace Facebook.WitAi.Utilities
             if (wit && Application.isPlaying)
             {
                 wit.Activate(utterance);
+                // Hack to watch for loading to complete. Response does not
+                // come back on the main thread so Repaint in onResponse in
+                // the editor does nothing.
+                EditorApplication.update += WatchForWitResponse;
             }
             else
             {
+                // Hack to watch for loading to complete. Response does not
+                // come back on the main thread so Repaint in onResponse in
+                // the editor does nothing.
+                EditorApplication.update += WatchForResponse;
+
                 submitStart = System.DateTime.Now;
-                var request = witConfiguration.MessageRequest(utterance, new WitRequestOptions());
+                request = witConfiguration.MessageRequest(utterance, new WitRequestOptions());
                 request.onResponse = OnResponse;
                 request.Request();
             }
@@ -271,7 +301,6 @@ namespace Facebook.WitAi.Utilities
         private void OnResponse(WitRequest request)
         {
             responseCode = request.StatusCode;
-            requestLength = DateTime.Now - submitStart;
             if (null != request.ResponseData)
             {
                 ShowResponse(request.ResponseData);
@@ -284,8 +313,6 @@ namespace Facebook.WitAi.Utilities
             {
                 responseText = "No response. Status: " + request.StatusCode;
             }
-
-            status = $"Response time: {requestLength}";
             EditorForegroundRunner.Run(Repaint);
         }
 
@@ -293,11 +320,22 @@ namespace Facebook.WitAi.Utilities
         {
             response = r;
             responseText = response.ToString();
+            requestLength = DateTime.Now - submitStart;
+            status = $"Response time: {requestLength}";
         }
 
         private void WatchForResponse()
         {
-            if (!wit.IsRequestActive)
+            if (null == request || !request.IsActive)
+            {
+                Repaint();
+                EditorApplication.update -= WatchForResponse;
+            }
+        }
+
+        private void WatchForWitResponse()
+        {
+            if (wit && !wit.Active)
             {
                 Repaint();
                 EditorApplication.update -= WatchForResponse;
@@ -318,10 +356,20 @@ namespace Facebook.WitAi.Utilities
                 return;
             }
 
-            foreach (var child in witResponseNode.AsObject.ChildNodeNames)
+            if(string.IsNullOrEmpty(path))
             {
-                var childNode = witResponseNode[child];
-                DrawNode(childNode, child, path);
+                DrawNode(witResponseNode["text"], "text", path);
+            }
+
+            var names = witResponseNode.AsObject.ChildNodeNames;
+            Array.Sort(names);
+            foreach (string child in names)
+            {
+                if (!(string.IsNullOrEmpty(path) && child == "text"))
+                {
+                    var childNode = witResponseNode[child];
+                    DrawNode(childNode, child, path);
+                }
             }
         }
 

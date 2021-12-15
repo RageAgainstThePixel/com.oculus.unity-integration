@@ -10,7 +10,6 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
-using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -83,9 +82,7 @@ public class OVRPlatformMenu : MonoBehaviour
 	{
 #if UNITY_ANDROID && !UNITY_EDITOR
 		Debug.Log("[PlatformUI-ConfirmQuit] Showing @ " + Time.time);
-#pragma warning disable 618
 		OVRManager.PlatformUIConfirmQuit();
-#pragma warning restore 618
 #endif
 	}
 
