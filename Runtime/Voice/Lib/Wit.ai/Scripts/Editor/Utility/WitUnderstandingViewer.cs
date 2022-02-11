@@ -313,7 +313,7 @@ namespace Facebook.WitAi.Utilities
             {
                 responseText = "No response. Status: " + request.StatusCode;
             }
-            EditorForegroundRunner.Run(Repaint);
+            Repaint();
         }
 
         private void ShowResponse(WitResponseNode r)
