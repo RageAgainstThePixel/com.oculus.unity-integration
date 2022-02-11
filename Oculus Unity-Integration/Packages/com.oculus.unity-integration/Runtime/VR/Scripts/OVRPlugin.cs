@@ -33,7 +33,7 @@ using UnityEngine;
 
 // Internal C# wrapper for OVRPlugin.
 
-public static class OVRPlugin
+public static partial class OVRPlugin
 {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public const bool isSupportedPlatform = false;
@@ -44,7 +44,7 @@ public static class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public static readonly System.Version wrapperVersion = _versionZero;
 #else
-    public static readonly System.Version wrapperVersion = OVRP_1_67_0.version;
+    public static readonly System.Version wrapperVersion = OVRP_1_69_0.version;
 #endif
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -246,6 +246,7 @@ public static class OVRPlugin
         TrackerThree = 8,
         Head = 9,
         DeviceObjectZero = 10,
+        TrackedKeyboard = 11,
         Count,
     }
 
@@ -361,6 +362,7 @@ public static class OVRPlugin
         ReconstructionPassthrough = 7,
         SurfaceProjectedPassthrough = 8,
         Fisheye = 9,
+        KeyboardHandsPassthrough = 10,
     }
 
     public enum Step
@@ -426,11 +428,11 @@ public static class OVRPlugin
         System_CpuUtilAveragePercentage_Float = 8,
         System_CpuUtilWorstPercentage_Float = 9,
 
-        // 1.32.0
-        Device_CpuClockFrequencyInMHz_Float = 10,
-        Device_GpuClockFrequencyInMHz_Float = 11,
-        Device_CpuClockLevel_Int = 12,
-        Device_GpuClockLevel_Int = 13,
+        // Added 1.32.0
+        Device_CpuClockFrequencyInMHz_Float = 10, // Deprecated 1.68.0
+        Device_GpuClockFrequencyInMHz_Float = 11, // Deprecated 1.68.0
+        Device_CpuClockLevel_Int = 12, // Deprecated 1.68.0
+        Device_GpuClockLevel_Int = 13, // Deprecated 1.68.0
 
         Count,
         EnumSize = 0x7FFFFFFF
@@ -821,6 +823,16 @@ public static class OVRPlugin
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct Size3f
+    {
+        public float w;
+        public float h;
+        public float d;
+
+        public static readonly Size3f zero = new Size3f { w = 0, h = 0, d = 0 };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct Vector2i
     {
         public int x;
@@ -837,8 +849,15 @@ public static class OVRPlugin
     [StructLayout(LayoutKind.Sequential)]
     public struct Rectf
     {
-        private Vector2f Pos;
-        private Sizef Size;
+        public Vector2f Pos;
+        public Sizef Size;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Boundsf
+    {
+        public Vector3f Pos;
+        public Size3f Size;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1315,6 +1334,60 @@ public static class OVRPlugin
     }
 
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyboardState
+    {
+        public Bool IsActive;
+        public Bool OrientationValid;
+        public Bool PositionValid;
+        public Bool OrientationTracked;
+        public Bool PositionTracked;
+        public PoseStatef PoseState;
+        public Vector4f ContrastParameters;
+    }
+
+    public enum KeyboardDescriptionConstants
+    {
+        NameMaxLength = 128,
+    }
+
+    // Enum defining the type of the keyboard model, effect render parameters and passthrough configuration.
+    public enum TrackedKeyboardPresentationStyles
+    {
+        Unknown = 0,
+        Opaque = 1,
+        KeyLabel = 2,
+    }
+
+    // Enum defining the type of the keyboard returned
+    public enum TrackedKeyboardFlags
+    {
+        Exists = 1,
+        Local = 2,
+        Remote = 4,
+        Connected = 8,
+    }
+
+    // Enum defining the type of the keyboard requested
+    public enum TrackedKeyboardQueryFlags
+    {
+        Local = 2,
+        Remote = 4,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyboardDescription
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)KeyboardDescriptionConstants.NameMaxLength)]
+        public byte[] Name;
+
+        public UInt64 TrackedKeyboardId;
+        public Vector3f Dimensions;
+        public TrackedKeyboardFlags KeyboardFlags;
+        public TrackedKeyboardPresentationStyles SupportedPresentationStyles;
+    }
+
+
     public enum ColorSpace
     {
         /// The default value from GetHmdColorSpace until SetClientColorDesc is called. Only valid on PC, and will be remapped to Quest on Mobile
@@ -1359,6 +1432,27 @@ public static class OVRPlugin
         public byte[] EventData;
     }
 
+    public const int RENDER_MODEL_NULL_KEY = 0;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RenderModelProperties
+    {
+        public string ModelName;
+        public UInt64 ModelKey;
+        public uint VendorId;
+        public uint ModelVersion;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RenderModelPropertiesInternal
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = OVRP_1_68_0.OVRP_RENDER_MODEL_MAX_NAME_LENGTH)]
+        public byte[] ModelName;
+        public UInt64 ModelKey;
+        public uint VendorId;
+        public uint ModelVersion;
+    }
+
 
     public enum InsightPassthroughColorMapType
     {
@@ -1383,6 +1477,13 @@ public static class OVRPlugin
         public InsightPassthroughColorMapType TextureColorMapType;
         public uint TextureColorMapDataSize;
         public IntPtr TextureColorMapData;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct InsightPassthroughKeyboardHandsIntensity
+    {
+        public float LeftHandIntensity;
+        public float RightHandIntensity;
     }
 
     public enum SpatialEntityComponentType
@@ -2241,15 +2342,15 @@ public static class OVRPlugin
                 }
                 else
 #else
-                if (shape == OverlayShape.Cubemap && version >= OVRP_1_10_0.version)
+				if (shape == OverlayShape.Cubemap && version >= OVRP_1_10_0.version)
                 {
-                    flags |= (uint)(shape) << OverlayShapeFlagShift;
+					flags |= (uint)(shape) << OverlayShapeFlagShift;
                 }
-                else if (shape == OverlayShape.Cylinder && version >= OVRP_1_16_0.version)
+				else if (shape == OverlayShape.Cylinder && version >= OVRP_1_16_0.version)
                 {
-                    flags |= (uint)(shape) << OverlayShapeFlagShift;
+					flags |= (uint)(shape) << OverlayShapeFlagShift;
                 }
-                else
+				else
 #endif
                 {
                     return false;
@@ -2490,7 +2591,7 @@ public static class OVRPlugin
     public static Vector3f GetNodeVelocity(Node nodeId, Step stepId)
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
-        return new Vector3f();
+		return new Vector3f();
 #else
         if (nativeXrApi == XrApi.OpenXR && stepId == Step.Physics)
         {
@@ -2676,6 +2777,30 @@ public static class OVRPlugin
 #endif
     }
 
+    public static PoseStatef GetNodePoseStateImmediate(Node nodeId)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return PoseStatef.identity;
+#else
+        if (version >= OVRP_1_69_0.version)
+        {
+            PoseStatef nodePoseState;
+            Result result = OVRP_1_69_0.ovrp_GetNodePoseStateImmediate(nodeId, out nodePoseState);
+            if (result == Result.Success)
+            {
+                return nodePoseState;
+            }
+            else
+            {
+                return PoseStatef.identity;
+            }
+        }
+        else
+        {
+            return PoseStatef.identity;
+        }
+#endif
+    }
 
     public static Posef GetCurrentTrackingTransformPose()
     {
@@ -3658,6 +3783,27 @@ public static class OVRPlugin
         if (version >= OVRP_1_63_0.version)
         {
             Result result = OVRP_1_63_0.ovrp_SetInsightPassthroughStyle(layerId, style);
+            if (result != Result.Success)
+            {
+                return false;
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool SetInsightPassthroughKeyboardHandsIntensity(int layerId, InsightPassthroughKeyboardHandsIntensity intensity)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            Result result = OVRP_1_68_0.ovrp_SetInsightPassthroughKeyboardHandsIntensity(layerId, intensity);
             if (result != Result.Success)
             {
                 return false;
@@ -5720,6 +5866,83 @@ public static class OVRPlugin
     }
 
 
+    public static bool StartKeyboardTracking(UInt64 trackedKeyboardId)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            Result result;
+            result = OVRP_1_68_0.ovrp_StartKeyboardTracking(trackedKeyboardId);
+            return result == Result.Success;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool StopKeyboardTracking()
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            Result result;
+            result = OVRP_1_68_0.ovrp_StopKeyboardTracking();
+            return result == Result.Success;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool GetKeyboardState(Step stepId, out KeyboardState keyboardState)
+    {
+        keyboardState = default(KeyboardState);
+
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            Result result;
+            result = OVRP_1_68_0.ovrp_GetKeyboardState(stepId, -1, out keyboardState);
+            return result == Result.Success;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool GetSystemKeyboardDescription(TrackedKeyboardQueryFlags keyboardQueryFlags, out KeyboardDescription keyboardDescription)
+    {
+        keyboardDescription = default(KeyboardDescription);
+
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            Result result;
+            result = OVRP_1_68_0.ovrp_GetSystemKeyboardDescription(keyboardQueryFlags, out keyboardDescription);
+            return result == Result.Success;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+
     public static int GetLocalTrackingSpaceRecenterCount()
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -6083,6 +6306,96 @@ public static class OVRPlugin
 #endif
     }
 
+
+    public static string[] GetRenderModelPaths()
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return null;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            uint index = 0;
+            List<string> paths = new List<string>();
+            IntPtr pathPtr = Marshal.AllocHGlobal(sizeof(byte) * OVRP_1_68_0.OVRP_RENDER_MODEL_MAX_PATH_LENGTH);
+            while (OVRP_1_68_0.ovrp_GetRenderModelPaths(index, pathPtr) == Result.Success)
+            {
+                paths.Add(Marshal.PtrToStringAnsi(pathPtr));
+                index++;
+            }
+            Marshal.FreeHGlobal(pathPtr);
+            return paths.ToArray();
+        }
+        else
+        {
+            return null;
+        }
+#endif
+    }
+
+    public static bool GetRenderModelProperties(string modelPath, ref RenderModelProperties modelProperties)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            RenderModelPropertiesInternal props;
+            Result result = OVRP_1_68_0.ovrp_GetRenderModelProperties(modelPath, out props);
+            if (result != Result.Success)
+            {
+                return false;
+            }
+
+            modelProperties.ModelName = System.Text.Encoding.Default.GetString(props.ModelName);
+            modelProperties.ModelKey = props.ModelKey;
+            modelProperties.VendorId = props.VendorId;
+            modelProperties.ModelVersion = props.ModelVersion;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static byte[] LoadRenderModel(UInt64 modelKey)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return null;
+#else
+        if (version >= OVRP_1_68_0.version)
+        {
+            uint bufferSize = 0;
+            if (OVRP_1_68_0.ovrp_LoadRenderModel(modelKey, 0, ref bufferSize, IntPtr.Zero) != Result.Success)
+            {
+                return null;
+            }
+
+            if (bufferSize == 0)
+            {
+                return null;
+            }
+
+            IntPtr bufferPtr = Marshal.AllocHGlobal((int)bufferSize);
+            if (OVRP_1_68_0.ovrp_LoadRenderModel(modelKey, bufferSize, ref bufferSize, bufferPtr) != Result.Success)
+            {
+                Marshal.FreeHGlobal(bufferPtr);
+                return null;
+            }
+
+            byte[] bufferData = new byte[bufferSize];
+            Marshal.Copy(bufferPtr, bufferData, 0, (int)bufferSize);
+            Marshal.FreeHGlobal(bufferPtr);
+
+            return bufferData;
+        }
+        else
+        {
+            return null;
+        }
+#endif
+    }
 
     public class Ktx
     {
@@ -7350,5 +7663,49 @@ public static class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_QuerySpatialEntity(ref SpatialEntityQueryInfo queryInfo, out UInt64 requestId);
+
+    }
+
+    private static class OVRP_1_68_0
+    {
+        public static readonly System.Version version = new System.Version(1, 68, 0);
+
+        public const int OVRP_RENDER_MODEL_MAX_PATH_LENGTH = 256;
+        public const int OVRP_RENDER_MODEL_MAX_NAME_LENGTH = 64;
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_LoadRenderModel(UInt64 modelKey, uint bufferInputCapacity, ref uint bufferCountOutput, IntPtr buffer);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetRenderModelPaths(uint index, IntPtr path);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetRenderModelProperties(string path, out RenderModelPropertiesInternal properties);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SetInsightPassthroughKeyboardHandsIntensity(int layerId, InsightPassthroughKeyboardHandsIntensity intensity);
+
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_StartKeyboardTracking(UInt64 trackedKeyboardId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_StopKeyboardTracking();
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSystemKeyboardDescription(TrackedKeyboardQueryFlags keyboardQueryFlags, out KeyboardDescription keyboardDescription);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetKeyboardState(Step stepId, int frameIndex, out KeyboardState keyboardState);
+
+    }
+
+    private static class OVRP_1_69_0
+    {
+        public static readonly System.Version version = new System.Version(1, 69, 0);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetNodePoseStateImmediate(Node nodeId, out PoseStatef nodePoseState);
+
     }
 }

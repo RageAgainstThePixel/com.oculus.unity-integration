@@ -32,8 +32,6 @@ namespace Facebook.WitAi
         private float lastMinVolumeLevelTime;
         private WitRequest activeRequest;
 
-        private ConcurrentQueue<Action> updateQueue = new ConcurrentQueue<Action>();
-
         private bool isSoundWakeActive;
         private RingBuffer<byte> micDataBuffer;
         private RingBuffer<byte>.Marker lastSampleMarker;
@@ -268,25 +266,6 @@ namespace Facebook.WitAi
             events?.OnStartListening?.Invoke();
         }
 
-        private void Update()
-        {
-            if (!runtimeConfiguration.witConfiguration)
-            {
-                Debug.LogError(
-                    "Wit configuration is not set on your Wit component. Requests cannot be made without a configuration. Wit will be disabled at runtime until the configuration has been set.");
-                enabled = false;
-                return;
-            }
-
-            if (updateQueue.Count > 0)
-            {
-                if (updateQueue.TryDequeue(out var result))
-                {
-                    result.Invoke();
-                }
-            }
-        }
-
         private IEnumerator DeactivateDueToTimeLimit()
         {
             yield return new WaitForSeconds(runtimeConfiguration.maxRecordingTime);
@@ -337,7 +316,14 @@ namespace Facebook.WitAi
                 Debug.Log("Writing recording to file: " + file);
 #endif
 
-                micInput.StartRecording(sampleLen: runtimeConfiguration.sampleLengthInMs);
+                if (micInput.IsInputAvailable)
+                {
+                    micInput.StartRecording(sampleLen: runtimeConfiguration.sampleLengthInMs);
+                }
+                else
+                {
+                    events.OnError.Invoke("Input Error", "No input source was available. Cannot activate for voice input.");
+                }
             }
 
             if (!isActive)
@@ -370,12 +356,10 @@ namespace Facebook.WitAi
             {
                 activeRequest = RuntimeConfiguration.witConfiguration.SpeechRequest(requestOptions);
                 activeRequest.audioEncoding = micInput.AudioEncoding;
-                activeRequest.onPartialTranscription =
-                    s => updateQueue.Enqueue(() => OnPartialTranscription(s));
-                activeRequest.onFullTranscription =
-                    s => updateQueue.Enqueue(() => OnFullTranscription(s));
-                activeRequest.onInputStreamReady = (r) => updateQueue.Enqueue(OnWitReadyForData);
-                activeRequest.onResponse = QueueResult;
+                activeRequest.onPartialTranscription = OnPartialTranscription;
+                activeRequest.onFullTranscription = OnFullTranscription;
+                activeRequest.onInputStreamReady = r => OnWitReadyForData();
+                activeRequest.onResponse = HandleResult;
                 events.OnRequestCreated?.Invoke(activeRequest);
                 activeRequest.Request();
                 timeLimitCoroutine = StartCoroutine(DeactivateDueToTimeLimit());
@@ -392,7 +376,7 @@ namespace Facebook.WitAi
         {
             activationTime = Time.time;
             lastMinVolumeLevelTime = Time.time;
-            if (!micInput.IsRecording)
+            if (!micInput.IsRecording && micInput.IsInputAvailable)
             {
                 micInput.StartRecording(runtimeConfiguration.sampleLengthInMs);
             }
@@ -519,18 +503,9 @@ namespace Facebook.WitAi
             isActive = true;
             activeRequest =
                 RuntimeConfiguration.witConfiguration.MessageRequest(transcription, requestOptions);
-            activeRequest.onResponse = QueueResult;
+            activeRequest.onResponse = HandleResult;
             events.OnRequestCreated?.Invoke(activeRequest);
             activeRequest.Request();
-        }
-
-        /// <summary>
-        /// Enqueues a result to be handled on the main thread in Wit's next Update call
-        /// </summary>
-        /// <param name="request"></param>
-        private void QueueResult(WitRequest request)
-        {
-            updateQueue.Enqueue(() => HandleResult(request));
         }
 
         /// <summary>

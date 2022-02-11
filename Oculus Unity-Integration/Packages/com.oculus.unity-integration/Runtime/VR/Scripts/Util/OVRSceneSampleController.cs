@@ -135,8 +135,10 @@ public class OVRSceneSampleController : MonoBehaviour
             UpdateSpeedAndRotationScaleMultiplier();
         }
 
-        // Toggle Fullscreen
-        if (Input.GetKeyDown(KeyCode.F11))
+        //todo: enable for Unity Input System
+#if ENABLE_LEGACY_INPUT_MANAGER
+		// Toggle Fullscreen
+		if (Input.GetKeyDown(KeyCode.F11))
         {
             Screen.fullScreen = !Screen.fullScreen;
         }
@@ -153,19 +155,23 @@ public class OVRSceneSampleController : MonoBehaviour
             Application.Quit();
         }
 #endif
+#endif
     }
-    #endregion
+#endregion
 
     /// <summary>
     /// Updates the vision mode.
     /// </summary>
     private void UpdateVisionMode()
     {
-        if (Input.GetKeyDown(KeyCode.F2))
+		//todo: enable for Unity Input System
+#if ENABLE_LEGACY_INPUT_MANAGER
+		if (Input.GetKeyDown(KeyCode.F2))
         {
             visionMode ^= visionMode;
             OVRManager.tracker.isEnabled = visionMode;
         }
+#endif
     }
 
     /// <summary>
@@ -176,7 +182,9 @@ public class OVRSceneSampleController : MonoBehaviour
         float moveScaleMultiplier = 0.0f;
         playerController.GetMoveScaleMultiplier(ref moveScaleMultiplier);
 
-        if (Input.GetKeyDown(KeyCode.Alpha7))
+		//todo: enable for Unity Input System
+#if ENABLE_LEGACY_INPUT_MANAGER
+		if (Input.GetKeyDown(KeyCode.Alpha7))
         {
             moveScaleMultiplier -= speedRotationIncrement;
         }
@@ -184,13 +192,16 @@ public class OVRSceneSampleController : MonoBehaviour
         {
             moveScaleMultiplier += speedRotationIncrement;
         }
+#endif
 
         playerController.SetMoveScaleMultiplier(moveScaleMultiplier);
 
         float rotationScaleMultiplier = 0.0f;
         playerController.GetRotationScaleMultiplier(ref rotationScaleMultiplier);
 
-        if (Input.GetKeyDown(KeyCode.Alpha9))
+		//todo: enable for Unity Input System
+#if ENABLE_LEGACY_INPUT_MANAGER
+		if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             rotationScaleMultiplier -= speedRotationIncrement;
         }
@@ -198,6 +209,7 @@ public class OVRSceneSampleController : MonoBehaviour
         {
             rotationScaleMultiplier += speedRotationIncrement;
         }
+#endif
 
         playerController.SetRotationScaleMultiplier(rotationScaleMultiplier);
     }
@@ -207,9 +219,12 @@ public class OVRSceneSampleController : MonoBehaviour
     /// </summary>
     private void UpdateRecenterPose()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+		//todo: enable for Unity Input System
+#if ENABLE_LEGACY_INPUT_MANAGER
+		if (Input.GetKeyDown(KeyCode.R))
         {
             OVRManager.display.RecenterPose();
         }
+#endif
     }
 }
