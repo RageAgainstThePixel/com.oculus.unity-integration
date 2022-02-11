@@ -153,7 +153,7 @@ public class OVRSkeleton : MonoBehaviour
 #if UNITY_EDITOR
             return OVRInput.IsControllerConnected(OVRInput.Controller.Hands);
 #else
-			return true;
+            return true;
 #endif
         }
         else

@@ -1343,6 +1343,11 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     [Tooltip("If true, rendered controller latency is reduced by several ms, as the left/right controllers will have their positions updated right before rendering.")]
     public bool LateControllerUpdate = true;
 
+#if UNITY_2020_3_OR_NEWER
+    [Tooltip("Late latching is a feature that can reduce rendered head/controller latency by a substantial amount. Before enabling, be sure to go over the documentation to ensure that the feature is used correctly. This feature must also be enabled through the Oculus XR Plugin settings.")]
+    public bool LateLatching = false;
+#endif
+
     /// <summary>
     /// True if the current platform supports virtual reality.
     /// </summary>
@@ -1517,10 +1522,10 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
 
 #if !UNITY_EDITOR
-		if (IsUnityAlphaOrBetaVersion())
-		{
-			Debug.LogWarning(UnityAlphaOrBetaVersionWarningMessage);
-		}
+        if (IsUnityAlphaOrBetaVersion())
+        {
+            Debug.LogWarning(UnityAlphaOrBetaVersionWarningMessage);
+        }
 #endif
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
@@ -1556,12 +1561,12 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-		// Turn off chromatic aberration by default to save texture bandwidth.
-		chromatic = false;
+        // Turn off chromatic aberration by default to save texture bandwidth.
+        chromatic = false;
 #endif
 
 #if (UNITY_STANDALONE_WIN || UNITY_ANDROID) && !UNITY_EDITOR
-		enableMixedReality = false;     // we should never start the standalone game in MxR mode, unless the command-line parameter is provided
+        enableMixedReality = false;     // we should never start the standalone game in MxR mode, unless the command-line parameter is provided
 #endif
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
@@ -1635,7 +1640,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
                 perfTcpServer.enabled = true;
             }
 #if !UNITY_EDITOR
-			OVRPlugin.SetDeveloperMode(OVRPlugin.Bool.True);
+            OVRPlugin.SetDeveloperMode(OVRPlugin.Bool.True);
 #endif
         }
 
@@ -2121,14 +2126,6 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 #endif
 
         UpdateInsightPassthrough(isInsightPassthroughEnabled);
-
-        if (m_SpaceWarpEnabled && m_AppSpaceTransform != null)
-        {
-#if USING_XR_SDK
-            OculusXRPlugin.SetAppSpacePosition(m_AppSpaceTransform.position.x, m_AppSpaceTransform.position.y, m_AppSpaceTransform.position.z);
-            OculusXRPlugin.SetAppSpaceRotation(m_AppSpaceTransform.rotation.x, m_AppSpaceTransform.rotation.y, m_AppSpaceTransform.rotation.z, m_AppSpaceTransform.rotation.w);
-#endif
-        }
     }
 
     private void UpdateHMDEvents()
@@ -2292,6 +2289,14 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     private void LateUpdate()
     {
         OVRHaptics.Process();
+
+        if (m_SpaceWarpEnabled && m_AppSpaceTransform != null)
+        {
+#if USING_XR_SDK
+            OculusXRPlugin.SetAppSpacePosition(m_AppSpaceTransform.position.x, m_AppSpaceTransform.position.y, m_AppSpaceTransform.position.z);
+            OculusXRPlugin.SetAppSpaceRotation(m_AppSpaceTransform.rotation.x, m_AppSpaceTransform.rotation.y, m_AppSpaceTransform.rotation.z, m_AppSpaceTransform.rotation.w);
+#endif
+        }
     }
 
     private void FixedUpdate()
@@ -2343,6 +2348,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
     public void ReturnToLauncher()
     {
         // show the platform UI quit prompt
+        Debug.LogWarning($"{nameof(ReturnToLauncher)} deprecated. This function will not be supported in OpenXR");
         OVRManager.PlatformUIConfirmQuit();
     }
 
@@ -2353,6 +2359,8 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         {
             return;
         }
+
+        Debug.LogWarning($"{nameof(PlatformUIConfirmQuit)} deprecated. This function will not be supported in OpenXR");
 
         OVRPlugin.ShowUI(OVRPlugin.PlatformUI.ConfirmQuit);
     }
@@ -2372,35 +2380,35 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
             staticMrcSettings.ReadFrom(configuration);
 
 #if OVR_ANDROID_MRC
-			bool mediaInitialized = OVRPlugin.Media.Initialize();
-			Debug.Log(mediaInitialized ? "OVRPlugin.Media initialized" : "OVRPlugin.Media not initialized");
-			if (mediaInitialized)
-			{
-				var audioConfig = AudioSettings.GetConfiguration();
-				if(audioConfig.sampleRate > 0)
-				{
-					OVRPlugin.Media.SetMrcAudioSampleRate(audioConfig.sampleRate);
-					Debug.LogFormat("[MRC] SetMrcAudioSampleRate({0})", audioConfig.sampleRate);
-				}
+            bool mediaInitialized = OVRPlugin.Media.Initialize();
+            Debug.Log(mediaInitialized ? "OVRPlugin.Media initialized" : "OVRPlugin.Media not initialized");
+            if (mediaInitialized)
+            {
+                var audioConfig = AudioSettings.GetConfiguration();
+                if (audioConfig.sampleRate > 0)
+                {
+                    OVRPlugin.Media.SetMrcAudioSampleRate(audioConfig.sampleRate);
+                    Debug.LogFormat("[MRC] SetMrcAudioSampleRate({0})", audioConfig.sampleRate);
+                }
 
-				OVRPlugin.Media.SetMrcInputVideoBufferType(OVRPlugin.Media.InputVideoBufferType.TextureHandle);
-				Debug.LogFormat("[MRC] Active InputVideoBufferType:{0}", OVRPlugin.Media.GetMrcInputVideoBufferType());
-				if (configuration.mrcActivationMode == MrcActivationMode.Automatic)
-				{
-					OVRPlugin.Media.SetMrcActivationMode(OVRPlugin.Media.MrcActivationMode.Automatic);
-					Debug.LogFormat("[MRC] ActivateMode: Automatic");
-				}
-				else if (configuration.mrcActivationMode == MrcActivationMode.Disabled)
-				{
-					OVRPlugin.Media.SetMrcActivationMode(OVRPlugin.Media.MrcActivationMode.Disabled);
-					Debug.LogFormat("[MRC] ActivateMode: Disabled");
-				}
-				if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
-				{
-					OVRPlugin.Media.SetAvailableQueueIndexVulkan(1);
-					OVRPlugin.Media.SetMrcFrameImageFlipped(true);
-				}
-			}
+                OVRPlugin.Media.SetMrcInputVideoBufferType(OVRPlugin.Media.InputVideoBufferType.TextureHandle);
+                Debug.LogFormat("[MRC] Active InputVideoBufferType:{0}", OVRPlugin.Media.GetMrcInputVideoBufferType());
+                if (configuration.mrcActivationMode == MrcActivationMode.Automatic)
+                {
+                    OVRPlugin.Media.SetMrcActivationMode(OVRPlugin.Media.MrcActivationMode.Automatic);
+                    Debug.LogFormat("[MRC] ActivateMode: Automatic");
+                }
+                else if (configuration.mrcActivationMode == MrcActivationMode.Disabled)
+                {
+                    OVRPlugin.Media.SetMrcActivationMode(OVRPlugin.Media.MrcActivationMode.Disabled);
+                    Debug.LogFormat("[MRC] ActivateMode: Disabled");
+                }
+                if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
+                {
+                    OVRPlugin.Media.SetAvailableQueueIndexVulkan(1);
+                    OVRPlugin.Media.SetMrcFrameImageFlipped(true);
+                }
+            }
 #endif
             staticPrevEnableMixedRealityCapture = false;
 
@@ -2420,13 +2428,13 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
 
 #if OVR_ANDROID_MRC
-		configuration.enableMixedReality = OVRPlugin.Media.GetInitialized() && OVRPlugin.Media.IsMrcActivated();
-		configuration.compositionMethod = CompositionMethod.External;       // force external composition on Android MRC
+        configuration.enableMixedReality = OVRPlugin.Media.GetInitialized() && OVRPlugin.Media.IsMrcActivated();
+        configuration.compositionMethod = CompositionMethod.External;       // force external composition on Android MRC
 
-		if (OVRPlugin.Media.GetInitialized())
-		{
-			OVRPlugin.Media.Update();
-		}
+        if (OVRPlugin.Media.GetInitialized())
+        {
+            OVRPlugin.Media.Update();
+        }
 #endif
 
         if (configuration.enableMixedReality && !staticPrevEnableMixedRealityCapture)
@@ -2482,10 +2490,10 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
             OVRMixedReality.Cleanup();
 
 #if OVR_ANDROID_MRC
-			if (OVRPlugin.Media.GetInitialized())
-			{
-				OVRPlugin.Media.Shutdown();
-			}
+            if (OVRPlugin.Media.GetInitialized())
+            {
+                OVRPlugin.Media.Shutdown();
+            }
 #endif
             staticMixedRealityCaptureInitialized = false;
         }
@@ -2598,15 +2606,22 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
     }
 
+    /// Checks whether the passthrough is initialized.
+    /// \return Boolean value to indicate the current state of passthrough. If the value returned is true, the passthrough is initialized.
     public static bool IsInsightPassthroughInitialized()
     {
         return _passthroughInitializationState == PassthroughInitializationState.Initialized;
     }
 
+    /// Checks whether the passthrough has failed the initialization.
+    /// \return Boolean value to indicate the passthrough initialization failed status. If the value returned is true, the passthrough has failed the initialization.
     public static bool HasInsightPassthroughInitFailed()
     {
         return _passthroughInitializationState == PassthroughInitializationState.Failed;
     }
+
+    /// Checks whether the passthrough is in the process of initialization.
+    /// \return Boolean value to indicate the current state of passthrough. If the value returned is true, the passthrough is initializing.
     public static bool IsInsightPassthroughInitPending()
     {
         return _passthroughInitializationState == PassthroughInitializationState.Pending;
