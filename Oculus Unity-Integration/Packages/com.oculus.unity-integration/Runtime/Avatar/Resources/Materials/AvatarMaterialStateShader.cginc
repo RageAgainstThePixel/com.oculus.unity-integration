@@ -151,8 +151,8 @@ float3 ComputeColor(
 #endif
 	else if (sampleMode == SAMPLE_MODE_RSRM) {
 		float roughnessMin = sampleParameters.x;
-#ifdef ROUGHNESS_ON
 		float roughnessMax = sampleParameters.y;
+#ifdef ROUGHNESS_ON
 		float roughnessValue = tex2D(_RoughnessMap, TRANSFORM_TEX(uv, _RoughnessMap)).r;
 		float scaledRoughness = lerp(roughnessMin, roughnessMax, roughnessValue);
 #else
