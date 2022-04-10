@@ -1,5 +1,6 @@
 {
     "name": "Oculus.VR.Editor",
+    "rootNamespace": "",
     "references": [
         "Oculus.VR",
         "Unity.XR.Oculus"

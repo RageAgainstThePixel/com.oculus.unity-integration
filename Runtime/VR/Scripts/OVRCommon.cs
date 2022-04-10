@@ -43,7 +43,7 @@ public static class OVRExtensions
 	/// </summary>
 	public static OVRPose ToTrackingSpacePose(this Transform transform, Camera camera)
 	{
-		//Initializing to identity, but for all Oculus headsets, down below the pose will be initialized to the runtime's pose value, so identity will never be returned.
+		// Initializing to identity, but for all Oculus headsets, down below the pose will be initialized to the runtime's pose value, so identity will never be returned.
 		OVRPose headPose = OVRPose.identity;
 
 		Vector3 pos;
@@ -63,11 +63,19 @@ public static class OVRExtensions
 		return ret;
 	}
 
+	/// <summary>
+	/// Converts the given pose from tracking-space to world-space.
+	/// </summary>
+	[Obsolete("ToWorldSpacePose should be invoked with an explicit mainCamera parameter")]
+	public static OVRPose ToWorldSpacePose(this OVRPose trackingSpacePose)
+	{
+		return ToWorldSpacePose(trackingSpacePose, Camera.main);
+	}
 
 	/// <summary>
 	/// Converts the given pose from tracking-space to world-space.
 	/// </summary>
-	public static OVRPose ToWorldSpacePose(OVRPose trackingSpacePose)
+	public static OVRPose ToWorldSpacePose(this OVRPose trackingSpacePose, Camera mainCamera)
 	{
 		OVRPose headPose = OVRPose.identity;
 
@@ -87,7 +95,7 @@ public static class OVRExtensions
 		OVRPose poseInHeadSpace = headPose.Inverse() * trackingSpacePose;
 
 		// Transform from head space to world space
-		OVRPose ret = Camera.main.transform.ToOVRPose() * poseInHeadSpace;
+		OVRPose ret = mainCamera.transform.ToOVRPose() * poseInHeadSpace;
 
 		return ret;
 	}
@@ -305,7 +313,7 @@ public static class OVRExtensions
 			colorKeys[i].color = new Color(col.r, col.g, col.b, col.a);
 			colorKeys[i].time = otherGradient.colorKeys[i].time;
 		}
-		
+
 		GradientAlphaKey[] alphaKeys = new GradientAlphaKey[otherGradient.alphaKeys.Length];
 		for (int i = 0; i < alphaKeys.Length; i++)
 		{
@@ -652,6 +660,13 @@ public struct OVRPose
 		result.Orientation.z = orientation.z;
 		result.Orientation.w = orientation.w;
 		return result;
+	}
+
+	public OVRPose Rotate180AlongX()
+	{
+		var ret = this;
+		ret.orientation *= Quaternion.Euler(180, 0, 0);
+		return ret;
 	}
 }
 

@@ -121,7 +121,6 @@ internal class ONSPAudioPluginUpdater
     {
         string ovrPath = GetUtilitiesRootPath();
         string spatializerPluginsPath = Path.GetFullPath(Path.Combine(ovrPath, "../Spatializer/Plugins"));
-        UnityEngine.Debug.Assert(Directory.Exists(spatializerPluginsPath));
         return spatializerPluginsPath;
     }
 
@@ -167,9 +166,7 @@ internal class ONSPAudioPluginUpdater
         string pluginsPath = GetSpatializerPluginsRootPath();
         string newX86PluginPath = Path.GetFullPath(Path.Combine(pluginsPath, "x86/AudioPluginOculusSpatializer.dll.new"));
         string newX64PluginPath = Path.GetFullPath(Path.Combine(pluginsPath, "x86_64/AudioPluginOculusSpatializer.dll.new"));
-
-        if (File.Exists(newX86PluginPath) ||
-            File.Exists(newX64PluginPath))
+        if (File.Exists(newX86PluginPath) || File.Exists(newX64PluginPath))
         {
             bool userAcceptsUpdate = false;
 
@@ -199,7 +196,7 @@ internal class ONSPAudioPluginUpdater
                         File.Delete(newX64PluginPath);
                         File.Delete(newX64PluginPath + ".meta");
                     }
-                    catch (Exception e)
+                    catch (Exception e) 
                     {
                         UnityEngine.Debug.LogWarning("Exception happened when deleting new spatializer plugin: " + e.Message);
                     }
@@ -295,7 +292,7 @@ internal class ONSPAudioPluginUpdater
                         UnityEngine.Debug.LogWarning("Unable to rename the new spatializer plugin: " + e.Message);
                     }
                 }
-
+                
                 if (upgradeDone)
                 {
                     if (unityRunningInBatchmode

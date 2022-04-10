@@ -44,7 +44,7 @@ public static partial class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public static readonly System.Version wrapperVersion = _versionZero;
 #else
-    public static readonly System.Version wrapperVersion = OVRP_1_69_0.version;
+    public static readonly System.Version wrapperVersion = OVRP_1_70_0.version;
 #endif
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -185,6 +185,32 @@ public static partial class OVRPlugin
         Failure_DataIsInvalid = -1008,
         Failure_DeprecatedOperation = -1009
     }
+
+    public enum LogLevel
+    {
+        Debug = 0,
+        Info = 1,
+        Error = 2
+    }
+
+    public delegate void LogCallback2DelegateType(LogLevel logLevel, IntPtr message, int size);
+
+    public static void SetLogCallback2(LogCallback2DelegateType logCallback)
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			// do nothing
+#else
+        if (version >= OVRP_1_70_0.version)
+        {
+            Result result = OVRP_1_70_0.ovrp_SetLogCallback2(logCallback);
+            if (result != Result.Success)
+            {
+                Debug.LogWarning("OVRPlugin.SetLogCallback2() failed");
+            }
+        }
+#endif
+    }
+
 
     public enum CameraStatus
     {
@@ -6213,22 +6239,11 @@ public static partial class OVRPlugin
 #endif
     }
 
+    [System.Obsolete("Deprecated. This function will not be supported in OpenXR", false)]
     public static bool SpatialEntityTerminateSpatialEntityQuery(ref UInt64 requestId)
-    {
-#if OVRPLUGIN_UNSUPPORTED_PLATFORM
-		return false;
-#else
-        if (version >= OVRP_1_63_0.version)
-        {
-            Result result = OVRP_1_63_0.ovrp_TerminateSpatialEntityQuery(ref requestId);
-            return (result == Result.Success);
-        }
-        else
         {
             return false;
         }
-#endif
-    }
 
     public static bool SpatialEntitySaveSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, SpatialEntityStoragePersistenceMode mode, ref UInt64 requestId)
     {
@@ -6616,11 +6631,11 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ovrp_GetVersion")]
         private static extern IntPtr _ovrp_GetVersion();
-        public static string ovrp_GetVersion() { return Marshal.PtrToStringAnsi(_ovrp_GetVersion()); }
+        public static string ovrp_GetVersion() { return Marshal.PtrToStringAnsi(OVRP_1_1_0._ovrp_GetVersion()); }
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ovrp_GetNativeSDKVersion")]
         private static extern IntPtr _ovrp_GetNativeSDKVersion();
-        public static string ovrp_GetNativeSDKVersion() { return Marshal.PtrToStringAnsi(_ovrp_GetNativeSDKVersion()); }
+        public static string ovrp_GetNativeSDKVersion() { return Marshal.PtrToStringAnsi(OVRP_1_1_0._ovrp_GetNativeSDKVersion()); }
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ovrp_GetAudioOutId();
@@ -6702,7 +6717,7 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ovrp_GetSystemProductName")]
         private static extern IntPtr _ovrp_GetSystemProductName();
-        public static string ovrp_GetSystemProductName() { return Marshal.PtrToStringAnsi(_ovrp_GetSystemProductName()); }
+        public static string ovrp_GetSystemProductName() { return Marshal.PtrToStringAnsi(OVRP_1_1_0._ovrp_GetSystemProductName()); }
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Bool ovrp_ShowSystemUI(PlatformUI ui);
@@ -6724,7 +6739,7 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ovrp_GetAppLatencyTimings")]
         private static extern IntPtr _ovrp_GetAppLatencyTimings();
-        public static string ovrp_GetAppLatencyTimings() { return Marshal.PtrToStringAnsi(_ovrp_GetAppLatencyTimings()); }
+        public static string ovrp_GetAppLatencyTimings() { return Marshal.PtrToStringAnsi(OVRP_1_1_0._ovrp_GetAppLatencyTimings()); }
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Bool ovrp_GetUserPresent();
@@ -7706,6 +7721,15 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_GetNodePoseStateImmediate(Node nodeId, out PoseStatef nodePoseState);
+
+    }
+
+    private static class OVRP_1_70_0
+    {
+        public static readonly System.Version version = new System.Version(1, 70, 0);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SetLogCallback2(LogCallback2DelegateType logCallback);
 
     }
 }

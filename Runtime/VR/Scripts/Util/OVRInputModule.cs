@@ -178,8 +178,10 @@ namespace UnityEngine.EventSystems
 
         public override void UpdateModule()
         {
+#if ENABLE_LEGACY_INPUT_MANAGER
             m_LastMousePosition = m_MousePosition;
             m_MousePosition = Input.mousePosition;
+#endif
         }
 
         public override bool IsModuleSupported()
@@ -197,6 +199,7 @@ namespace UnityEngine.EventSystems
                 return false;
             }
 
+#if ENABLE_LEGACY_INPUT_MANAGER
             var shouldActivate = Input.GetButtonDown(m_SubmitButton);
             shouldActivate |= Input.GetButtonDown(m_CancelButton);
             shouldActivate |= !Mathf.Approximately(Input.GetAxisRaw(m_HorizontalAxis), 0.0f);
@@ -204,13 +207,18 @@ namespace UnityEngine.EventSystems
             shouldActivate |= (m_MousePosition - m_LastMousePosition).sqrMagnitude > 0.0f;
             shouldActivate |= Input.GetMouseButtonDown(0);
             return shouldActivate;
-        }
+#else
+			return false;
+#endif
+		}
 
         public override void ActivateModule()
         {
             base.ActivateModule();
+#if ENABLE_LEGACY_INPUT_MANAGER
             m_MousePosition = Input.mousePosition;
             m_LastMousePosition = Input.mousePosition;
+#endif
 
             var toSelect = eventSystem.currentSelectedGameObject;
             if (toSelect == null)
@@ -240,6 +248,7 @@ namespace UnityEngine.EventSystems
             }
 
             var data = GetBaseEventData();
+#if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetButtonDown(m_SubmitButton))
             {
                 ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
@@ -249,17 +258,21 @@ namespace UnityEngine.EventSystems
             {
                 ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.cancelHandler);
             }
-
+#endif
             return data.used;
         }
 
         private bool AllowMoveEventProcessing(float time)
         {
-            bool allow = Input.GetButtonDown(m_HorizontalAxis);
+#if ENABLE_LEGACY_INPUT_MANAGER
+			bool allow = Input.GetButtonDown(m_HorizontalAxis);
             allow |= Input.GetButtonDown(m_VerticalAxis);
             allow |= (time > m_NextAction);
             return allow;
-        }
+#else
+			return false;
+#endif
+		}
 
         private Vector2 GetRawMoveVector()
         {
@@ -352,7 +365,9 @@ namespace UnityEngine.EventSystems
                 pointerEvent.pressPosition = pointerEvent.position;
                 if (pointerEvent.IsVRPointer())
                 {
+#if ENABLE_LEGACY_INPUT_MANAGER
                     pointerEvent.SetSwipeStart(Input.mousePosition);
+#endif
                 }
                 pointerEvent.pointerPressRaycast = pointerEvent.pointerCurrentRaycast;
 
@@ -451,7 +466,7 @@ namespace UnityEngine.EventSystems
             }
         }
 #endregion
-        #region Modified StandaloneInputModule methods
+#region Modified StandaloneInputModule methods
 
         /// <summary>
         /// Process all mouse events. This is the same as the StandaloneInputModule version except that
@@ -527,7 +542,7 @@ namespace UnityEngine.EventSystems
 
             return false;
         }
-        #endregion
+#endregion
 
 
         /// <summary>
@@ -728,7 +743,9 @@ namespace UnityEngine.EventSystems
             // Setup default values here. Set position to zero because we don't actually know the pointer
             // positions. Each canvas knows the position of its canvas pointer.
             leftData.position = Vector2.zero;
+#if ENABLE_LEGACY_INPUT_MANAGER
             leftData.scrollDelta = Input.mouseScrollDelta;
+#endif
             leftData.button = PointerEventData.InputButton.Left;
 
             if (activeGraphicRaycaster)
@@ -763,9 +780,11 @@ namespace UnityEngine.EventSystems
             CopyFromTo(leftData, middleData);
             middleData.button = PointerEventData.InputButton.Middle;
 
+#if ENABLE_LEGACY_INPUT_MANAGER
             m_MouseState.SetButtonState(PointerEventData.InputButton.Left, StateForMouseButton(0), leftData);
             m_MouseState.SetButtonState(PointerEventData.InputButton.Right, StateForMouseButton(1), rightData);
             m_MouseState.SetButtonState(PointerEventData.InputButton.Middle, StateForMouseButton(2), middleData);
+#endif
             return m_MouseState;
         }
 
