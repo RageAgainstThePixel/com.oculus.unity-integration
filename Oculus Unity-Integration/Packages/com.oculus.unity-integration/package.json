@@ -12,7 +12,7 @@
   },
   "author": "Facebook Technologies, LLC",
   "dependencies": {
-    "com.unity.xr.oculus": "1.11.2"
+    "com.unity.xr.oculus": "1.12.0"
   },
   "type": "sdk"
 }
