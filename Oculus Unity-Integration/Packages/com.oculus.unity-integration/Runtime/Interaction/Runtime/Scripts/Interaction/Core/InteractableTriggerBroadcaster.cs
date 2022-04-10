@@ -30,6 +30,7 @@ namespace Oculus.Interaction
 
         private IInteractable _interactable;
         private Dictionary<Rigidbody, bool> _rigidbodyTriggers;
+        private List<Rigidbody> _rigidbodies;
 
         private static HashSet<InteractableTriggerBroadcaster> _broadcasters =
             new HashSet<InteractableTriggerBroadcaster>();
@@ -40,11 +41,17 @@ namespace Oculus.Interaction
         {
             this.BeginStart(ref _started);
             _rigidbodyTriggers = new Dictionary<Rigidbody, bool>();
+            _rigidbodies = new List<Rigidbody>();
             this.EndStart(ref _started);
         }
 
         protected virtual void OnTriggerStay(Collider collider)
         {
+            if (!_started)
+            {
+                return;
+            }
+
             Rigidbody rigidbody = collider.attachedRigidbody;
             if (rigidbody == null)
             {
@@ -81,8 +88,9 @@ namespace Oculus.Interaction
 
         private void UpdateTriggers()
         {
-            List<Rigidbody> rigidbodys = new List<Rigidbody>(_rigidbodyTriggers.Keys);
-            foreach (Rigidbody rigidbody in rigidbodys)
+            _rigidbodies.Clear();
+            _rigidbodies.AddRange(_rigidbodyTriggers.Keys);
+            foreach (Rigidbody rigidbody in _rigidbodies)
             {
                 if (_rigidbodyTriggers[rigidbody] == false)
                 {
@@ -106,6 +114,7 @@ namespace Oculus.Interaction
                     OnTriggerExited(_interactable, rigidbody);
                 }
                 _broadcasters.Remove(this);
+                _rigidbodies.Clear();
             }
         }
 
