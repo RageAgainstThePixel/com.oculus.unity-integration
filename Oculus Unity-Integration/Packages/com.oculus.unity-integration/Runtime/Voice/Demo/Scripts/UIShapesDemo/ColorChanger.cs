@@ -59,7 +59,10 @@ namespace Oculus.Voice.Demo.UIShapesDemo
         /// <param name="shape">The shape name or if empty all shapes</param>
         public void UpdateColor(string colorName, string shape)
         {
-            if (!ColorUtility.TryParseHtmlString(colorName, out var color)) return;
+            if (!ColorUtility.TryParseHtmlString(colorName, out var color))
+            {
+                return;
+            }
 
             if (string.IsNullOrEmpty(shape) || shape == "color")
             {
