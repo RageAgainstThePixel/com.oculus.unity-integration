@@ -11,9 +11,10 @@ permissions and limitations under the License.
 ************************************************************************************/
 
 using System;
+using UnityEngine;
 
 namespace Oculus.Interaction.Deprecated
 {
     [Obsolete]
-    public class InteractorDriver { }
+    public class InteractorDriver : MonoBehaviour { }
 }
