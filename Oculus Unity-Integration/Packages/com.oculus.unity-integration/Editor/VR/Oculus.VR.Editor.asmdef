@@ -3,7 +3,9 @@
     "rootNamespace": "",
     "references": [
         "Oculus.VR",
-        "Unity.XR.Oculus"
+        "Unity.XR.Oculus",
+        "Unity.XR.OpenXR",
+        "Unity.XR.OpenXR.Editor"
     ],
     "includePlatforms": [
         "Editor"

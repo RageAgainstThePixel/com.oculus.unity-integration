@@ -118,10 +118,23 @@ public class OVRProjectConfigEditor : Editor
 					"Note that a higher tracking frequency will reserve some performance headroom from the application's budget."),
 					ref projectConfig.handTrackingFrequency, ref hasModified, "https://developer.oculus.com/documentation/unity/unity-handtracking/#enable-hand-tracking");
 
+				OVREditorUtil.SetupEnumField(projectConfig, "Hand Tracking Version", ref projectConfig.handTrackingVersion, ref hasModified);
+
 				// Enable Render Model Support
+				bool renderModelSupportAvailable = OVRPluginUpdater.IsOVRPluginOpenXRActivated();
+				EditorGUI.BeginDisabledGroup(!renderModelSupportAvailable);
+				if (!renderModelSupportAvailable)
+				{
+					projectConfig.renderModelSupport = OVRProjectConfig.RenderModelSupport.Disabled;
+				}
 				OVREditorUtil.SetupEnumField(projectConfig, new GUIContent("Render Model Support",
-					"If enabled, the application will be able to load render models from the runtime."),
+						"If enabled, the application will be able to load render models from the runtime."),
 					ref projectConfig.renderModelSupport, ref hasModified);
+				if (hasModified && projectConfig.renderModelSupport == OVRProjectConfig.RenderModelSupport.Disabled)
+				{
+					projectConfig.trackedKeyboardSupport = OVRProjectConfig.TrackedKeyboardSupport.None;
+				}
+				EditorGUI.EndDisabledGroup();
 
 				// System Keyboard Support
 				OVREditorUtil.SetupBoolField(projectConfig, new GUIContent("Requires System Keyboard",
@@ -129,19 +142,34 @@ public class OVRProjectConfigEditor : Editor
 					ref projectConfig.requiresSystemKeyboard, ref hasModified);
 
 				// Tracked Keyboard Support
-				var trackedKeyboardSetting = projectConfig.trackedKeyboardSupport;
-				OVREditorUtil.SetupEnumField(projectConfig, "Tracked Keyboard Support", ref projectConfig.trackedKeyboardSupport, ref hasModified);
-				if (trackedKeyboardSetting != projectConfig.trackedKeyboardSupport && projectConfig.trackedKeyboardSupport > OVRProjectConfig.TrackedKeyboardSupport.None)
-                {
-                    projectConfig.renderModelSupport = OVRProjectConfig.RenderModelSupport.Enabled;
-                }
+				bool trackedKeyboardSupportAvailable = OVRPluginUpdater.IsOVRPluginOpenXRActivated();
+				EditorGUI.BeginDisabledGroup(!trackedKeyboardSupportAvailable);
+				if (!trackedKeyboardSupportAvailable)
+				{
+					projectConfig.trackedKeyboardSupport = OVRProjectConfig.TrackedKeyboardSupport.None;
+				}
+				OVREditorUtil.SetupEnumField(projectConfig, new GUIContent("Tracked Keyboard Support",
+						"Show user's physical keyboard in correct position in VR."),
+					ref projectConfig.trackedKeyboardSupport, ref hasModified);
+				if (hasModified && projectConfig.trackedKeyboardSupport != OVRProjectConfig.TrackedKeyboardSupport.None)
+				{
+					projectConfig.renderModelSupport = OVRProjectConfig.RenderModelSupport.Enabled;
+				}
+				if (!OVRPluginUpdater.IsOVRPluginOpenXRActivated())
+				{
+					EditorGUILayout.HelpBox(
+						"The OpenXR backend must be enabled in the Oculus menu to use the Render Model and Tracked Keyboard features.",
+						MessageType.Info);
+				}
+				if (projectConfig.trackedKeyboardSupport != OVRProjectConfig.TrackedKeyboardSupport.None && projectConfig.renderModelSupport == OVRProjectConfig.RenderModelSupport.Disabled)
+				{
+					EditorGUILayout.HelpBox(
+						"Render model support is required to load keyboard models from the runtime.",
+						MessageType.Error);
+				}
+				EditorGUI.EndDisabledGroup();
 
-                if (projectConfig.trackedKeyboardSupport > OVRProjectConfig.TrackedKeyboardSupport.None && projectConfig.renderModelSupport == OVRProjectConfig.RenderModelSupport.Disabled)
-                {
-                    EditorGUILayout.LabelField("Render model support is required to load keyboard models from the runtime.");
-                }
-
-                // System Splash Screen
+				// System Splash Screen
 				OVREditorUtil.SetupTexture2DField(projectConfig, new GUIContent("System Splash Screen",
 					"If set, the Splash Screen will be presented by the Operating System as a high quality composition layer at launch time."),
 					ref projectConfig.systemSplashScreen, ref hasModified,

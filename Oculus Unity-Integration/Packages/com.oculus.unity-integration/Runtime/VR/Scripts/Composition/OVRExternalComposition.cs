@@ -214,21 +214,14 @@ public class OVRExternalComposition : OVRComposition
 			CleanupAudioFilter();
 
 			AudioListener tmpAudioListener = cameraRig.centerEyeAnchor.gameObject.activeInHierarchy ? cameraRig.centerEyeAnchor.GetComponent<AudioListener>() : null;
-			if (tmpAudioListener != null && !tmpAudioListener.enabled)
-            {
-                tmpAudioListener = null;
-            }
-
-            if (tmpAudioListener == null)
+			if (tmpAudioListener != null && !tmpAudioListener.enabled) tmpAudioListener = null;
+			if (tmpAudioListener == null)
 			{
 				if (Camera.main != null && Camera.main.gameObject.activeInHierarchy)
 				{
 					tmpAudioListener = Camera.main.GetComponent<AudioListener>();
-					if (tmpAudioListener != null && !tmpAudioListener.enabled)
-                    {
-                        tmpAudioListener = null;
-                    }
-                }
+					if (tmpAudioListener != null && !tmpAudioListener.enabled) tmpAudioListener = null;
+				}
 			}
 			if (tmpAudioListener == null)
 			{
@@ -553,19 +546,17 @@ public class OVRMRAudioFilter : MonoBehaviour
 
 	public OVRExternalComposition composition;
 
-    private void Start()
+	void Start()
 	{
 		running = true;
 	}
 
-    private void OnAudioFilterRead(float[] data, int channels)
+	void OnAudioFilterRead(float[] data, int channels)
 	{
 		if (!running)
-        {
-            return;
-        }
+			return;
 
-        if (composition != null)
+		if (composition != null)
 		{
 			composition.CacheAudioData(data, channels);
 		}

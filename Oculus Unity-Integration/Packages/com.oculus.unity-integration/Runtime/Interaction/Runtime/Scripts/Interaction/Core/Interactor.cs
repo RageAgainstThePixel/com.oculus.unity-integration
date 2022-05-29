@@ -25,24 +25,22 @@ namespace Oculus.Interaction
     /// Subclasses are responsible for implementing that coordination logic via template
     /// methods that operate on the concrete interactor and interactable classes.
     /// </summary>
-    public abstract class Interactor<TInteractor, TInteractable> : MonoBehaviour,
-                                    IInteractor<TInteractable>,
-                                    IInteractorDriver
-                                    where TInteractor : class, IInteractor<TInteractable>
-                                    where TInteractable : class, IInteractable<TInteractor>
+    public abstract class Interactor<TInteractor, TInteractable> : MonoBehaviour, IInteractor
+                                    where TInteractor : Interactor<TInteractor, TInteractable>
+                                    where TInteractable : Interactable<TInteractor, TInteractable>
     {
         [SerializeField, Interface(typeof(IActiveState)), Optional]
         private MonoBehaviour _activeState;
         private IActiveState ActiveState = null;
 
-        [SerializeField, Interface(typeof(IInteractableFilter)), Optional]
-        private List<MonoBehaviour> _interactableFilters;
-        private List<IInteractableFilter> InteractableFilters = null;
+        [SerializeField, Interface(typeof(IMonoBehaviourFilter)), Optional]
+        private List<MonoBehaviour> _interactableFilters = new List<MonoBehaviour>();
+        private List<IMonoBehaviourFilter> InteractableFilters = null;
 
         protected virtual void DoEveryUpdate() { }
         protected virtual void DoNormalUpdate() { }
         protected virtual void DoHoverUpdate() { }
-        protected virtual void DoSelectUpdate(TInteractable interactable = null) { }
+        protected virtual void DoSelectUpdate() { }
 
         public virtual bool ShouldSelect { get; protected set; }
         public virtual bool ShouldUnselect { get; protected set; }
@@ -52,6 +50,8 @@ namespace Oculus.Interaction
         public event Action WhenInteractorUpdated = delegate { };
 
         private ISelector _selector = null;
+
+        public int MaxIterationsPerFrame = 3;
 
         protected ISelector Selector
         {
@@ -63,7 +63,7 @@ namespace Oculus.Interaction
             {
                 if (value != _selector)
                 {
-                    if (_selector != null && State != InteractorState.Disabled)
+                    if (_selector != null && _started)
                     {
                         _selector.WhenSelected -= HandleSelected;
                         _selector.WhenUnselected -= HandleUnselected;
@@ -71,7 +71,7 @@ namespace Oculus.Interaction
                 }
 
                 _selector = value;
-                if (_selector != null && State != InteractorState.Disabled)
+                if (_selector != null && _started)
                 {
                     _selector.WhenSelected += HandleSelected;
                     _selector.WhenUnselected += HandleUnselected;
@@ -94,7 +94,6 @@ namespace Oculus.Interaction
                 {
                     return;
                 }
-
                 InteractorState previousState = _state;
                 _state = value;
 
@@ -110,7 +109,8 @@ namespace Oculus.Interaction
         protected TInteractable _interactable;
         protected TInteractable _selectedInteractable;
 
-        public TInteractable Candidate => _candidate;
+        public virtual object Candidate => _candidate;
+
         public TInteractable Interactable => _interactable;
         public TInteractable SelectedInteractable => _selectedInteractable;
 
@@ -147,6 +147,10 @@ namespace Oculus.Interaction
             _whenInteractableUnselected.Invoke(interactable);
         }
 
+        protected virtual void DoInteractorUpdated()
+        {
+        }
+
         private UniqueIdentifier _identifier;
         public int Identifier => _identifier.ID;
 
@@ -157,13 +161,13 @@ namespace Oculus.Interaction
             _identifier = UniqueIdentifier.Generate();
             ActiveState = _activeState as IActiveState;
             InteractableFilters =
-                _interactableFilters.ConvertAll(mono => mono as IInteractableFilter);
+                _interactableFilters.ConvertAll(mono => mono as IMonoBehaviourFilter);
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            foreach (IInteractableFilter filter in InteractableFilters)
+            foreach (IMonoBehaviourFilter filter in InteractableFilters)
             {
                 Assert.IsNotNull(filter);
             }
@@ -174,7 +178,11 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                Enable();
+                if (_selector != null)
+                {
+                    _selector.WhenSelected += HandleSelected;
+                    _selector.WhenUnselected += HandleUnselected;
+                }
             }
         }
 
@@ -182,6 +190,12 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
+                if (_selector != null)
+                {
+                    _selector.WhenSelected -= HandleSelected;
+                    _selector.WhenUnselected -= HandleUnselected;
+                    _performSelect = _performUnselect = false;
+                }
                 Disable();
             }
         }
@@ -191,127 +205,137 @@ namespace Oculus.Interaction
             UniqueIdentifier.Release(_identifier);
         }
 
-        private void CandidateUpdate()
-        {
-            if (State == InteractorState.Select)
-            {
-                return;
-            }
-
-            if (State == InteractorState.Disabled)
-            {
-                UnsetInteractable();
-                return;
-            }
-
-            _candidate = ComputeCandidate();
-        }
-
-        private void SelectActionsUpdate()
-        {
-            if (State == InteractorState.Disabled)
-            {
-                return;
-            }
-            ComputeSelectActions();
-        }
-
         public void UpdateInteractor()
         {
-            if (State == InteractorState.Disabled)
-            {
-                return;
-            }
-
-            InteractableChangesUpdate();
+            UpdateSelector();
             DoEveryUpdate();
-            NormalUpdate();
-            CandidateUpdate();
-            HoverUpdate();
-            SelectActionsUpdate();
-            SelectUpdate();
+            DoInteractorUpdated();
             WhenInteractorUpdated();
         }
 
-        private void InteractableChangesUpdate()
+        public virtual void UpdateCandidate()
         {
-            if (State == InteractorState.Select)
+            _candidate = null;
+            if (!UpdateActiveState())
             {
-                if (_selectedInteractable != null &&
-                    !_selectedInteractable.HasSelectingInteractor(this as TInteractor))
-                {
-                    TInteractable interactable = _selectedInteractable;
-                    _selectedInteractable = null;
-                    InteractableUnselected(interactable);
-                }
+                return;
+            }
+            _candidate = ComputeCandidate();
+        }
 
-                if (_interactable != null &&
-                    !_interactable.HasInteractor(this as TInteractor))
-                {
-                    TInteractable interactable = _interactable;
-                    _interactable = null;
-                    InteractableUnset(interactable);
-                }
+        private void InteractableSelectChangesUpdate()
+        {
+            if (State != InteractorState.Select)
+            {
+                return;
+            }
+            if (_selectedInteractable != null &&
+            !_selectedInteractable.HasSelectingInteractor(this as TInteractor))
+            {
+                TInteractable interactable = _selectedInteractable;
+                _selectedInteractable = null;
+                InteractableUnselected(interactable);
             }
 
-            if(State == InteractorState.Hover &&
-               _interactable != null &&
-               !_interactable.HasInteractor(this as TInteractor))
+            if (_interactable != null &&
+                !_interactable.HasInteractor(this as TInteractor))
             {
                 TInteractable interactable = _interactable;
                 _interactable = null;
                 InteractableUnset(interactable);
-                State = InteractorState.Normal;
+            }
+        }
+
+        private void InteractableHoverChangesUpdate()
+        {
+            if (State != InteractorState.Hover)
+            {
+                return;
+            }
+
+            if (_interactable != null &&
+                !_interactable.HasInteractor(this as TInteractor))
+            {
+                TInteractable interactable = _interactable;
+                _interactable = null;
+                InteractableUnset(interactable);
             }
         }
 
         public virtual void Select()
         {
-            ShouldSelect = false;
-
             if (State == InteractorState.Select)
+            {
+                if (!UpdateActiveState())
+                {
+                    ShouldSelect = false;
+                    ShouldUnselect = true;
+                    return;
+                }
+                InteractableSelectChangesUpdate();
+                SelectUpdate();
+                return;
+            }
+
+            if (!ShouldSelect)
             {
                 return;
             }
 
+            ShouldSelect = false;
+
             TInteractable interactable = _interactable;
             if (interactable != null)
             {
-                if (interactable.CanBeSelectedBy(this as TInteractor))
-                {
-                    SelectInteractable(interactable);
-                }
-                else
-                {
-                    State = InteractorState.Normal;
-                }
+                SelectInteractable(interactable);
             }
             else
             {
                 // Selected with no interactable
+                State = InteractorState.Hover;
                 State = InteractorState.Select;
             }
 
+            InteractableSelectChangesUpdate();
             SelectUpdate();
         }
 
         public virtual void Unselect()
         {
+            if (!UpdateActiveState())
+            {
+                return;
+            }
+
+            if (!ShouldUnselect)
+            {
+                return;
+            }
+
             ShouldUnselect = false;
 
             if (State != InteractorState.Select)
             {
                 return;
             }
+
             UnselectInteractable();
-            UpdateInteractor();
+
+            if (_interactable != null)
+            {
+                State = InteractorState.Hover;
+            }
+            else
+            {
+                State = InteractorState.Hover;
+                State = InteractorState.Normal;
+            }
         }
 
         // Returns the best interactable for selection or null
         protected abstract TInteractable ComputeCandidate();
 
-        // Updates to ShouldSelect or ShouldUnselect should happen here
-        protected virtual void ComputeSelectActions()
+        private void UpdateSelector()
         {
             if (Selector == null)
             {
@@ -332,9 +356,9 @@ namespace Oculus.Interaction
                 return true;
             }
 
-            foreach (IInteractableFilter interactableFilter in InteractableFilters)
+            foreach (IMonoBehaviourFilter interactableFilter in InteractableFilters)
             {
-                if (!interactableFilter.FilterInteractable(interactable))
+                if (!interactableFilter.FilterMonoBehaviour(interactable))
                 {
                     return false;
                 }
@@ -344,11 +368,18 @@ namespace Oculus.Interaction
 
         public void Hover()
         {
+            if (!UpdateActiveState())
+            {
+                return;
+            }
+
             if (State == InteractorState.Select ||
                 State == InteractorState.Disabled)
             {
                 return;
             }
+
+            InteractableHoverChangesUpdate();
 
             if (_candidate != null)
             {
@@ -385,7 +416,7 @@ namespace Oculus.Interaction
             {
                 return;
             }
-            DoSelectUpdate(_selectedInteractable);
+            DoSelectUpdate();
         }
 
         private void SetInteractable(TInteractable interactable)
@@ -394,7 +425,6 @@ namespace Oculus.Interaction
             {
                 return;
             }
-
             UnsetInteractable();
             _interactable = interactable;
             interactable.AddInteractor(this as TInteractor);
@@ -409,7 +439,6 @@ namespace Oculus.Interaction
             {
                 return;
             }
-
             _interactable = null;
             interactable.RemoveInteractor(this as TInteractor);
             InteractableUnset(interactable);
@@ -418,7 +447,7 @@ namespace Oculus.Interaction
 
         private void SelectInteractable(TInteractable interactable)
         {
-            UnselectInteractable();
+            Unselect();
             _selectedInteractable = interactable;
             interactable.AddSelectingInteractor(this as TInteractor);
             InteractableSelected(interactable);
@@ -430,32 +459,28 @@ namespace Oculus.Interaction
             TInteractable interactable = _selectedInteractable;
             if (interactable == null)
             {
-                State = InteractorState.Normal;
                 return;
             }
             interactable.RemoveSelectingInteractor(this as TInteractor);
             _selectedInteractable = null;
             InteractableUnselected(interactable);
-            State = InteractorState.Hover;
         }
 
         public void Enable()
         {
-            if (ActiveState != null && !ActiveState.Active)
+            if (!UpdateActiveState())
             {
                 return;
             }
 
-            if (State != InteractorState.Disabled)
+            if (State == InteractorState.Disabled)
             {
-                return;
+                State = InteractorState.Normal;
             }
 
-            State = InteractorState.Normal;
-            if (_selector != null)
+            if (State == InteractorState.Normal)
             {
-                _selector.WhenSelected += HandleSelected;
-                _selector.WhenUnselected += HandleUnselected;
+                NormalUpdate();
             }
         }
 
@@ -468,12 +493,6 @@ namespace Oculus.Interaction
 
             UnselectInteractable();
             UnsetInteractable();
-            if (_selector != null)
-            {
-                _selector.WhenSelected -= HandleSelected;
-                _selector.WhenUnselected -= HandleUnselected;
-                _performSelect = _performUnselect = false;
-            }
 
             State = InteractorState.Disabled;
         }
@@ -488,78 +507,59 @@ namespace Oculus.Interaction
             _performUnselect = true;
         }
 
-        #region IInteractorDriver
-        public bool IsRootInteractorDriver { get; set; } = true;
-
-        public bool IsSelectingInteractable => HasSelectedInteractable;
-        public bool IsHovering => State == InteractorState.Hover;
-        public bool IsSelecting => State == InteractorState.Select;
-        public IInteractor CandidateInteractor => HasCandidate ? this : null;
-
-        protected virtual void Update()
-        {
-            if (!IsRootInteractorDriver)
-            {
-                return;
-            }
-
-            UpdateInteraction();
-            UpdateHover();
-            UpdateSelection(true);
-        }
-
         private bool UpdateActiveState()
         {
             if (ActiveState == null || ActiveState.Active)
             {
                 return true;
             }
-            Disable();
             return false;
         }
 
-        public void UpdateInteraction()
+        public bool IsRootDriver { get; set; } = true;
+
+        protected virtual void Update()
         {
-            if (!UpdateActiveState())
+            if (!IsRootDriver)
             {
                 return;
             }
+
+            if (!UpdateActiveState())
+            {
+                Disable();
+                return;
+            }
+
             Enable();
             UpdateInteractor();
-        }
-
-        public void UpdateHover()
-        {
-            if (!UpdateActiveState())
+            for (int i = 0; i < MaxIterationsPerFrame; i++)
             {
-                return;
-            }
-            Enable();
-            Hover();
-        }
-
-        public void UpdateSelection(bool selectionCanBeEmpty)
-        {
-            if (!UpdateActiveState())
-            {
-                return;
-            }
-            Enable();
-
-            if (ShouldSelect)
-            {
-                if (selectionCanBeEmpty || HasInteractable)
+                if (ShouldSelect || State == InteractorState.Select)
                 {
                     Select();
+                    if (!ShouldUnselect)
+                    {
+                        return;
+                    }
+                    Unselect();
+                }
+
+                UpdateCandidate();
+
+                Hover();
+
+                if (!HasInteractable)
+                {
+                    return;
+                }
+
+                if (!ShouldSelect)
+                {
+                    return;
                 }
             }
-
-            if(ShouldUnselect)
-            {
-                Unselect();
-            }
         }
-        #endregion
 
         #region Inject
         public void InjectOptionalActiveState(IActiveState activeState)
@@ -568,7 +568,7 @@ namespace Oculus.Interaction
             ActiveState = activeState;
         }
 
-        public void InjectOptionalInteractableFilters(List<IInteractableFilter> interactableFilters)
+        public void InjectOptionalInteractableFilters(List<IMonoBehaviourFilter> interactableFilters)
         {
             InteractableFilters = interactableFilters;
             _interactableFilters = interactableFilters.ConvertAll(interactableFilter =>
