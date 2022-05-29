@@ -10,7 +10,7 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
-#if USING_XR_MANAGEMENT && USING_XR_SDK_OCULUS
+#if USING_XR_MANAGEMENT && (USING_XR_SDK_OCULUS || USING_XR_SDK_OPENXR)
 #define USING_XR_SDK
 #endif
 
@@ -44,7 +44,7 @@ public static partial class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public static readonly System.Version wrapperVersion = _versionZero;
 #else
-    public static readonly System.Version wrapperVersion = OVRP_1_70_0.version;
+    public static readonly System.Version wrapperVersion = OVRP_1_71_0.version;
 #endif
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -461,6 +461,15 @@ public static partial class OVRPlugin
         Device_GpuClockLevel_Int = 13, // Deprecated 1.68.0
 
         Count,
+        EnumSize = 0x7FFFFFFF
+    }
+
+    public enum ProcessorPerformanceLevel
+    {
+        PowerSavings = 0,
+        SustainedLow = 1,
+        SustainedHigh = 2,
+        Boost = 3,
         EnumSize = 0x7FFFFFFF
     }
 
@@ -1515,7 +1524,7 @@ public static partial class OVRPlugin
     public enum SpatialEntityComponentType
     {
         Locatable = 0,
-        Storable = 1
+        Storable = 1,
     }
 
     public enum SpatialEntityStorageLocation
@@ -1543,7 +1552,7 @@ public static partial class OVRPlugin
     public enum SpatialEntityQueryFilterType
     {
         None = 0,
-        Ids = 1
+        Ids = 1,
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -2142,6 +2151,69 @@ public static partial class OVRPlugin
         }
     }
 
+    public static ProcessorPerformanceLevel suggestedCpuPerfLevel
+    {
+        get
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return ProcessorPerformanceLevel.SustainedHigh;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                ProcessorPerformanceLevel level;
+                if (OVRP_1_71_0.ovrp_GetSuggestedCpuPerformanceLevel(out level) == Result.Success)
+                {
+                    return level;
+                }
+            }
+            return ProcessorPerformanceLevel.SustainedHigh;
+#endif
+        }
+        set
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_SetSuggestedCpuPerformanceLevel(value);
+            }
+#endif
+        }
+    }
+
+    public static ProcessorPerformanceLevel suggestedGpuPerfLevel
+    {
+        get
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return ProcessorPerformanceLevel.SustainedHigh;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                ProcessorPerformanceLevel level;
+                if (OVRP_1_71_0.ovrp_GetSuggestedGpuPerformanceLevel(out level) == Result.Success)
+                {
+                    return level;
+                }
+            }
+            return ProcessorPerformanceLevel.SustainedHigh;
+#endif
+        }
+        set
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_SetSuggestedGpuPerformanceLevel(value);
+            }
+#endif
+        }
+    }
+
+    [System.Obsolete("Deprecated. Please use suggestedCpuPerfLevel.", false)]
     public static int cpuLevel
     {
         get
@@ -2162,6 +2234,7 @@ public static partial class OVRPlugin
         }
     }
 
+    [System.Obsolete("Deprecated. Please use suggestedGpuPerfLevel.", false)]
     public static int gpuLevel
     {
         get
@@ -3607,6 +3680,30 @@ public static partial class OVRPlugin
 #endif
     }
 
+    public static bool IsInsightPassthroughSupported()
+    {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_71_0.version)
+        {
+            Bool supported = OVRPlugin.Bool.False;
+            Result result = OVRP_1_71_0.ovrp_IsInsightPassthroughSupported(ref supported);
+            if (result == Result.Success)
+            {
+                return supported == OVRPlugin.Bool.True;
+            }
+
+            Debug.LogError("Unable to determine whether passthrough is supported. Try calling IsInsightPassthroughSupported() while the XR plug-in is initialized. Failed with reason: " + result);
+            return false;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
     public static bool InitializeInsightPassthrough()
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -4890,7 +4987,7 @@ public static partial class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-#if USING_XR_SDK
+#if USING_XR_SDK_OCULUS
         OculusXRPlugin.SetColorScale(colorScale.x, colorScale.y, colorScale.z, colorScale.w);
         OculusXRPlugin.SetColorOffset(colorOffset.x, colorOffset.y, colorOffset.z, colorOffset.w);
         return true;
@@ -6241,9 +6338,9 @@ public static partial class OVRPlugin
 
     [System.Obsolete("Deprecated. This function will not be supported in OpenXR", false)]
     public static bool SpatialEntityTerminateSpatialEntityQuery(ref UInt64 requestId)
-        {
-            return false;
-        }
+    {
+        return false;
+    }
 
     public static bool SpatialEntitySaveSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, SpatialEntityStoragePersistenceMode mode, ref UInt64 requestId)
     {
@@ -6556,6 +6653,144 @@ public static partial class OVRPlugin
         }
     }
 
+    public class UnityOpenXR
+    {
+        public static bool Enabled = false; // OculusXRFeature will set it to true when being used
+
+        public static void SetClientVersion()
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			// do nothing
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_SetClientVersion(wrapperVersion.Major, wrapperVersion.Minor, wrapperVersion.Build);
+            }
+#endif
+        }
+
+        public static IntPtr HookGetInstanceProcAddr(IntPtr func)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return func;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                return OVRP_1_71_0.ovrp_UnityOpenXR_HookGetInstanceProcAddr(func);
+            }
+            else
+            {
+                return func;
+            }
+#endif
+        }
+
+        public static bool OnInstanceCreate(UInt64 xrInstance)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+			return false;
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                Result result = OVRP_1_71_0.ovrp_UnityOpenXR_OnInstanceCreate(xrInstance);
+                return result == Result.Success;
+            }
+            else
+            {
+                return false;
+            }
+#endif
+        }
+
+        public static void OnInstanceDestroy(UInt64 xrInstance)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnInstanceDestroy(xrInstance);
+            }
+#endif
+        }
+
+        public static void OnSessionCreate(UInt64 xrSession)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionCreate(xrSession);
+            }
+#endif
+        }
+
+        public static void OnAppSpaceChange(UInt64 xrSpace)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnAppSpaceChange(xrSpace);
+            }
+#endif
+        }
+
+        public static void OnSessionStateChange(int oldState, int newState)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionStateChange(oldState, newState);
+            }
+#endif
+        }
+
+        public static void OnSessionBegin(UInt64 xrSession)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionBegin(xrSession);
+            }
+#endif
+        }
+
+        public static void OnSessionEnd(UInt64 xrSession)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionEnd(xrSession);
+            }
+#endif
+        }
+
+        public static void OnSessionExiting(UInt64 xrSession)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionExiting(xrSession);
+            }
+#endif
+        }
+
+        public static void OnSessionDestroy(UInt64 xrSession)
+        {
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+#else
+            if (version >= OVRP_1_71_0.version)
+            {
+                OVRP_1_71_0.ovrp_UnityOpenXR_OnSessionDestroy(xrSession);
+            }
+#endif
+        }
+    }
+
     private const string pluginName = "OVRPlugin";
     private static System.Version _versionZero = new System.Version(0, 0, 0);
 
@@ -6682,15 +6917,19 @@ public static partial class OVRPlugin
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ControllerState ovrp_GetControllerState(uint controllerMask);
 
+        [System.Obsolete("Deprecated. Replaced by ovrp_GetSuggestedCpuPerformanceLevel", false)]
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ovrp_GetSystemCpuLevel();
 
+        [System.Obsolete("Deprecated. Replaced by ovrp_SetSuggestedCpuPerformanceLevel", false)]
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Bool ovrp_SetSystemCpuLevel(int value);
 
+        [System.Obsolete("Deprecated. Replaced by ovrp_GetSuggestedGpuPerformanceLevel", false)]
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ovrp_GetSystemGpuLevel();
 
+        [System.Obsolete("Deprecated. Replaced by ovrp_SetSuggestedGpuPerformanceLevel", false)]
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Bool ovrp_SetSystemGpuLevel(int value);
 
@@ -7503,7 +7742,6 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_GetNativeOpenXRHandles(out UInt64 xrInstance, out UInt64 xrSession);
-
     }
 
     private static class OVRP_1_55_1
@@ -7626,7 +7864,6 @@ public static partial class OVRPlugin
     {
         public static readonly System.Version version = new System.Version(1, 64, 0);
 
-
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_LocateSpace(ref Posef location, ref UInt64 space, TrackingOrigin trackingOrigin);
 
@@ -7730,6 +7967,60 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_SetLogCallback2(LogCallback2DelegateType logCallback);
+
+    }
+
+    private static class OVRP_1_71_0
+    {
+        public static readonly System.Version version = new System.Version(1, 71, 0);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_IsInsightPassthroughSupported(ref Bool supported);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_SetClientVersion(int majorVersion, int minorVersion, int patchVersion);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr ovrp_UnityOpenXR_HookGetInstanceProcAddr(IntPtr func);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_UnityOpenXR_OnInstanceCreate(UInt64 xrInstance);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnInstanceDestroy(UInt64 xrInstance);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionCreate(UInt64 xrSession);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnAppSpaceChange(UInt64 xrSpace);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionStateChange(int oldState, int newState);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionBegin(UInt64 xrSession);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionEnd(UInt64 xrSession);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionExiting(UInt64 xrSession);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ovrp_UnityOpenXR_OnSessionDestroy(UInt64 xrSession);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SetSuggestedCpuPerformanceLevel(ProcessorPerformanceLevel perfLevel);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSuggestedCpuPerformanceLevel(out ProcessorPerformanceLevel perfLevel);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SetSuggestedGpuPerformanceLevel(ProcessorPerformanceLevel perfLevel);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSuggestedGpuPerformanceLevel(out ProcessorPerformanceLevel perfLevel);
 
     }
 }

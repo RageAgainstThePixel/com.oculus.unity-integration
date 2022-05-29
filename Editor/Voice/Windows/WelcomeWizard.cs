@@ -10,13 +10,11 @@
  * permissions and limitations under the License.
  **************************************************************************************************/
 
-using System;
 using System.Collections.Generic;
 using Facebook.WitAi;
 using Facebook.WitAi.Data.Configuration;
 using Facebook.WitAi.Windows;
 using Oculus.Voice.Utility;
-using UnityEditor;
 using UnityEngine;
 
 namespace Oculus.Voice.Windows
@@ -25,9 +23,10 @@ namespace Oculus.Voice.Windows
     {
         private int witBuiltInIndex;
         private string[] builtinAppNames;
-        
+
         protected override Texture2D HeaderIcon => VoiceSDKStyles.MainHeader;
         protected override GUIContent Title => VoiceSDKStyles.SetupTitle;
+        protected override string ContentHeaderLabel => VoiceSDKStyles.Texts.SetupHeaderLabel;
         protected override string ContentSubheaderLabel => VoiceSDKStyles.Texts.SetupSubheaderLabel;
 
         protected override void OnEnable()
@@ -62,7 +61,7 @@ namespace Oculus.Voice.Windows
                     serverToken = AppBuiltIns.builtInPrefix + builtinAppNames[witBuiltInIndex];
                 }
             }
-            
+
             // Base fields
             if (witBuiltInIndex == 0)
             {
@@ -70,7 +69,7 @@ namespace Oculus.Voice.Windows
                 base.LayoutFields();
             }
         }
-        
+
         // Customize configuration if voice app was selected
         protected override int CreateConfiguration(string newToken)
         {
@@ -79,11 +78,11 @@ namespace Oculus.Voice.Windows
             {
                 return base.CreateConfiguration(newToken);
             }
-            
+
             // Get built in app data
             string languageName = builtinAppNames[witBuiltInIndex];
             Dictionary<string, string> appData = AppBuiltIns.apps[languageName];
-            
+
             // Generate asset using app data
             WitConfiguration configuration = ScriptableObject.CreateInstance<WitConfiguration>();
             configuration.clientAccessToken = appData["clientToken"];
@@ -93,7 +92,7 @@ namespace Oculus.Voice.Windows
             application.lang = appData["lang"];
             configuration.application = application;
             configuration.name = application.id;
-            
+
             // Save configuration to asset
             return WitConfigurationUtility.SaveConfiguration(newToken, configuration);
         }

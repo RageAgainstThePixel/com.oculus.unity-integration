@@ -936,11 +936,18 @@ private void Awake()
 
     private void InitOVROverlay()
 	{
-		if (!OVRManager.isHmdPresent)
+#if USING_XR_SDK_OPENXR
+		if (!OVRPlugin.UnityOpenXR.Enabled)
 		{
-			enabled = false;
-			return;
+#endif
+			if (!OVRManager.isHmdPresent)
+			{
+				enabled = false;
+				return;
+			}
+#if USING_XR_SDK_OPENXR
 		}
+#endif
 
 		constructedOverlayXRDevice = OVRManager.XRDevice.Unknown;
 		if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
