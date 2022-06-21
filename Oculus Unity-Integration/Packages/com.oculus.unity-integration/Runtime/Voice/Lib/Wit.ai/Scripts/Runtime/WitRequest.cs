@@ -77,7 +77,7 @@ namespace Facebook.WitAi
         public const int URI_DEFAULT_PORT = 0;
 
         public const string WIT_API_VERSION = "20210928";
-        public const string WIT_SDK_VERSION = "0.0.30";
+        public const string WIT_SDK_VERSION = "0.0.33";
 
         public const string WIT_ENDPOINT_SPEECH = "speech";
         public const string WIT_ENDPOINT_MESSAGE = "message";
@@ -403,7 +403,7 @@ namespace Facebook.WitAi
             }
 #endif
 
-            _request.UserAgent = $"voice-sdk-39.0.0.70.369,wit-unity-{WIT_SDK_VERSION},{operatingSystem},{deviceModel},{configId},{appIdentifier}";
+            _request.UserAgent = $"voice-sdk-40.0.0.93.333,wit-unity-{WIT_SDK_VERSION},{operatingSystem},{deviceModel},{configId},{appIdentifier}";
 
 #if UNITY_EDITOR
             _request.UserAgent += ",Editor";
@@ -539,7 +539,7 @@ namespace Facebook.WitAi
                                     // Test case: Utterance with multiple entity responses pushing
                                     // final data > 1024 bytes.
                                     offset = bytes;
-                                    Debug.LogWarning("Received what appears to be a partial response or invalid json. Attempting to continue reading. Parsing error: " + e.Message);
+                                    Debug.LogWarning("Received what appears to be a partial response or invalid json. Attempting to continue reading. Parsing error: " + e.Message + "\n" + stringResponse);
                                 }
                             }
                         }
@@ -648,30 +648,42 @@ namespace Facebook.WitAi
 
         private void HandleRequestStream(IAsyncResult ar)
         {
-            StartResponse();
-            var stream = _request.EndGetRequestStream(ar);
-            bytesWritten = 0;
+            try
+            {
+                StartResponse();
+                var stream = _request.EndGetRequestStream(ar);
+                bytesWritten = 0;
 
-            if (null != postData)
-            {
-                bytesWritten += postData.Length;
-                stream.Write(postData, 0, postData.Length);
-                CloseRequestStream();
-            }
-            else
-            {
-                if (null == onInputStreamReady)
+                if (null != postData)
                 {
+                    bytesWritten += postData.Length;
+                    stream.Write(postData, 0, postData.Length);
                     CloseRequestStream();
                 }
                 else
                 {
-                    isRequestStreamActive = true;
-                    SafeInvoke(onInputStreamReady);
+                    if (null == onInputStreamReady)
+                    {
+                        CloseRequestStream();
+                    }
+                    else
+                    {
+                        isRequestStreamActive = true;
+                        SafeInvoke(onInputStreamReady);
+                    }
+                }
+
+                new Thread(ExecuteWriteThread).Start(stream);
+            }
+            catch (WebException e)
+            {
+                if (e.Status != WebExceptionStatus.RequestCanceled)
+                {
+                    statusCode = (int) e.Status;
+                    statusDescription = e.Message;
+                    SafeInvoke(onResponse);
                 }
             }
-
-            new Thread(ExecuteWriteThread).Start(stream);
         }
 
         private void ExecuteWriteThread(object obj)
@@ -752,8 +764,11 @@ namespace Facebook.WitAi
         {
             CloseActiveStream();
             _request.Abort();
-            statusCode = ERROR_CODE_ABORTED;
-            statusDescription = "Request was aborted";
+            if (statusCode == 0)
+            {
+                statusCode = ERROR_CODE_ABORTED;
+                statusDescription = "Request was aborted";
+            }
             isActive = false;
         }
 

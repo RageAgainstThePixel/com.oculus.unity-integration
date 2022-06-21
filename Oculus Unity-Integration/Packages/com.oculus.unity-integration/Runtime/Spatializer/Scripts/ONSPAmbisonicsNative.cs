@@ -85,7 +85,7 @@ public class ONSPAmbisonicsNative : MonoBehaviour
 #endif
     }
 
-// Unity 4 is deprecated; UNITY_5 still valid with plug-in
+    // Unity 4 is deprecated; UNITY_5 still valid with plug-in
 #if !UNITY_5
     /// <summary>
     /// Update this instance.

@@ -67,6 +67,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: StoneCube
       objectReference: {fileID: 0}
+    - target: {fileID: 5775624067367861585, guid: 93abbce9b8b609046a3caec01ae3c57a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5775624067367861585, guid: 93abbce9b8b609046a3caec01ae3c57a,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5775624067367861585, guid: 93abbce9b8b609046a3caec01ae3c57a,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6311908445123942050, guid: 93abbce9b8b609046a3caec01ae3c57a,
         type: 3}
       propertyPath: m_Mesh

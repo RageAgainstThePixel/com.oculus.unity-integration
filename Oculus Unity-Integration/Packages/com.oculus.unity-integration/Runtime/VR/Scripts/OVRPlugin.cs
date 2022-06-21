@@ -44,7 +44,7 @@ public static partial class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 	public static readonly System.Version wrapperVersion = _versionZero;
 #else
-    public static readonly System.Version wrapperVersion = OVRP_1_71_0.version;
+    public static readonly System.Version wrapperVersion = OVRP_1_72_0.version;
 #endif
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -473,6 +473,7 @@ public static partial class OVRPlugin
         EnumSize = 0x7FFFFFFF
     }
 
+
     [StructLayout(LayoutKind.Sequential)]
     public struct CameraDeviceIntrinsicsParameters
     {
@@ -619,6 +620,7 @@ public static partial class OVRPlugin
             AngularAcceleration = Vector3f.zero
         };
     }
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct ControllerState4
@@ -1052,7 +1054,6 @@ public static partial class OVRPlugin
         private int TextureStage;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
         private Recti[] ViewportRect;
-
         private Posef Pose;
         private int LayerSubmitFlags;
     }
@@ -1118,7 +1119,7 @@ public static partial class OVRPlugin
 
         // add new bones here
 
-        Max = ((int)Hand_End > 50) ? (int)Hand_End : 50,
+        Max = ((int)Hand_End > 70) ? (int)Hand_End : 70,
     }
 
     public enum HandFinger
@@ -1313,6 +1314,26 @@ public static partial class OVRPlugin
         public Bone Bones_47;
         public Bone Bones_48;
         public Bone Bones_49;
+        public Bone Bones_50;
+        public Bone Bones_51;
+        public Bone Bones_52;
+        public Bone Bones_53;
+        public Bone Bones_54;
+        public Bone Bones_55;
+        public Bone Bones_56;
+        public Bone Bones_57;
+        public Bone Bones_58;
+        public Bone Bones_59;
+        public Bone Bones_60;
+        public Bone Bones_61;
+        public Bone Bones_62;
+        public Bone Bones_63;
+        public Bone Bones_64;
+        public Bone Bones_65;
+        public Bone Bones_66;
+        public Bone Bones_67;
+        public Bone Bones_68;
+        public Bone Bones_69;
         public BoneCapsule BoneCapsules_0;
         public BoneCapsule BoneCapsules_1;
         public BoneCapsule BoneCapsules_2;
@@ -1423,6 +1444,7 @@ public static partial class OVRPlugin
     }
 
 
+
     public enum ColorSpace
     {
         /// The default value from GetHmdColorSpace until SetClientColorDesc is called. Only valid on PC, and will be remapped to Quest on Mobile
@@ -1450,11 +1472,15 @@ public static partial class OVRPlugin
         Unknown = 0,
         DisplayRefreshRateChanged = 1,
 
-        SpatialEntitySetComponentEnabledResult = 50,
-        SpatialEntityQueryResults = 51,
-        SpatialEntityQueryComplete = 52,
-        SpatialEntityStorageSaveResult = 53,
-        SpatialEntityStorageEraseResult = 54,
+        SpatialAnchorCreateComplete = 49,
+        SpaceSetComponentStatusComplete = 50,
+        SpaceQueryResults = 51,
+        SpaceQueryComplete = 52,
+        SpaceSaveComplete = 53,
+        SpaceEraseComplete = 54,
+
+
+        SceneCaptureComplete = 100,
     }
 
     private const int EventDataBufferSize = 4000;
@@ -1494,6 +1520,7 @@ public static partial class OVRPlugin
         None = 0,
         MonoToRgba = 1,
         MonoToMono = 2,
+        BrightnessContrastSaturation = 4,
     }
 
     public enum InsightPassthroughStyleFlags
@@ -1521,83 +1548,96 @@ public static partial class OVRPlugin
         public float RightHandIntensity;
     }
 
-    public enum SpatialEntityComponentType
+    public enum SpaceComponentType
     {
         Locatable = 0,
         Storable = 1,
+        Bounded2D = 3,
+        Bounded3D = 4,
+        SemanticLabels = 5,
+        RoomLayout = 6,
+        SpaceContainer = 7,
     }
 
-    public enum SpatialEntityStorageLocation
+    public enum SpaceStorageLocation
     {
         Invalid = 0,
-        Local = 1
+        Local = 1,
     }
 
-    public enum SpatialEntityStoragePersistenceMode
+    public enum SpaceStoragePersistenceMode
     {
         Invalid = 0,
-        IndefiniteHighPri = 1
+        Indefinite = 1
     }
 
-    public enum SpatialEntityQueryActionType
+    public enum SpaceQueryActionType
     {
         Load = 0,
     }
 
-    public enum SpatialEntityQueryType
+    public enum SpaceQueryType
     {
         Action = 0
     }
 
-    public enum SpatialEntityQueryFilterType
+    public enum SpaceQueryFilterType
     {
         None = 0,
         Ids = 1,
+        Components = 2,
     }
 
+
     [StructLayout(LayoutKind.Sequential)]
-    public struct SpatialEntityAnchorCreateInfo
+    public struct SpatialAnchorCreateInfo
     {
         public TrackingOrigin BaseTracking;
         public Posef PoseInSpace;
         public double Time;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SpatialEntityUuid
-    {
-        public UInt64 Value_0;
-        public UInt64 Value_1;
-    }
 
-    public const int SpatialEntityFilterInfoIdsMaxSize = 1024;
+    public const int SpaceFilterInfoIdsMaxSize = 1024;
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SpatialEntityFilterInfoIds
+    public struct SpaceFilterInfoIds
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = SpatialEntityFilterInfoIdsMaxSize)]
-        public SpatialEntityUuid[] Ids;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = SpaceFilterInfoIdsMaxSize)]
+        public Guid[] Ids;
         public int NumIds;
     }
 
+    public const int SpaceFilterInfoComponentsMaxSize = 16;
+
     [StructLayout(LayoutKind.Sequential)]
-    public struct SpatialEntityQueryInfo
+    public struct SpaceFilterInfoComponents
     {
-        public SpatialEntityQueryType QueryType;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = SpaceFilterInfoComponentsMaxSize)]
+        public SpaceComponentType[] Components;
+        public int NumComponents;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SpaceQueryInfo
+    {
+        public SpaceQueryType QueryType;
         public int MaxQuerySpaces;
         public double Timeout;
-        public SpatialEntityStorageLocation Location;
-        public SpatialEntityQueryActionType ActionType;
-        public SpatialEntityQueryFilterType FilterType;
-        public SpatialEntityFilterInfoIds IdInfo;
+        public SpaceStorageLocation Location;
+        public SpaceQueryActionType ActionType;
+        public SpaceQueryFilterType FilterType;
+        public SpaceFilterInfoIds IdInfo;
+        public SpaceFilterInfoComponents ComponentsInfo;
     }
 
     public const int SpatialEntityMaxQueryResultsPerEvent = 128;
 
-    public struct SpatialEntityQueryResult
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SpaceQueryResult
     {
         public UInt64 space;
-        public SpatialEntityUuid uuid;
+        public Guid uuid;
     }
 
     public static bool initialized
@@ -1653,7 +1693,7 @@ public static partial class OVRPlugin
             }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-			return false;
+            return false;
 #else
             return true;
 #endif
@@ -2442,18 +2482,12 @@ public static partial class OVRPlugin
                 else
 #else
 				if (shape == OverlayShape.Cubemap && version >= OVRP_1_10_0.version)
-                {
 					flags |= (uint)(shape) << OverlayShapeFlagShift;
-                }
 				else if (shape == OverlayShape.Cylinder && version >= OVRP_1_16_0.version)
-                {
 					flags |= (uint)(shape) << OverlayShapeFlagShift;
-                }
 				else
 #endif
-                {
                     return false;
-                }
             }
 
             if (shape == OverlayShape.OffcenterCubemap)
@@ -2465,9 +2499,7 @@ public static partial class OVRPlugin
                 }
                 else
 #endif
-                {
                     return false;
-                }
             }
 
             if (shape == OverlayShape.Equirect)
@@ -2479,9 +2511,7 @@ public static partial class OVRPlugin
                 }
                 else
 #endif
-                {
                     return false;
-                }
             }
 
             if (shape == OverlayShape.Fisheye)
@@ -2493,14 +2523,12 @@ public static partial class OVRPlugin
                 }
                 else
 #endif
-                {
                     return false;
-                }
             }
             if (version >= OVRP_1_34_0.version && layerId != -1)
             {
                 return OVRP_1_34_0.ovrp_EnqueueSubmitLayer2(flags, leftTexture, rightTexture, layerId, frameIndex, ref pose, ref scale, layerIndex,
-                    overrideTextureRectMatrix ? Bool.True : Bool.False, ref textureRectMatrix, overridePerLayerColorScaleAndOffset ? Bool.True : Bool.False, ref colorScale, ref colorOffset) == Result.Success;
+                overrideTextureRectMatrix ? Bool.True : Bool.False, ref textureRectMatrix, overridePerLayerColorScaleAndOffset ? Bool.True : Bool.False, ref colorScale, ref colorOffset) == Result.Success;
             }
             else if (version >= OVRP_1_15_0.version && layerId != -1)
             {
@@ -3015,6 +3043,7 @@ public static partial class OVRPlugin
 #endif
     }
 
+
     public static bool SetControllerVibration(uint controllerMask, float frequency, float amplitude)
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -3023,6 +3052,7 @@ public static partial class OVRPlugin
         return OVRP_0_1_2.ovrp_SetControllerVibration(controllerMask, frequency, amplitude) == Bool.True;
 #endif
     }
+
 
     public static HapticsDesc GetControllerHapticsDesc(uint controllerMask)
     {
@@ -3355,9 +3385,9 @@ public static partial class OVRPlugin
 #else
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             Result result = OVRP_1_15_0.ovrp_InitializeMixedReality();
@@ -3381,9 +3411,9 @@ public static partial class OVRPlugin
 #else
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             Result result = OVRP_1_15_0.ovrp_ShutdownMixedReality();
@@ -3407,9 +3437,9 @@ public static partial class OVRPlugin
 #else
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             return OVRP_1_15_0.ovrp_GetMixedRealityInitialized() == Bool.True;
@@ -3428,9 +3458,9 @@ public static partial class OVRPlugin
 #else
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             int cameraCount = 0;
@@ -3457,9 +3487,9 @@ public static partial class OVRPlugin
 #else
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             Result result = OVRP_1_15_0.ovrp_UpdateExternalCamera();
@@ -3488,9 +3518,9 @@ public static partial class OVRPlugin
         cameraIntrinsics = default(CameraIntrinsics);
 
 #if OVRPLUGIN_INCLUDE_MRC_ANDROID
-		if (version >= OVRP_1_38_0.version)		// MRC functions are invalid before 1.38.0
+        if (version >= OVRP_1_38_0.version)     // MRC functions are invalid before 1.38.0
 #else
-        if (version >= OVRP_1_15_0.version)
+		if (version >= OVRP_1_15_0.version)
 #endif
         {
             bool retValue = true;
@@ -4083,349 +4113,349 @@ public static partial class OVRPlugin
     }
 
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-    public static bool UpdateCameraDevices()
-    {
+	public static bool UpdateCameraDevices()
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Result result = OVRP_1_16_0.ovrp_UpdateCameraDevices();
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_UpdateCameraDevices return " + result);
-            }
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Result result = OVRP_1_16_0.ovrp_UpdateCameraDevices();
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_UpdateCameraDevices return " + result);
+			}
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool IsCameraDeviceAvailable(CameraDevice cameraDevice)
-    {
+	public static bool IsCameraDeviceAvailable(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Bool result = OVRP_1_16_0.ovrp_IsCameraDeviceAvailable(cameraDevice);
-            return result == Bool.True;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Bool result = OVRP_1_16_0.ovrp_IsCameraDeviceAvailable(cameraDevice);
+			return result == Bool.True;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool SetCameraDevicePreferredColorFrameSize(CameraDevice cameraDevice, int width, int height)
-    {
+	public static bool SetCameraDevicePreferredColorFrameSize(CameraDevice cameraDevice, int width, int height)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Sizei size = new Sizei();
-            size.w = width;
-            size.h = height;
-            Result result = OVRP_1_16_0.ovrp_SetCameraDevicePreferredColorFrameSize(cameraDevice, size);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_SetCameraDevicePreferredColorFrameSize return " + result);
-            }
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Sizei size = new Sizei();
+			size.w = width;
+			size.h = height;
+			Result result = OVRP_1_16_0.ovrp_SetCameraDevicePreferredColorFrameSize(cameraDevice, size);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_SetCameraDevicePreferredColorFrameSize return " + result);
+			}
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool OpenCameraDevice(CameraDevice cameraDevice)
-    {
+	public static bool OpenCameraDevice(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Result result = OVRP_1_16_0.ovrp_OpenCameraDevice(cameraDevice);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_OpenCameraDevice return " + result);
-            }
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Result result = OVRP_1_16_0.ovrp_OpenCameraDevice(cameraDevice);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_OpenCameraDevice return " + result);
+			}
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool CloseCameraDevice(CameraDevice cameraDevice)
-    {
+	public static bool CloseCameraDevice(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Result result = OVRP_1_16_0.ovrp_CloseCameraDevice(cameraDevice);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_OpenCameraDevice return " + result);
-            }
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Result result = OVRP_1_16_0.ovrp_CloseCameraDevice(cameraDevice);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_OpenCameraDevice return " + result);
+			}
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool HasCameraDeviceOpened(CameraDevice cameraDevice)
-    {
+	public static bool HasCameraDeviceOpened(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Bool result = OVRP_1_16_0.ovrp_HasCameraDeviceOpened(cameraDevice);
-            return result == Bool.True;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Bool result = OVRP_1_16_0.ovrp_HasCameraDeviceOpened(cameraDevice);
+			return result == Bool.True;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool IsCameraDeviceColorFrameAvailable(CameraDevice cameraDevice)
-    {
+	public static bool IsCameraDeviceColorFrameAvailable(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Bool result = OVRP_1_16_0.ovrp_IsCameraDeviceColorFrameAvailable(cameraDevice);
-            return result == Bool.True;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Bool result = OVRP_1_16_0.ovrp_IsCameraDeviceColorFrameAvailable(cameraDevice);
+			return result == Bool.True;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
-    private static Texture2D cachedCameraFrameTexture = null;
+	private static Texture2D cachedCameraFrameTexture = null;
 #endif
-    public static Texture2D GetCameraDeviceColorFrameTexture(CameraDevice cameraDevice)
-    {
+	public static Texture2D GetCameraDeviceColorFrameTexture(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return null;
 #else
-        if (version >= OVRP_1_16_0.version)
-        {
-            Sizei size = new Sizei();
-            Result result = OVRP_1_16_0.ovrp_GetCameraDeviceColorFrameSize(cameraDevice, out size);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceColorFrameSize return " + result);
-                return null;
-            }
-            IntPtr pixels;
-            int rowPitch;
-            result = OVRP_1_16_0.ovrp_GetCameraDeviceColorFrameBgraPixels(cameraDevice, out pixels, out rowPitch);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceColorFrameBgraPixels return " + result);
-                return null;
-            }
-            if (rowPitch != size.w * 4)
-            {
-                //Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
-                return null;
-            }
-            if (!cachedCameraFrameTexture || cachedCameraFrameTexture.width != size.w || cachedCameraFrameTexture.height != size.h)
-            {
-                cachedCameraFrameTexture = new Texture2D(size.w, size.h, TextureFormat.BGRA32, false);
-            }
-            cachedCameraFrameTexture.LoadRawTextureData(pixels, rowPitch * size.h);
-            cachedCameraFrameTexture.Apply();
-            return cachedCameraFrameTexture;
-        }
-        else
-        {
-            return null;
-        }
+		if (version >= OVRP_1_16_0.version)
+		{
+			Sizei size = new Sizei();
+			Result result = OVRP_1_16_0.ovrp_GetCameraDeviceColorFrameSize(cameraDevice, out size);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceColorFrameSize return " + result);
+				return null;
+			}
+			IntPtr pixels;
+			int rowPitch;
+			result = OVRP_1_16_0.ovrp_GetCameraDeviceColorFrameBgraPixels(cameraDevice, out pixels, out rowPitch);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceColorFrameBgraPixels return " + result);
+				return null;
+			}
+			if (rowPitch != size.w * 4)
+			{
+				//Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
+				return null;
+			}
+			if (!cachedCameraFrameTexture || cachedCameraFrameTexture.width != size.w || cachedCameraFrameTexture.height != size.h)
+			{
+				cachedCameraFrameTexture = new Texture2D(size.w, size.h, TextureFormat.BGRA32, false);
+			}
+			cachedCameraFrameTexture.LoadRawTextureData(pixels, rowPitch * size.h);
+			cachedCameraFrameTexture.Apply();
+			return cachedCameraFrameTexture;
+		}
+		else
+		{
+			return null;
+		}
 #endif
-    }
+	}
 
-    public static bool DoesCameraDeviceSupportDepth(CameraDevice cameraDevice)
-    {
+	public static bool DoesCameraDeviceSupportDepth(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Bool supportDepth;
-            Result result = OVRP_1_17_0.ovrp_DoesCameraDeviceSupportDepth(cameraDevice, out supportDepth);
-            return result == Result.Success && supportDepth == Bool.True;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Bool supportDepth;
+			Result result = OVRP_1_17_0.ovrp_DoesCameraDeviceSupportDepth(cameraDevice, out supportDepth);
+			return result == Result.Success && supportDepth == Bool.True;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool SetCameraDeviceDepthSensingMode(CameraDevice camera, CameraDeviceDepthSensingMode depthSensoringMode)
-    {
+	public static bool SetCameraDeviceDepthSensingMode(CameraDevice camera, CameraDeviceDepthSensingMode depthSensoringMode)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Result result = OVRP_1_17_0.ovrp_SetCameraDeviceDepthSensingMode(camera, depthSensoringMode);
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Result result = OVRP_1_17_0.ovrp_SetCameraDeviceDepthSensingMode(camera, depthSensoringMode);
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool SetCameraDevicePreferredDepthQuality(CameraDevice camera, CameraDeviceDepthQuality depthQuality)
-    {
+	public static bool SetCameraDevicePreferredDepthQuality(CameraDevice camera, CameraDeviceDepthQuality depthQuality)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Result result = OVRP_1_17_0.ovrp_SetCameraDevicePreferredDepthQuality(camera, depthQuality);
-            return result == Result.Success;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Result result = OVRP_1_17_0.ovrp_SetCameraDevicePreferredDepthQuality(camera, depthQuality);
+			return result == Result.Success;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
-    public static bool IsCameraDeviceDepthFrameAvailable(CameraDevice cameraDevice)
-    {
+	public static bool IsCameraDeviceDepthFrameAvailable(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Bool available;
-            Result result = OVRP_1_17_0.ovrp_IsCameraDeviceDepthFrameAvailable(cameraDevice, out available);
-            return result == Result.Success && available == Bool.True;
-        }
-        else
-        {
-            return false;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Bool available;
+			Result result = OVRP_1_17_0.ovrp_IsCameraDeviceDepthFrameAvailable(cameraDevice, out available);
+			return result == Result.Success && available == Bool.True;
+		}
+		else
+		{
+			return false;
+		}
 #endif
-    }
+	}
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
-    private static Texture2D cachedCameraDepthTexture = null;
+	private static Texture2D cachedCameraDepthTexture = null;
 #endif
-    public static Texture2D GetCameraDeviceDepthFrameTexture(CameraDevice cameraDevice)
-    {
+	public static Texture2D GetCameraDeviceDepthFrameTexture(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return null;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Sizei size = new Sizei();
-            Result result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFrameSize(cameraDevice, out size);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceDepthFrameSize return " + result);
-                return null;
-            }
-            IntPtr depthData;
-            int rowPitch;
-            result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFramePixels(cameraDevice, out depthData, out rowPitch);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceDepthFramePixels return " + result);
-                return null;
-            }
-            if (rowPitch != size.w * 4)
-            {
-                //Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
-                return null;
-            }
-            if (!cachedCameraDepthTexture || cachedCameraDepthTexture.width != size.w || cachedCameraDepthTexture.height != size.h)
-            {
-                cachedCameraDepthTexture = new Texture2D(size.w, size.h, TextureFormat.RFloat, false);
-                cachedCameraDepthTexture.filterMode = FilterMode.Point;
-            }
-            cachedCameraDepthTexture.LoadRawTextureData(depthData, rowPitch * size.h);
-            cachedCameraDepthTexture.Apply();
-            return cachedCameraDepthTexture;
-        }
-        else
-        {
-            return null;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Sizei size = new Sizei();
+			Result result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFrameSize(cameraDevice, out size);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceDepthFrameSize return " + result);
+				return null;
+			}
+			IntPtr depthData;
+			int rowPitch;
+			result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFramePixels(cameraDevice, out depthData, out rowPitch);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceDepthFramePixels return " + result);
+				return null;
+			}
+			if (rowPitch != size.w * 4)
+			{
+				//Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
+				return null;
+			}
+			if (!cachedCameraDepthTexture || cachedCameraDepthTexture.width != size.w || cachedCameraDepthTexture.height != size.h)
+			{
+				cachedCameraDepthTexture = new Texture2D(size.w, size.h, TextureFormat.RFloat, false);
+				cachedCameraDepthTexture.filterMode = FilterMode.Point;
+			}
+			cachedCameraDepthTexture.LoadRawTextureData(depthData, rowPitch * size.h);
+			cachedCameraDepthTexture.Apply();
+			return cachedCameraDepthTexture;
+		}
+		else
+		{
+			return null;
+		}
 #endif
-    }
+	}
 
 #if !OVRPLUGIN_UNSUPPORTED_PLATFORM
-    private static Texture2D cachedCameraDepthConfidenceTexture = null;
+	private static Texture2D cachedCameraDepthConfidenceTexture = null;
 #endif
-    public static Texture2D GetCameraDeviceDepthConfidenceTexture(CameraDevice cameraDevice)
-    {
+	public static Texture2D GetCameraDeviceDepthConfidenceTexture(CameraDevice cameraDevice)
+	{
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return null;
 #else
-        if (version >= OVRP_1_17_0.version)
-        {
-            Sizei size = new Sizei();
-            Result result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFrameSize(cameraDevice, out size);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceDepthFrameSize return " + result);
-                return null;
-            }
-            IntPtr confidenceData;
-            int rowPitch;
-            result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthConfidencePixels(cameraDevice, out confidenceData, out rowPitch);
-            if (result != Result.Success)
-            {
-                //Debug.LogWarning("ovrp_GetCameraDeviceDepthConfidencePixels return " + result);
-                return null;
-            }
-            if (rowPitch != size.w * 4)
-            {
-                //Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
-                return null;
-            }
-            if (!cachedCameraDepthConfidenceTexture || cachedCameraDepthConfidenceTexture.width != size.w || cachedCameraDepthConfidenceTexture.height != size.h)
-            {
-                cachedCameraDepthConfidenceTexture = new Texture2D(size.w, size.h, TextureFormat.RFloat, false);
-            }
-            cachedCameraDepthConfidenceTexture.LoadRawTextureData(confidenceData, rowPitch * size.h);
-            cachedCameraDepthConfidenceTexture.Apply();
-            return cachedCameraDepthConfidenceTexture;
-        }
-        else
-        {
-            return null;
-        }
+		if (version >= OVRP_1_17_0.version)
+		{
+			Sizei size = new Sizei();
+			Result result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthFrameSize(cameraDevice, out size);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceDepthFrameSize return " + result);
+				return null;
+			}
+			IntPtr confidenceData;
+			int rowPitch;
+			result = OVRP_1_17_0.ovrp_GetCameraDeviceDepthConfidencePixels(cameraDevice, out confidenceData, out rowPitch);
+			if (result != Result.Success)
+			{
+				//Debug.LogWarning("ovrp_GetCameraDeviceDepthConfidencePixels return " + result);
+				return null;
+			}
+			if (rowPitch != size.w * 4)
+			{
+				//Debug.LogWarning(string.Format("RowPitch mismatch, expected {0}, get {1}", size.w * 4, rowPitch));
+				return null;
+			}
+			if (!cachedCameraDepthConfidenceTexture || cachedCameraDepthConfidenceTexture.width != size.w || cachedCameraDepthConfidenceTexture.height != size.h)
+			{
+				cachedCameraDepthConfidenceTexture = new Texture2D(size.w, size.h, TextureFormat.RFloat, false);
+			}
+			cachedCameraDepthConfidenceTexture.LoadRawTextureData(confidenceData, rowPitch * size.h);
+			cachedCameraDepthConfidenceTexture.Apply();
+			return cachedCameraDepthConfidenceTexture;
+		}
+		else
+		{
+			return null;
+		}
 #endif
-    }
+	}
 #endif
 
     public static bool fixedFoveatedRenderingSupported
@@ -5897,6 +5927,26 @@ public static partial class OVRPlugin
                 skeleton.Bones[47] = cachedSkeleton2.Bones_47;
                 skeleton.Bones[48] = cachedSkeleton2.Bones_48;
                 skeleton.Bones[49] = cachedSkeleton2.Bones_49;
+                skeleton.Bones[50] = cachedSkeleton2.Bones_50;
+                skeleton.Bones[51] = cachedSkeleton2.Bones_51;
+                skeleton.Bones[52] = cachedSkeleton2.Bones_52;
+                skeleton.Bones[53] = cachedSkeleton2.Bones_53;
+                skeleton.Bones[54] = cachedSkeleton2.Bones_54;
+                skeleton.Bones[55] = cachedSkeleton2.Bones_55;
+                skeleton.Bones[56] = cachedSkeleton2.Bones_56;
+                skeleton.Bones[57] = cachedSkeleton2.Bones_57;
+                skeleton.Bones[58] = cachedSkeleton2.Bones_58;
+                skeleton.Bones[59] = cachedSkeleton2.Bones_59;
+                skeleton.Bones[60] = cachedSkeleton2.Bones_60;
+                skeleton.Bones[61] = cachedSkeleton2.Bones_61;
+                skeleton.Bones[62] = cachedSkeleton2.Bones_62;
+                skeleton.Bones[63] = cachedSkeleton2.Bones_63;
+                skeleton.Bones[64] = cachedSkeleton2.Bones_64;
+                skeleton.Bones[65] = cachedSkeleton2.Bones_65;
+                skeleton.Bones[66] = cachedSkeleton2.Bones_66;
+                skeleton.Bones[67] = cachedSkeleton2.Bones_67;
+                skeleton.Bones[68] = cachedSkeleton2.Bones_68;
+                skeleton.Bones[69] = cachedSkeleton2.Bones_69;
                 skeleton.BoneCapsules[0] = cachedSkeleton2.BoneCapsules_0;
                 skeleton.BoneCapsules[1] = cachedSkeleton2.BoneCapsules_1;
                 skeleton.BoneCapsules[2] = cachedSkeleton2.BoneCapsules_2;
@@ -6066,6 +6116,7 @@ public static partial class OVRPlugin
     }
 
 
+
     public static int GetLocalTrackingSpaceRecenterCount()
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -6192,6 +6243,7 @@ public static partial class OVRPlugin
     }
 
 
+
     public static UInt64 GetNativeOpenXRInstance()
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
@@ -6243,14 +6295,15 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntityCreateSpatialAnchor(SpatialEntityAnchorCreateInfo createInfo, ref UInt64 space)
+    public static bool CreateSpatialAnchor(SpatialAnchorCreateInfo createInfo, out UInt64 requestId)
     {
+        requestId = 0;
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_63_0.ovrp_CreateSpatialAnchor(ref createInfo, out space);
+            Result result = OVRP_1_72_0.ovrp_CreateSpatialAnchor(ref createInfo, out requestId);
             return (result == Result.Success);
         }
         else
@@ -6260,14 +6313,15 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntitySetComponentEnabled(ref UInt64 space, SpatialEntityComponentType componentType, bool enable, double timeout, ref UInt64 requestId)
+    public static bool SetSpaceComponentStatus(UInt64 space, SpaceComponentType componentType, bool enable, double timeout, out UInt64 requestId)
     {
+        requestId = 0;
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_63_0.ovrp_SetComponentEnabled(ref space, componentType, ToBool(enable), timeout, out requestId);
+            Result result = OVRP_1_72_0.ovrp_SetSpaceComponentStatus(ref space, componentType, ToBool(enable), timeout, out requestId);
             return (result == Result.Success);
         }
         else
@@ -6277,7 +6331,7 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntityGetComponentEnabled(ref UInt64 space, SpatialEntityComponentType componentType, out bool enabled, out bool changePending)
+    public static bool GetSpaceComponentStatus(UInt64 space, SpaceComponentType componentType, out bool enabled, out bool changePending)
     {
         enabled = false;
         changePending = false;
@@ -6285,10 +6339,10 @@ public static partial class OVRPlugin
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
             Bool isEnabled, isPending;
-            Result result = OVRP_1_63_0.ovrp_GetComponentEnabled(ref space, componentType, out isEnabled, out isPending);
+            Result result = OVRP_1_72_0.ovrp_GetSpaceComponentStatus(ref space, componentType, out isEnabled, out isPending);
             enabled = isEnabled == Bool.True;
             changePending = isPending == Bool.True;
             return (result == Result.Success);
@@ -6300,16 +6354,16 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntityEnumerateSupportedComponents(ref UInt64 space, out uint numSupportedComponents, SpatialEntityComponentType[] supportedComponents)
+    public static bool EnumerateSpaceSupportedComponents(UInt64 space, out uint numSupportedComponents, SpaceComponentType[] supportedComponents)
     {
         numSupportedComponents = 0;
 
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_63_0.ovrp_EnumerateSupportedComponents(ref space, (uint)supportedComponents.Length, out numSupportedComponents, supportedComponents);
+            Result result = OVRP_1_72_0.ovrp_EnumerateSpaceSupportedComponents(ref space, (uint)supportedComponents.Length, out numSupportedComponents, supportedComponents);
             return (result == Result.Success);
         }
         else
@@ -6319,14 +6373,15 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntityQuerySpatialEntity(SpatialEntityQueryInfo queryInfo, ref UInt64 requestId)
+    public static bool SaveSpace(UInt64 space, SpaceStorageLocation location, SpaceStoragePersistenceMode mode, out UInt64 requestId)
     {
+        requestId = 0;
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_67_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_67_0.ovrp_QuerySpatialEntity(ref queryInfo, out requestId);
+            Result result = OVRP_1_72_0.ovrp_SaveSpace(ref space, location, mode, out requestId);
             return (result == Result.Success);
         }
         else
@@ -6336,20 +6391,15 @@ public static partial class OVRPlugin
 #endif
     }
 
-    [System.Obsolete("Deprecated. This function will not be supported in OpenXR", false)]
-    public static bool SpatialEntityTerminateSpatialEntityQuery(ref UInt64 requestId)
+    public static bool EraseSpace(UInt64 space, SpaceStorageLocation location, out UInt64 requestId)
     {
-        return false;
-    }
-
-    public static bool SpatialEntitySaveSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, SpatialEntityStoragePersistenceMode mode, ref UInt64 requestId)
-    {
+        requestId = 0;
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_63_0.ovrp_SaveSpatialEntity(ref space, location, mode, out requestId);
+            Result result = OVRP_1_72_0.ovrp_EraseSpace(ref space, location, out requestId);
             return (result == Result.Success);
         }
         else
@@ -6359,49 +6409,113 @@ public static partial class OVRPlugin
 #endif
     }
 
-    public static bool SpatialEntityEraseSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, ref UInt64 requestId)
+    public static bool QuerySpaces(SpaceQueryInfo queryInfo, out UInt64 requestId)
     {
+        requestId = 0;
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
 #else
-        if (version >= OVRP_1_63_0.version)
+        if (version >= OVRP_1_72_0.version)
         {
-            Result result = OVRP_1_63_0.ovrp_EraseSpatialEntity(ref space, location, out requestId);
-            return (result == Result.Success);
-        }
-        else
-        {
-            return false;
-        }
-#endif
-    }
-
-    public static Posef LocateSpace(ref UInt64 space, TrackingOrigin baseOrigin)
-    {
-#if OVRPLUGIN_UNSUPPORTED_PLATFORM
-		return Posef.identity;
-#else
-        if (version >= OVRP_1_64_0.version)
-        {
-            Posef location = Posef.identity;
-            Result result = OVRP_1_64_0.ovrp_LocateSpace(ref location, ref space, baseOrigin);
-            if (result == Result.Success)
+            if (queryInfo.FilterType == SpaceQueryFilterType.Ids)
             {
-                return location;
+                if (queryInfo.IdInfo.Ids?.Length > SpaceFilterInfoIdsMaxSize)
+                {
+                    Debug.LogError("QuerySpaces attempted to query more uuids than the maximum number supported: " + SpaceFilterInfoIdsMaxSize);
+                    return false;
+                }
             }
-            else
+            else if (queryInfo.FilterType == SpaceQueryFilterType.Components)
             {
-                return Posef.identity;
+                if (queryInfo.ComponentsInfo.Components?.Length > SpaceFilterInfoComponentsMaxSize)
+                {
+                    Debug.LogError("QuerySpaces attempted to query more components than the maximum number supported: " + SpaceFilterInfoComponentsMaxSize);
+                    return false;
+                }
             }
+
+            // The array size must be exactly SpaceFilterInfoIdsMaxSize or else the data marshaling will fail
+            if (queryInfo.IdInfo.Ids?.Length != SpaceFilterInfoIdsMaxSize)
+            {
+                Array.Resize(ref queryInfo.IdInfo.Ids, SpaceFilterInfoIdsMaxSize);
+            }
+
+            // The array size must be exactly SpaceFilterInfoComponentsMaxSize or else the data marshaling will fail
+            if (queryInfo.ComponentsInfo.Components?.Length != SpaceFilterInfoComponentsMaxSize)
+            {
+                Array.Resize(ref queryInfo.ComponentsInfo.Components, SpaceFilterInfoComponentsMaxSize);
+            }
+
+            Result result = OVRP_1_72_0.ovrp_QuerySpaces(ref queryInfo, out requestId);
+            return (result == Result.Success);
         }
         else
         {
-            return Posef.identity;
+            return false;
         }
 #endif
     }
 
-    public static bool DestroySpace(ref UInt64 space)
+    public static bool RetrieveSpaceQueryResults(UInt64 requestId, out SpaceQueryResult[] results)
+    {
+        results = null;
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            Result result;
+            IntPtr nullResultsPtr = new IntPtr(0);
+            UInt32 resultCountOutput = 0;
+            result = OVRP_1_72_0.ovrp_RetrieveSpaceQueryResults(ref requestId, 0, ref resultCountOutput, nullResultsPtr);
+            if (result != Result.Success)
+            {
+                return false;
+            }
+
+            int spaceQueryResultSize = Marshal.SizeOf(typeof(SpaceQueryResult));
+            int resultsSizeInBytes = (int)resultCountOutput * spaceQueryResultSize;
+            IntPtr resultsPtr = Marshal.AllocHGlobal(resultsSizeInBytes);
+            result = OVRP_1_72_0.ovrp_RetrieveSpaceQueryResults(ref requestId, resultCountOutput, ref resultCountOutput, resultsPtr);
+            if (result != Result.Success)
+            {
+                Marshal.FreeHGlobal(resultsPtr);
+                return false;
+            }
+
+            results = new SpaceQueryResult[resultCountOutput];
+            for (int i = 0; i < resultCountOutput; i++)
+            {
+                SpaceQueryResult r = (SpaceQueryResult)Marshal.PtrToStructure(resultsPtr + (i * spaceQueryResultSize), typeof(SpaceQueryResult));
+                results[i] = r;
+            }
+
+            Marshal.FreeHGlobal(resultsPtr);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+
+    public static bool TryLocateSpace(UInt64 space, TrackingOrigin baseOrigin, out Posef pose)
+    {
+        pose = Posef.identity;
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        return version >= OVRP_1_64_0.version &&
+               OVRP_1_64_0.ovrp_LocateSpace(ref pose, ref space, baseOrigin) == Result.Success;
+#endif // OVRPLUGIN_UNSUPPORTED_PLATFORM
+    }
+
+    public static Posef LocateSpace(UInt64 space, TrackingOrigin baseOrigin) =>
+        TryLocateSpace(space, baseOrigin, out var pose) ? pose : Posef.identity;
+
+    public static bool DestroySpace(UInt64 space)
     {
 #if OVRPLUGIN_UNSUPPORTED_PLATFORM
 		return false;
@@ -6418,6 +6532,266 @@ public static partial class OVRPlugin
 #endif
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SpaceContainerInternal
+    {
+        public int uuidCapacityInput;
+        public int uuidCountOutput;
+        public IntPtr uuids;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SpaceSemanticLabelInternal
+    {
+        public int byteCapacityInput;
+        public int byteCountOutput;
+        public IntPtr labels;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RoomLayout
+    {
+        public Guid floorUuid;
+        public Guid ceilingUuid;
+        public Guid[] wallUuids;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RoomLayoutInternal
+    {
+        public Guid floorUuid;
+        public Guid ceilingUuid;
+        public int wallUuidCapacityInput;
+        public int wallUuidCountOutput;
+        public IntPtr wallUuids;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PolygonalBoundary2DInternal
+    {
+        public int vertexCapacityInput;
+        public int vertexCountOutput;
+        public IntPtr vertices;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SceneCaptureRequestInternal
+    {
+        public int requestByteCount;
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string request;
+    }
+
+    private struct PinnedArray<T> : IDisposable where T : unmanaged
+    {
+        private GCHandle _handle;
+        public PinnedArray(T[] array) => _handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+        public void Dispose() => _handle.Free();
+        public static implicit operator IntPtr(PinnedArray<T> pinnedArray) => pinnedArray._handle.AddrOfPinnedObject();
+    }
+
+    public static bool GetSpaceContainer(UInt64 space, out Guid[] containerUuids)
+    {
+        containerUuids = Array.Empty<Guid>();
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version < OVRP_1_72_0.version)
+        {
+            return false;
+        }
+
+        var containerInternal = default(SpaceContainerInternal);
+        if (OVRP_1_72_0.ovrp_GetSpaceContainer(ref space, ref containerInternal) != Result.Success)
+        {
+            return false;
+        }
+
+        var uuids = new Guid[containerInternal.uuidCountOutput];
+        using (var pinnedArray = new PinnedArray<Guid>(uuids))
+        {
+            containerInternal.uuidCapacityInput = containerInternal.uuidCountOutput;
+            containerInternal.uuids = pinnedArray;
+            if (OVRP_1_72_0.ovrp_GetSpaceContainer(ref space, ref containerInternal) != Result.Success)
+            {
+                return false;
+            }
+        }
+
+        containerUuids = uuids;
+        return true;
+#endif
+    }
+
+    public static bool GetSpaceBoundingBox2D(UInt64 space, out Rectf rect)
+    {
+        rect = new Rectf();
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            Result result = OVRP_1_72_0.ovrp_GetSpaceBoundingBox2D(ref space, out rect);
+            return (result == Result.Success);
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool GetSpaceBoundingBox3D(UInt64 space, out Boundsf bounds)
+    {
+        bounds = new Boundsf();
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            Result result = OVRP_1_72_0.ovrp_GetSpaceBoundingBox3D(ref space, out bounds);
+            return (result == Result.Success);
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool GetSpaceSemanticLabels(UInt64 space, out string labels)
+    {
+        labels = "";
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            var labelsInternal = new SpaceSemanticLabelInternal
+            {
+                byteCapacityInput = 0,
+                byteCountOutput = 0,
+            };
+            Result result = OVRP_1_72_0.ovrp_GetSpaceSemanticLabels(ref space, ref labelsInternal);
+            if (result == Result.Success)
+            {
+                labelsInternal.byteCapacityInput = labelsInternal.byteCountOutput;
+                labelsInternal.labels = Marshal.AllocHGlobal(sizeof(byte) * labelsInternal.byteCountOutput);
+                result = OVRP_1_72_0.ovrp_GetSpaceSemanticLabels(ref space, ref labelsInternal);
+                labels = Marshal.PtrToStringAnsi(labelsInternal.labels, labelsInternal.byteCountOutput);
+                Marshal.FreeHGlobal(labelsInternal.labels);
+            }
+            return (result == Result.Success);
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool GetSpaceRoomLayout(UInt64 space, out RoomLayout roomLayout)
+    {
+        roomLayout = new RoomLayout();
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version < OVRP_1_72_0.version)
+        {
+            return false;
+        }
+
+        var roomLayoutInternal = default(RoomLayoutInternal);
+        if (OVRP_1_72_0.ovrp_GetSpaceRoomLayout(ref space, ref roomLayoutInternal) != Result.Success)
+        {
+            return false;
+        }
+
+        var uuids = new Guid[roomLayoutInternal.wallUuidCountOutput];
+        using (var uuidBuffer = new PinnedArray<Guid>(uuids))
+        {
+            roomLayoutInternal.wallUuidCapacityInput = roomLayoutInternal.wallUuidCountOutput;
+            roomLayoutInternal.wallUuids = uuidBuffer;
+            if (OVRP_1_72_0.ovrp_GetSpaceRoomLayout(ref space, ref roomLayoutInternal) != Result.Success)
+            {
+                return false;
+            }
+        }
+
+        roomLayout.ceilingUuid = roomLayoutInternal.ceilingUuid;
+        roomLayout.floorUuid = roomLayoutInternal.floorUuid;
+        roomLayout.wallUuids = uuids;
+        return true;
+#endif
+    }
+
+    public static bool GetSpaceBoundary2D(UInt64 space, out Vector2[] boundary)
+    {
+        boundary = Array.Empty<Vector2>();
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            var boundaryInternal = new PolygonalBoundary2DInternal
+            {
+                vertexCapacityInput = 0,
+                vertexCountOutput = 0,
+            };
+            Result result = OVRP_1_72_0.ovrp_GetSpaceBoundary2D(ref space, ref boundaryInternal);
+            if (result == Result.Success)
+            {
+                boundaryInternal.vertexCapacityInput = boundaryInternal.vertexCountOutput;
+                int size = Marshal.SizeOf(typeof(Vector2));
+                boundaryInternal.vertices = Marshal.AllocHGlobal(boundaryInternal.vertexCountOutput * size);
+                result = OVRP_1_72_0.ovrp_GetSpaceBoundary2D(ref space, ref boundaryInternal);
+                if (result == Result.Success)
+                {
+                    boundary = new Vector2[boundaryInternal.vertexCountOutput];
+
+                    IntPtr LongPtr = boundaryInternal.vertices;
+                    for (int i = 0; i < boundaryInternal.vertexCountOutput; i++)
+                    {
+                        IntPtr tempPtr = new IntPtr(size);
+                        tempPtr = LongPtr;
+                        LongPtr += size;
+                        boundary[i] = Marshal.PtrToStructure<Vector2>(tempPtr);
+                    }
+
+                    Marshal.FreeHGlobal(boundaryInternal.vertices);
+                }
+            }
+            return (result == Result.Success);
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
+
+    public static bool RequestSceneCapture(string requestString, out UInt64 requestId)
+    {
+        requestId = 0;
+#if OVRPLUGIN_UNSUPPORTED_PLATFORM
+		return false;
+#else
+        if (version >= OVRP_1_72_0.version)
+        {
+            var sceneCaptureRequest = new SceneCaptureRequestInternal
+            {
+                requestByteCount = requestString == null ? 0 : System.Text.Encoding.ASCII.GetByteCount(requestString),
+                request = requestString,
+            };
+            Result result = OVRP_1_72_0.ovrp_RequestSceneCapture(ref sceneCaptureRequest, out requestId);
+            return (result == Result.Success);
+        }
+        else
+        {
+            return false;
+        }
+#endif
+    }
 
     public static string[] GetRenderModelPaths()
     {
@@ -6652,6 +7026,7 @@ public static partial class OVRPlugin
 #endif
         }
     }
+
 
     public class UnityOpenXR
     {
@@ -7269,41 +7644,41 @@ public static partial class OVRPlugin
         public static readonly System.Version version = new System.Version(1, 17, 0);
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetExternalCameraPose(CameraDevice camera, out Posef cameraPose);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetExternalCameraPose(CameraDevice camera, out Posef cameraPose);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_ConvertPoseToCameraSpace(CameraDevice camera, ref Posef trackingSpacePose, out Posef cameraSpacePose);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_ConvertPoseToCameraSpace(CameraDevice camera, ref Posef trackingSpacePose, out Posef cameraSpacePose);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDeviceIntrinsicsParameters(CameraDevice camera, out Bool supportIntrinsics, out CameraDeviceIntrinsicsParameters intrinsicsParameters);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDeviceIntrinsicsParameters(CameraDevice camera, out Bool supportIntrinsics, out CameraDeviceIntrinsicsParameters intrinsicsParameters);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_DoesCameraDeviceSupportDepth(CameraDevice camera, out Bool supportDepth);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_DoesCameraDeviceSupportDepth(CameraDevice camera, out Bool supportDepth);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDeviceDepthSensingMode(CameraDevice camera, out CameraDeviceDepthSensingMode depthSensoringMode);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDeviceDepthSensingMode(CameraDevice camera, out CameraDeviceDepthSensingMode depthSensoringMode);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_SetCameraDeviceDepthSensingMode(CameraDevice camera, CameraDeviceDepthSensingMode depthSensoringMode);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_SetCameraDeviceDepthSensingMode(CameraDevice camera, CameraDeviceDepthSensingMode depthSensoringMode);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDevicePreferredDepthQuality(CameraDevice camera, out CameraDeviceDepthQuality depthQuality);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDevicePreferredDepthQuality(CameraDevice camera, out CameraDeviceDepthQuality depthQuality);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_SetCameraDevicePreferredDepthQuality(CameraDevice camera, CameraDeviceDepthQuality depthQuality);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_SetCameraDevicePreferredDepthQuality(CameraDevice camera, CameraDeviceDepthQuality depthQuality);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_IsCameraDeviceDepthFrameAvailable(CameraDevice camera, out Bool available);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_IsCameraDeviceDepthFrameAvailable(CameraDevice camera, out Bool available);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDeviceDepthFrameSize(CameraDevice camera, out Sizei depthFrameSize);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDeviceDepthFrameSize(CameraDevice camera, out Sizei depthFrameSize);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDeviceDepthFramePixels(CameraDevice cameraDevice, out IntPtr depthFramePixels, out int depthFrameRowPitch);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDeviceDepthFramePixels(CameraDevice cameraDevice, out IntPtr depthFramePixels, out int depthFrameRowPitch);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetCameraDeviceDepthConfidencePixels(CameraDevice cameraDevice, out IntPtr depthConfidencePixels, out int depthConfidenceRowPitch);
+		[DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result ovrp_GetCameraDeviceDepthConfidencePixels(CameraDevice cameraDevice, out IntPtr depthConfidencePixels, out int depthConfidenceRowPitch);
 #endif
     }
 
@@ -7730,7 +8105,6 @@ public static partial class OVRPlugin
     {
         public static readonly System.Version version = new System.Version(1, 55, 0);
 
-
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_GetSkeleton2(SkeletonType skeletonType, out Skeleton2Internal skeleton);
 
@@ -7755,7 +8129,6 @@ public static partial class OVRPlugin
     private static class OVRP_1_56_0
     {
         public static readonly System.Version version = new System.Version(1, 56, 0);
-
     }
 
     private static class OVRP_1_57_0
@@ -7808,27 +8181,6 @@ public static partial class OVRPlugin
     private static class OVRP_1_63_0
     {
         public static readonly System.Version version = new System.Version(1, 63, 0);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_CreateSpatialAnchor(ref SpatialEntityAnchorCreateInfo createInfo, out UInt64 space);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_SetComponentEnabled(ref UInt64 space, SpatialEntityComponentType componentType, Bool enable, double timeout, out UInt64 requestId);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_GetComponentEnabled(ref UInt64 space, SpatialEntityComponentType componentType, out Bool enabled, out Bool changePending);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_EnumerateSupportedComponents(ref UInt64 space, uint componentTypesCapacityInput, out uint componentTypesCountOutput, [MarshalAs(UnmanagedType.LPArray), In, Out] SpatialEntityComponentType[] componentTypes);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_TerminateSpatialEntityQuery(ref UInt64 requestId);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_SaveSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, SpatialEntityStoragePersistenceMode mode, out UInt64 requestId);
-
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_EraseSpatialEntity(ref UInt64 space, SpatialEntityStorageLocation location, out UInt64 requestId);
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_InitializeInsightPassthrough();
@@ -7913,9 +8265,6 @@ public static partial class OVRPlugin
     {
         public static readonly System.Version version = new System.Version(1, 67, 0);
 
-        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ovrp_QuerySpatialEntity(ref SpatialEntityQueryInfo queryInfo, out UInt64 requestId);
-
     }
 
     private static class OVRP_1_68_0
@@ -7949,7 +8298,6 @@ public static partial class OVRPlugin
 
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_GetKeyboardState(Step stepId, int frameIndex, out KeyboardState keyboardState);
-
     }
 
     private static class OVRP_1_69_0
@@ -8022,5 +8370,59 @@ public static partial class OVRPlugin
         [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
         public static extern Result ovrp_GetSuggestedGpuPerformanceLevel(out ProcessorPerformanceLevel perfLevel);
 
+
     }
+
+    private static class OVRP_1_72_0
+    {
+        public static readonly System.Version version = new System.Version(1, 72, 0);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_CreateSpatialAnchor(ref SpatialAnchorCreateInfo createInfo, out UInt64 requestId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SetSpaceComponentStatus(ref UInt64 space, SpaceComponentType componentType, Bool enable, double timeout, out UInt64 requestId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceComponentStatus(ref UInt64 space, SpaceComponentType componentType, out Bool enabled, out Bool changePending);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_EnumerateSpaceSupportedComponents(ref UInt64 space, uint componentTypesCapacityInput, out uint componentTypesCountOutput, [MarshalAs(UnmanagedType.LPArray), In, Out] SpaceComponentType[] componentTypes);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_SaveSpace(ref UInt64 space, SpaceStorageLocation location, SpaceStoragePersistenceMode mode, out UInt64 requestId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_QuerySpaces(ref SpaceQueryInfo queryInfo, out UInt64 requestId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_RetrieveSpaceQueryResults(ref UInt64 requestId, UInt32 resultCapacityInput, ref UInt32 resultCountOutput, System.IntPtr results);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_EraseSpace(ref UInt64 space, SpaceStorageLocation location, out UInt64 requestId);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceContainer(ref UInt64 space, ref SpaceContainerInternal containerInternal);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceBoundingBox2D(ref UInt64 space, out Rectf rect);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceBoundingBox3D(ref UInt64 space, out Boundsf bounds);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceSemanticLabels(ref UInt64 space, ref SpaceSemanticLabelInternal labelsInternal);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceRoomLayout(ref UInt64 space, ref RoomLayoutInternal roomLayoutInternal);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_GetSpaceBoundary2D(ref UInt64 space, ref PolygonalBoundary2DInternal boundaryInternal);
+
+        [DllImport(pluginName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ovrp_RequestSceneCapture(ref SceneCaptureRequestInternal request, out UInt64 requestId);
+
+    }
+
+    /* INSERT NEW OVRP CLASS ABOVE THIS LINE */
 }

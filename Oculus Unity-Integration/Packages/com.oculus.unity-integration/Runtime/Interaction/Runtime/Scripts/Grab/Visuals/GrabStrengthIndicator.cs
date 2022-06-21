@@ -124,7 +124,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                Interactor.WhenInteractorUpdated += UpdateVisual;
+                Interactor.WhenPostprocessed += UpdateVisual;
                 _currentGlowColor = _fingerGlowColorWithNoInteractable;
             }
         }
@@ -133,7 +133,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                Interactor.WhenInteractorUpdated -= UpdateVisual;
+                Interactor.WhenPostprocessed -= UpdateVisual;
             }
         }
 

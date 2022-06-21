@@ -64,7 +64,7 @@ namespace Oculus.Platform.Samples.VrHoops
 			get { return m_heldBall != null; }
 		}
 
-		#endregion
+        #endregion
 
         private void Start()
 		{

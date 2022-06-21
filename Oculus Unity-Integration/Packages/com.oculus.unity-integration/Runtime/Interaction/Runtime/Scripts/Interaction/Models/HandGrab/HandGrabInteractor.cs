@@ -141,9 +141,9 @@ namespace Oculus.Interaction.HandPosing
         ///
         /// That is the tracked wrist plus a pregenerated position and rotation offset.
         /// </summary>
-        protected override void DoEveryUpdate()
+        protected override void DoPreprocess()
         {
-            base.DoEveryUpdate();
+            base.DoPreprocess();
 
             _gripPoint.GetWorldPose(ref _trackedGripPose);
             _gripPoint.GetOffset(ref _wristToSnapOffset);
@@ -176,6 +176,19 @@ namespace Oculus.Interaction.HandPosing
         protected override void DoHoverUpdate()
         {
             base.DoHoverUpdate();
+
+            if (Interactable == null)
+            {
+                return;
+            }
+
+            if (_interactable != _candidate)
+            {
+                Unhover();
+                Hover();
+                return;
+            }
+
             if (_currentSnap.IsValidAddress)
             {
                 SnapStrength = HandGrab.ComputeHandGrabScore(this, Interactable,
@@ -188,10 +201,10 @@ namespace Oculus.Interaction.HandPosing
                 SnapData = null;
             }
 
-            if (Interactable != null)
+            if (Interactable != null
+                && HandGrab.ComputeShouldSelect(this, Interactable, out GrabTypeFlags selectingGrabTypes))
             {
-                ShouldSelect = HandGrab.ComputeShouldSelect(this, Interactable,
-                    out GrabTypeFlags selectingGrabTypes);
+                ShouldSelect = true;
             }
         }
 
@@ -219,8 +232,10 @@ namespace Oculus.Interaction.HandPosing
             _movement.Tick();
 
             HandGrab.StoreGrabData(this, interactable, ref _lastInteractableData);
-            ShouldUnselect = HandGrab.ComputeShouldUnselect(this, interactable);
-
+            if (HandGrab.ComputeShouldUnselect(this, interactable))
+            {
+                ShouldUnselect = true;
+            }
         }
 
         /// <summary>

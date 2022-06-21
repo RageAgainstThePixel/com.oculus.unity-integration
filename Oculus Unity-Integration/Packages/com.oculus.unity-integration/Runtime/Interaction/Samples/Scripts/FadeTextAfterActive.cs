@@ -17,11 +17,8 @@ namespace Oculus.Interaction.Samples
 {
     public class FadeTextAfterActive : MonoBehaviour
     {
-        [SerializeField]
-        private float _fadeOutTime;
-        [SerializeField]
-        private TextMeshPro _text;
-
+        [SerializeField] private float _fadeOutTime;
+        [SerializeField] private TextMeshPro _text;
         private float _timeLeft;
 
         protected virtual void OnEnable()

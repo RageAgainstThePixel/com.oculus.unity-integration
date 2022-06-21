@@ -255,10 +255,8 @@ public class OVRGradleGeneration
                     Uri configUri = new Uri(Path.GetFullPath(securityConfigFile));
                     Uri projectUri = new Uri(Application.dataPath);
                     Uri relativeUri = projectUri.MakeRelativeUri(configUri);
-					securityConfigFile = relativeUri.ToString();
+                    securityConfigFile = relativeUri.ToString();
                 }
-
-                securityConfigFile = securityConfigFile.Replace("%20", " ");
 
                 string xmlDirectory = Path.Combine(path, "src/main/res/xml");
                 try
@@ -267,7 +265,7 @@ public class OVRGradleGeneration
                     {
                         Directory.CreateDirectory(xmlDirectory);
                     }
-					File.Copy(securityConfigFile, Path.Combine(xmlDirectory, "network_sec_config.xml"), true);
+                    File.Copy(securityConfigFile, Path.Combine(xmlDirectory, "network_sec_config.xml"), true);
                     patchedSecurityConfig = true;
                 }
                 catch (Exception e)

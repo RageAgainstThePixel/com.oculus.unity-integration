@@ -47,9 +47,9 @@ public class OVRScreenFade : MonoBehaviour
 	private Material fadeMaterial = null;
 	private bool isFading = false;
 
-	/// <summary>
-	/// Automatically starts a fade in
-	/// </summary>
+    /// <summary>
+    /// Automatically starts a fade in
+    /// </summary>
     private void Start()
 	{
 		if (gameObject.name.StartsWith("OculusMRC_"))
@@ -137,9 +137,9 @@ public class OVRScreenFade : MonoBehaviour
 		StartCoroutine(Fade(0,1));
 	}
 
-	/// <summary>
-	/// Starts a fade in when a new level is loaded
-	/// </summary>
+    /// <summary>
+    /// Starts a fade in when a new level is loaded
+    /// </summary>
     private void OnLevelFinishedLoading(int level)
 	{
 		FadeIn();
@@ -155,9 +155,9 @@ public class OVRScreenFade : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Cleans up the fade material
-	/// </summary>
+    /// <summary>
+    /// Cleans up the fade material
+    /// </summary>
     private void OnDestroy()
 	{
 		instance = null;
@@ -197,9 +197,9 @@ public class OVRScreenFade : MonoBehaviour
 		SetMaterialAlpha();
 	}
 
-	/// <summary>
-	/// Fades alpha from 1.0 to 0.0
-	/// </summary>
+    /// <summary>
+    /// Fades alpha from 1.0 to 0.0
+    /// </summary>
     private IEnumerator Fade(float startAlpha, float endAlpha)
 	{
 		float elapsedTime = 0.0f;

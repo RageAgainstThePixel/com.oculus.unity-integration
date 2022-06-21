@@ -357,10 +357,10 @@ public static class OVRNodeStateProperties
             return OVRPlugin.hmdPresent;
         }
 #if USING_XR_SDK
-		XRDisplaySubsystem currentDisplaySubsystem = OVRManager.GetCurrentDisplaySubsystem();
+        XRDisplaySubsystem currentDisplaySubsystem = OVRManager.GetCurrentDisplaySubsystem();
 		if (currentDisplaySubsystem != null)
         {
-            return currentDisplaySubsystem.running;				//In 2019.3, this should be changed to currentDisplaySubsystem.isConnected, but this is a fine placeholder for now.
+            return currentDisplaySubsystem.running;             //In 2019.3, this should be changed to currentDisplaySubsystem.isConnected, but this is a fine placeholder for now.
         }
 
         return false;

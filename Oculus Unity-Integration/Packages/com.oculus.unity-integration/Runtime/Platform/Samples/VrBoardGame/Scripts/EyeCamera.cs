@@ -27,7 +27,7 @@ namespace Oculus.Platform.Samples.VrBoardGame
 		// the current BoardPosition, if any, being looked at
 		private BoardPosition m_boardPosition;
 
-		void Update()
+        private void Update()
 		{
 			RaycastHit hit;
 			Button button = null;

@@ -296,7 +296,6 @@ public class OVRRaycaster : GraphicRaycaster, IPointerEnterHandler
         }
     }
 
-
     private struct RaycastHit
     {
         public Graphic graphic;

@@ -1,3 +1,15 @@
+/************************************************************************************
+Copyright : Copyright (c) Facebook Technologies, LLC and its affiliates. All rights reserved.
+
+Your use of this SDK or tool is subject to the Oculus SDK License Agreement, available at
+https://developer.oculus.com/licenses/oculussdk/
+
+Unless required by applicable law or agreed to in writing, the Utilities SDK distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, either express or implied. See the License for the specific language governing
+permissions and limitations under the License.
+************************************************************************************/
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -949,7 +961,7 @@ namespace Assets.Oculus.VR.Editor
 		// Private delegate for text field validation functions
 		private delegate TSuccess FieldValidatorDelegate<in TText, TError, out TSuccess>(TText text, ref TError error);
 
-		// Validate the text using a given field validator function. An error message will be printed if validation fails. Success will ONLY be modified to false if validation fails.
+        // Validate the text using a given field validator function. An error message will be printed if validation fails. Success will ONLY be modified to false if validation fails.
         private static void ValidateTextField(FieldValidatorDelegate<string, string, bool> fieldValidator, string fieldText, string fieldName, ref bool success)
 		{
 			string error = "";
@@ -961,7 +973,7 @@ namespace Assets.Oculus.VR.Editor
 			}
 		}
 
-		// Checks if the text is null or empty
+        // Checks if the text is null or empty
         private static bool GenericFieldValidator(string fieldText, ref string error)
 		{
 			if (string.IsNullOrEmpty(fieldText))
@@ -972,7 +984,7 @@ namespace Assets.Oculus.VR.Editor
 			return true;
 		}
 
-		// Checks if the App ID contains only numbers
+        // Checks if the App ID contains only numbers
         private static bool IDFieldValidator(string fieldText, ref string error)
 		{
 			if (string.IsNullOrEmpty(fieldText))
@@ -988,7 +1000,7 @@ namespace Assets.Oculus.VR.Editor
 			return true;
 		}
 
-		// Check that the directory exists
+        // Check that the directory exists
         private static bool DirectoryValidator(string path, ref string error)
 		{
 			if (!Directory.Exists(path))
@@ -999,7 +1011,7 @@ namespace Assets.Oculus.VR.Editor
 			return true;
 		}
 
-		// Check that the file exists
+        // Check that the file exists
         private static bool FileValidator(string path, ref string error)
 		{
 			if (!File.Exists(path))
@@ -1010,7 +1022,7 @@ namespace Assets.Oculus.VR.Editor
 			return true;
 		}
 
-		// Check if the launch parameter string contains illegal characters
+        // Check if the launch parameter string contains illegal characters
         private static bool LaunchParameterValidator(string fieldText, ref string error)
 		{
 			if (fieldText.Contains("\""))

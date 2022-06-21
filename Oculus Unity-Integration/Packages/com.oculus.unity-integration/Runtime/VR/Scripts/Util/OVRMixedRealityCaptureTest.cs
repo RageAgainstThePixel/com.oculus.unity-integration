@@ -33,7 +33,7 @@ public class OVRMixedRealityCaptureTest : MonoBehaviour {
 	public Camera defaultExternalCamera;
     private OVRPlugin.Fovf defaultFov;
 
-	// Use this for initialization
+    // Use this for initialization
     private void Start () {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || OVR_ANDROID_MRC
 		if (!defaultExternalCamera)
@@ -60,18 +60,18 @@ public class OVRMixedRealityCaptureTest : MonoBehaviour {
         }
 
 #if OVR_ANDROID_MRC
-		if (!OVRPlugin.Media.GetInitialized())
+        if (!OVRPlugin.Media.GetInitialized())
         {
             return;
         }
 #else
-		if (!OVRPlugin.IsMixedRealityInitialized())
+        if (!OVRPlugin.IsMixedRealityInitialized())
         {
             return;
         }
 #endif
 
-		OVRPlugin.ResetDefaultExternalCamera();
+        OVRPlugin.ResetDefaultExternalCamera();
 		Debug.LogFormat("GetExternalCameraCount before adding manual external camera {0}", OVRPlugin.GetExternalCameraCount());
 		UpdateDefaultExternalCamera();
 		Debug.LogFormat("GetExternalCameraCount after adding manual external camera {0}", OVRPlugin.GetExternalCameraCount());
@@ -152,7 +152,7 @@ public class OVRMixedRealityCaptureTest : MonoBehaviour {
 #endif
 	}
 
-	// Update is called once per frame
+    // Update is called once per frame
     private void Update () {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || OVR_ANDROID_MRC
 		if (!inited)
