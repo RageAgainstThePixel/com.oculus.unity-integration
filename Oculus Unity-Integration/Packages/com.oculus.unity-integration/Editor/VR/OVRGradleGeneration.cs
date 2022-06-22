@@ -258,6 +258,8 @@ public class OVRGradleGeneration
                     securityConfigFile = relativeUri.ToString();
                 }
 
+                securityConfigFile = securityConfigFile.Replace("%20", " ");
+
                 string xmlDirectory = Path.Combine(path, "src/main/res/xml");
                 try
                 {
