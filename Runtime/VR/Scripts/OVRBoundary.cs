@@ -196,7 +196,6 @@ public class OVRBoundary
         {
             return OVRPlugin.GetBoundaryDimensions((OVRPlugin.BoundaryType)boundaryType).FromVector3f();
         }
-
         else
 		{
 #if !USING_XR_SDK && !REQUIRES_XR_SDK

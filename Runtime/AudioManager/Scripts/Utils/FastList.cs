@@ -322,7 +322,6 @@ public class FastList<T>
         array = newArray;
     }
 
-
     private void Trim()
     {
         if (size > 0)

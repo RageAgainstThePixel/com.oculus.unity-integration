@@ -37,8 +37,8 @@ public class GroupPresenceSample : MonoBehaviour
   private List<string> DestinationAPINames = new List<string>();
   private ulong LoggedInUserID = 0;
 
-  // Start is called before the first frame update
-  private void Start()
+    // Start is called before the first frame update
+    private void Start()
   {
     UpdateConsole("Init Oculus Platform SDK...");
     Core.AsyncInitialize().OnComplete(message => {
@@ -79,10 +79,10 @@ public class GroupPresenceSample : MonoBehaviour
     });
   }
 
-  /**
-    * Setting the group presence
-    */
-  private void SetPresence()
+    /**
+      * Setting the group presence
+      */
+    private void SetPresence()
   {
     var options = new GroupPresenceOptions();
 
@@ -128,10 +128,10 @@ public class GroupPresenceSample : MonoBehaviour
     });
   }
 
-  /**
-    * Clearing the rich presence
-    */
-  private void ClearPresence()
+    /**
+      * Clearing the rich presence
+      */
+    private void ClearPresence()
   {
     UpdateConsole("Clearing Group Presence...");
     GroupPresence.Clear().OnComplete(message => {
@@ -157,10 +157,10 @@ public class GroupPresenceSample : MonoBehaviour
     });
   }
 
-  /**
-   * Launch the invite panel
-   */
-  private void LaunchInvitePanel()
+    /**
+     * Launch the invite panel
+     */
+    private void LaunchInvitePanel()
   {
     UpdateConsole("Launching Invite Panel...");
     var options = new InviteOptions();
@@ -177,10 +177,10 @@ public class GroupPresenceSample : MonoBehaviour
     });
   }
 
-  /**
-   * Launch the roster panel
-   */
-  private void LaunchRosterPanel()
+    /**
+     * Launch the roster panel
+     */
+    private void LaunchRosterPanel()
   {
     UpdateConsole("Launching Roster Panel...");
     var options = new RosterOptions();
@@ -197,8 +197,8 @@ public class GroupPresenceSample : MonoBehaviour
     });
   }
 
-  // User has interacted with a deeplink outside this app
-  private void OnJoinIntentChangeNotif(Message<Oculus.Platform.Models.GroupPresenceJoinIntent> message)
+    // User has interacted with a deeplink outside this app
+    private void OnJoinIntentChangeNotif(Message<Oculus.Platform.Models.GroupPresenceJoinIntent> message)
   {
     if (message.IsError)
     {
@@ -241,8 +241,8 @@ public class GroupPresenceSample : MonoBehaviour
     }
   }
 
-  // User has interacted with the roster to leave the current destination / lobby / match
-  private void OnLeaveIntentChangeNotif(Message<Oculus.Platform.Models.GroupPresenceLeaveIntent> message)
+    // User has interacted with the roster to leave the current destination / lobby / match
+    private void OnLeaveIntentChangeNotif(Message<Oculus.Platform.Models.GroupPresenceLeaveIntent> message)
   {
     if (message.IsError)
     {
@@ -264,8 +264,8 @@ public class GroupPresenceSample : MonoBehaviour
     }
   }
 
-  // User has invited users
-  private void OnInviteSentNotif(Message<Oculus.Platform.Models.LaunchInvitePanelFlowResult> message)
+    // User has invited users
+    private void OnInviteSentNotif(Message<Oculus.Platform.Models.LaunchInvitePanelFlowResult> message)
   {
     if (message.IsError)
     {
@@ -291,7 +291,7 @@ public class GroupPresenceSample : MonoBehaviour
     }
   }
 
-  private void OnGetDestinations(Message<Oculus.Platform.Models.DestinationList> message)
+    private void OnGetDestinations(Message<Oculus.Platform.Models.DestinationList> message)
   {
     if (message.IsError)
     {
@@ -311,8 +311,9 @@ public class GroupPresenceSample : MonoBehaviour
 
   private int DestinationIndex = 0;
   private bool OnlyPushUpOnce = false;
-  // Update is called once per frame
-  private void Update()
+
+    // Update is called once per frame
+    private void Update()
   {
     if (PressAButton())
     {

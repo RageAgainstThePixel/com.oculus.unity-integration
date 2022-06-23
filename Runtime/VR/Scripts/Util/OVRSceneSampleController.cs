@@ -51,7 +51,7 @@ public class OVRSceneSampleController : MonoBehaviour
     // of the menu RenderTarget
     private OVRGridCube gridCube = null;
 
-#if	SHOW_DK2_VARIABLES
+#if SHOW_DK2_VARIABLES
 	private string strVisionMode = "Vision Enabled: ON";
 #endif
 
@@ -137,9 +137,21 @@ public class OVRSceneSampleController : MonoBehaviour
 
         //todo: enable for Unity Input System
 #if ENABLE_LEGACY_INPUT_MANAGER
-		// Toggle Fullscreen
-		if (Input.GetKeyDown(KeyCode.F11))
+        // Toggle Fullscreen
+        if (Input.GetKeyDown(KeyCode.F11))
         {
+
+/* Unmerged change from project 'Oculus.VR.Player'
+Before:
+            Screen.fullScreen = !Screen.fullScreen;
+
+        if (Input.GetKeyDown(KeyCode.M))
+After:
+            Screen.fullScreen = !Screen.fullScreen;
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+*/
             Screen.fullScreen = !Screen.fullScreen;
         }
 
@@ -157,7 +169,7 @@ public class OVRSceneSampleController : MonoBehaviour
 #endif
 #endif
     }
-#endregion
+    #endregion
 
     /// <summary>
     /// Updates the vision mode.

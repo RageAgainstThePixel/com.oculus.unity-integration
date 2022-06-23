@@ -84,7 +84,7 @@ namespace Oculus.Interaction.HandPosing
         {
             _target = _grabberStartPose = target;
             _current = _grabbableStartPose;
-            _lastTime = Time.realtimeSinceStartup;
+            _lastTime = Time.time;
             _reachedGrabber = false;
             Vector3 grabDir = (_grabbableStartPose.position - _grabberStartPose.position);
             _originalDistance = grabDir.magnitude;
@@ -109,8 +109,8 @@ namespace Oculus.Interaction.HandPosing
                 return;
             }
 
-            float timeDelta = (Time.realtimeSinceStartup - _lastTime);
-            _lastTime = Time.realtimeSinceStartup;
+            float timeDelta = (Time.time - _lastTime);
+            _lastTime = Time.time;
             float posDelta = _pullingPlane.GetDistanceToPoint(_target.position);
             if (Mathf.Abs(posDelta) < _deadZone)
             {

@@ -149,6 +149,7 @@ namespace Oculus.Interaction
             {
                 return;
             }
+            interactor.InteractableChangesUpdate();
             WhenInteractorsCountUpdated();
             InteractorRemoved(interactor);
             UpdateInteractableState();
@@ -168,6 +169,7 @@ namespace Oculus.Interaction
             {
                 return;
             }
+            interactor.InteractableChangesUpdate();
             WhenSelectingInteractorsCountUpdated();
             SelectingInteractorRemoved(interactor);
             UpdateInteractableState();
@@ -233,7 +235,6 @@ namespace Oculus.Interaction
             {
                 return;
             }
-
             _registry.Register((TInteractable)this);
             State = InteractableState.Normal;
         }

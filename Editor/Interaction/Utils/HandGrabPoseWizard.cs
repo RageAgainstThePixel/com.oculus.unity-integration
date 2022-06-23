@@ -83,7 +83,7 @@ namespace Oculus.Interaction.HandPosing.Editor
         {
             if (_ghostProvider == null)
             {
-                HandGhostProvider.TryGetDefault(out _ghostProvider);
+                HandGhostProviderUtils.TryGetDefaultProvider(out _ghostProvider);
             }
         }
 

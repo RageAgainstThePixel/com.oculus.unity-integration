@@ -39,7 +39,7 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 	private const float elevationLimit = 30.0f;
 #endif
 
-	// Start is called before the first frame update
+    // Start is called before the first frame update
     private void Awake()
 	{
 #if OVR_ANDROID_MRC
@@ -48,7 +48,7 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 #endif
 	}
 
-	// Use this for initialization
+    // Use this for initialization
     private void Start ()
 	{
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || OVR_ANDROID_MRC
@@ -76,18 +76,18 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
         }
 
 #if OVR_ANDROID_MRC
-		if (!OVRPlugin.Media.GetInitialized())
+        if (!OVRPlugin.Media.GetInitialized())
         {
             return;
         }
 #else
-		if (!OVRPlugin.IsMixedRealityInitialized())
+        if (!OVRPlugin.IsMixedRealityInitialized())
         {
             return;
         }
 #endif
 
-		OVRPlugin.ResetDefaultExternalCamera();
+        OVRPlugin.ResetDefaultExternalCamera();
 		Debug.LogFormat("GetExternalCameraCount before adding manual external camera {0}", OVRPlugin.GetExternalCameraCount());
 		UpdateDefaultExternalCamera();
 		Debug.LogFormat("GetExternalCameraCount after adding manual external camera {0}", OVRPlugin.GetExternalCameraCount());
@@ -204,17 +204,31 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 		if (Mathf.Abs(axis.y) > 0.2f)
 		{
 			elevation = elevation + axis.y * 0.5f;
-			if (elevation < -90.0f + elevationLimit) elevation = -90.0f + elevationLimit;
-			if (elevation > 90.0f) elevation = 90.0f;
-		}
+			if (elevation < -90.0f + elevationLimit)
+            {
+                elevation = -90.0f + elevationLimit;
+            }
+
+            if (elevation > 90.0f)
+            {
+                elevation = 90.0f;
+            }
+        }
 
 		axis = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick);
 		if (Mathf.Abs(axis.y) > 0.1f)
 		{
 			distance = axis.y * 0.05f + distance;
-			if (distance > distance_far) distance = distance_far;
-			if (distance < distance_near) distance = distance_near;
-		}
+			if (distance > distance_far)
+            {
+                distance = distance_far;
+            }
+
+            if (distance < distance_near)
+            {
+                distance = distance_near;
+            }
+        }
 
 		SpectatorCamera.position = SpectatorCameraDomePosition(SpectatorAnchor.position, distance, elevation, polar);
 		SpectatorCamera.rotation = Quaternion.LookRotation(SpectatorCamera.position - SpectatorAnchor.position);
@@ -243,7 +257,7 @@ public class OVRSpectatorModeDomeTest : MonoBehaviour {
 #endif
 	}
 
-	// Update is called once per frame
+    // Update is called once per frame
     private void Update () {
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || OVR_ANDROID_MRC
 		if (!inited)

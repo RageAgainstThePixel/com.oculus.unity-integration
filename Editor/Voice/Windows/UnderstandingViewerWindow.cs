@@ -22,6 +22,6 @@ namespace Oculus.Voice.Windows
     {
         protected override GUIContent Title => VoiceSDKStyles.UnderstandingTitle;
         protected override Texture2D HeaderIcon => VoiceSDKStyles.MainHeader;
-        protected override string HeaderUrl => AppVoiceExperienceWitConfigurationEditor.GetSafeAppUrl(witConfiguration, WitStyles.WitAppEndpointType.Understanding);
+        protected override string HeaderUrl => AppVoiceExperienceWitConfigurationEditor.GetSafeAppUrl(witConfiguration, WitTexts.WitAppEndpointType.Understanding);
     }
 }

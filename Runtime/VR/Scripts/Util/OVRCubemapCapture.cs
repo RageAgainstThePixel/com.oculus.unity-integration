@@ -53,7 +53,7 @@ public class OVRCubemapCapture : MonoBehaviour
 	/// </summary>
 	public int cubemapSize = 2048;
 
-	// Update is called once per frame
+    // Update is called once per frame
     private void Update()
 	{
 		// Trigger after autoTriggerDelay

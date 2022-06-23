@@ -39,7 +39,10 @@ namespace Facebook.WitAi
         }
         public static void LayoutStatusLabel(string text)
         {
-            LayoutLabel(text, WitStyles.LabelStatus);
+            EditorGUILayout.BeginVertical(WitStyles.LabelStatusBackground,
+                GUILayout.ExpandWidth(true), GUILayout.Height(24));
+            EditorGUILayout.LabelField(text, WitStyles.LabelStatus, GUILayout.ExpandWidth(true));
+            EditorGUILayout.EndVertical();
         }
         private static void LayoutLabel(string text, GUIStyle style)
         {
@@ -348,8 +351,6 @@ namespace Facebook.WitAi
         #region WINDOW
         public static void LayoutWindow(string windowTitle, Texture2D windowHeader, string windowHeaderUrl, Action windowContentLayout, ref Vector2 offset, out Vector2 size)
         {
-            // Init styles
-            WitStyles.Init();
             // Get minimum width
             float minWidth = WitStyles.WindowMinWidth;
 

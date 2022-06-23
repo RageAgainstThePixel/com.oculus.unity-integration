@@ -18,7 +18,7 @@ using UnityEngine;
 // attaching this component would auto destroy that after the MRC camera get cloned
 public class OVRAutoDestroyInMRC : MonoBehaviour {
 
-	// Use this for initialization
+    // Use this for initialization
     private void Start () {
 		bool underMrcCamera = false;
 
@@ -38,8 +38,8 @@ public class OVRAutoDestroyInMRC : MonoBehaviour {
 			Destroy(gameObject);
 		}
 	}
-	
-	// Update is called once per frame
+
+    // Update is called once per frame
     private void Update () {
 		
 	}

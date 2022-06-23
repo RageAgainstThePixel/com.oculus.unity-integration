@@ -53,6 +53,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Facebook.WitAi.Data.Entities;
+using Facebook.WitAi.Data.Intents;
 
 
 namespace Facebook.WitAi.Lib
@@ -129,9 +131,11 @@ namespace Facebook.WitAi.Lib
             get
             {
                 foreach (var C in Childs)
-                foreach (var D in C.DeepChilds)
                 {
-                    yield return D;
+                    foreach (var D in C.DeepChilds)
+                    {
+                        yield return D;
+                    }
                 }
             }
         }
@@ -235,6 +239,11 @@ namespace Facebook.WitAi.Lib
             get { return this as WitResponseClass; }
         }
 
+        public virtual WitEntityData AsWitEntity => new WitEntityData(this);
+        public virtual WitEntityFloatData AsWitFloatEntity => new WitEntityFloatData(this);
+        public virtual WitEntityIntData AsWitIntEntity => new WitEntityIntData(this);
+
+        public virtual WitIntentData AsWitIntent => new WitIntentData(this);
 
         #endregion typecasting properties
 
@@ -617,11 +626,11 @@ namespace Facebook.WitAi.Lib
                     int count = aReader.ReadInt32();
                     WitResponseArray tmp = new WitResponseArray();
                     for (int i = 0; i < count; i++)
-                    {
-                        tmp.Add(Deserialize(aReader));
-                    }
+                        {
+                            tmp.Add(Deserialize(aReader));
+                        }
 
-                    return tmp;
+                        return tmp;
                 }
                 case JSONBinaryTag.Class:
                 {

@@ -62,12 +62,7 @@ namespace Oculus
 internal class ONSPPropagation
 {
     private static PropagationInterface CachedInterface;
-    public static PropagationInterface Interface { get { if (CachedInterface == null)
-        {
-            CachedInterface = FindInterface();
-        }
-
-        return CachedInterface; } }
+    public static PropagationInterface Interface { get { if (CachedInterface == null) { CachedInterface = FindInterface(); } return CachedInterface; } }
 
     private static PropagationInterface FindInterface()
     {
@@ -174,6 +169,7 @@ internal class ONSPPropagation
         /***********************************************************************************/
         // Context API: Required to create internal context if it does not exist yet
         private IntPtr context_ = IntPtr.Zero;
+
         private IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_UNITY); } return context_; } }
 
         [DllImport(strOSPS)]
@@ -312,6 +308,7 @@ internal class ONSPPropagation
         /***********************************************************************************/
         // Context API: Required to create internal context if it does not exist yet
         private IntPtr context_ = IntPtr.Zero;
+
         private IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_WWISE_UNKNOWN); } return context_; } }
 
         [DllImport(strOSPS)]
@@ -450,6 +447,7 @@ internal class ONSPPropagation
         /***********************************************************************************/
         // Context API: Required to create internal context if it does not exist yet
         private IntPtr context_ = IntPtr.Zero;
+
         private IntPtr context { get { if (context_ == IntPtr.Zero) { ovrAudio_GetPluginContext(out context_, ClientType.OVRA_CLIENT_TYPE_FMOD); } return context_; } }
 
         [DllImport(strOSPS)]

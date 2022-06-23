@@ -169,7 +169,7 @@ namespace Oculus.Interaction.HandPosing.Editor
                 return;
             }
 
-            HandGhostProvider.TryGetDefault(out _ghostVisualsProvider);
+            HandGhostProviderUtils.TryGetDefaultProvider(out _ghostVisualsProvider);
         }
 
         private void RegenerateGhost(HandGhostProvider provider)

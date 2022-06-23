@@ -24,7 +24,7 @@ namespace Oculus.Voice.Inspectors
     {
         // Override with voice sdk header
         public override Texture2D HeaderIcon => VoiceSDKStyles.MainHeader;
-        public override string HeaderUrl => GetSafeAppUrl(configuration, WitStyles.WitAppEndpointType.Settings);
+        public override string HeaderUrl => GetSafeAppUrl(configuration, WitTexts.WitAppEndpointType.Settings);
         public override string OpenButtonLabel => IsBuiltInConfiguration(configuration) ? VoiceSDKStyles.Texts.BuiltInAppBtnLabel : base.OpenButtonLabel;
 
         // Dont allow built-in configurations to refresh
@@ -55,7 +55,7 @@ namespace Oculus.Voice.Inspectors
         }
 
         // Get safe app url
-        public static string GetSafeAppUrl(WitConfiguration witConfiguration, WitStyles.WitAppEndpointType endpointType)
+        public static string GetSafeAppUrl(WitConfiguration witConfiguration, WitTexts.WitAppEndpointType endpointType)
         {
             // Use built in app url
             if (IsBuiltInConfiguration(witConfiguration))
@@ -63,7 +63,7 @@ namespace Oculus.Voice.Inspectors
                 return VoiceSDKStyles.Texts.BuiltInAppUrl;
             }
             // Return wit app id
-            return WitStyles.GetAppURL(WitConfigurationUtility.GetAppID(witConfiguration), endpointType);
+            return WitTexts.GetAppURL(WitConfigurationUtility.GetAppID(witConfiguration), endpointType);
         }
     }
 }

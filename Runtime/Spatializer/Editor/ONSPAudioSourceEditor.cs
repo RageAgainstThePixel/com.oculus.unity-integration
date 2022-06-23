@@ -31,7 +31,7 @@ public class OculusSpatializerUserParamsEditor : Editor
 	// target component
 	private ONSPAudioSource m_Component;
 
-	// OnEnable
+    // OnEnable
     private void OnEnable()
 	{
 		m_Component = (ONSPAudioSource)target;
@@ -78,19 +78,19 @@ public class OculusSpatializerUserParamsEditor : Editor
 		{
 			EditorUtility.SetDirty(m_Component);
 		}
-	}	
-	
-	// Utilities, move out of here (or copy over to other editor script)
-	
-	// Separator
+	}
+
+    // Utilities, move out of here (or copy over to other editor script)
+
+    // Separator
     private void Separator()
 	{
 		GUI.color = new Color(1, 1, 1, 0.25f);
 		GUILayout.Box("", "HorizontalSlider", GUILayout.Height(16));
 		GUI.color = Color.white;
 	}
-	
-	// Label
+
+    // Label
     private void Label(string label)
 	{
 		EditorGUILayout.LabelField (label);

@@ -150,7 +150,6 @@ public sealed class OVRTouchpadHelper : MonoBehaviour
         OVRTouchpad.AddListener(LocalTouchEventCallback);
     }
 
-
     private void Update ()
     {
         OVRTouchpad.Update();

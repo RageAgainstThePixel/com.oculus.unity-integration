@@ -207,23 +207,36 @@ public class OVRExternalComposition : OVRComposition
 	}
 
 #if OVR_ANDROID_MRC
-	private void RefreshAudioFilter()
+	private void RefreshAudioFilter(Camera mainCamera)
 	{
-		if (cameraRig != null && (audioListener == null || !audioListener.enabled || !audioListener.gameObject.activeInHierarchy))
+		if (audioListener == null || !audioListener.enabled || !audioListener.gameObject.activeInHierarchy)
 		{
 			CleanupAudioFilter();
 
-			AudioListener tmpAudioListener = cameraRig.centerEyeAnchor.gameObject.activeInHierarchy ? cameraRig.centerEyeAnchor.GetComponent<AudioListener>() : null;
-			if (tmpAudioListener != null && !tmpAudioListener.enabled) tmpAudioListener = null;
-			if (tmpAudioListener == null)
+			// first try cameraRig
+			AudioListener tmpAudioListener = cameraRig != null && cameraRig.centerEyeAnchor.gameObject.activeInHierarchy
+				? cameraRig.centerEyeAnchor.GetComponent<AudioListener>()
+				: null;
+
+			// second try mainCamera
+			if (tmpAudioListener == null || !tmpAudioListener.enabled)
 			{
-				if (Camera.main != null && Camera.main.gameObject.activeInHierarchy)
-				{
-					tmpAudioListener = Camera.main.GetComponent<AudioListener>();
-					if (tmpAudioListener != null && !tmpAudioListener.enabled) tmpAudioListener = null;
-				}
+				tmpAudioListener = mainCamera != null && mainCamera.gameObject.activeInHierarchy
+					? mainCamera.GetComponent<AudioListener>()
+					: null;
 			}
-			if (tmpAudioListener == null)
+
+			// third try Camera.main (expensive)
+			if (tmpAudioListener == null || !tmpAudioListener.enabled)
+			{
+				mainCamera = Camera.main;
+				tmpAudioListener = mainCamera != null && mainCamera.gameObject.activeInHierarchy
+					? mainCamera.GetComponent<AudioListener>()
+					: null;
+			}
+
+			// fourth, search for all AudioListeners (very expensive)
+			if (tmpAudioListener == null || !tmpAudioListener.enabled)
 			{
 				Object[] allListeners = Object.FindObjectsOfType<AudioListener>();
 				foreach (var l in allListeners)
@@ -236,18 +249,14 @@ public class OVRExternalComposition : OVRComposition
 					}
 				}
 			}
-			if (tmpAudioListener == null)
+			if (tmpAudioListener == null || !tmpAudioListener.enabled)
 			{
 				Debug.LogWarning("[OVRExternalComposition] No AudioListener in scene");
 			}
 			else
 			{
 				Debug.LogFormat("[OVRExternalComposition] AudioListener found, obj {0}", tmpAudioListener.gameObject.name);
-			}
-			audioListener = tmpAudioListener;
-
-			if(audioListener != null)
-			{
+				audioListener = tmpAudioListener;
 				audioFilter = audioListener.gameObject.AddComponent<OVRMRAudioFilter>();
 				audioFilter.composition = this;
 				Debug.LogFormat("OVRMRAudioFilter added");
@@ -339,7 +348,7 @@ public class OVRExternalComposition : OVRComposition
 		OVRPlugin.Media.SetMrcHeadsetControllerPose(head.ToPosef(), leftC.ToPosef(), rightC.ToPosef());
 
 #if OVR_ANDROID_MRC
-		RefreshAudioFilter();
+		RefreshAudioFilter(mainCamera);
 
 		int drawTextureIndex = (frameIndex / 2) % 2;
 		int castTextureIndex = 1 - drawTextureIndex;
@@ -546,17 +555,19 @@ public class OVRMRAudioFilter : MonoBehaviour
 
 	public OVRExternalComposition composition;
 
-	void Start()
+    private void Start()
 	{
 		running = true;
 	}
 
-	void OnAudioFilterRead(float[] data, int channels)
+    private void OnAudioFilterRead(float[] data, int channels)
 	{
 		if (!running)
-			return;
+        {
+            return;
+        }
 
-		if (composition != null)
+        if (composition != null)
 		{
 			composition.CacheAudioData(data, channels);
 		}

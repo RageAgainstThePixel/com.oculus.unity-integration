@@ -171,6 +171,9 @@ public class OVROverlay : MonoBehaviour
 	[Tooltip("When checked, the layer will use bicubic filtering")]
 	public bool useBicubicFiltering = false;
 
+	[Tooltip("When checked, the cubemap will retain the legacy rotation which was rotated 180 degrees around the Y axis comapred to Unity's definition of cubemaps. This setting will be deprecated in the near future, therefore it is recommended to fix the cubemap texture instead.")]
+	public bool useLegacyCubemapRotation = false;
+
 
 	/// <summary>
 	/// Preview the overlay in the editor using a mesh renderer.
@@ -246,7 +249,7 @@ public class OVROverlay : MonoBehaviour
                 return OVRPlugin.LayerLayout.Stereo;
             }
 #endif
-			return OVRPlugin.LayerLayout.Mono;
+            return OVRPlugin.LayerLayout.Mono;
 		}
 	}
 
@@ -365,7 +368,7 @@ public class OVROverlay : MonoBehaviour
 
         // For newer SDKs, blit directly to the surface that will be used in compositing.
 
-		if (layerTextures == null)
+        if (layerTextures == null)
         {
             layerTextures = new LayerTexture[texturesPerStage];
         }
@@ -882,9 +885,9 @@ public class OVROverlay : MonoBehaviour
 			|| shape == OverlayShape.SurfaceProjectedPassthrough;
 	}
 
-#region Unity Messages
+    #region Unity Messages
 
-private void Awake()
+    private void Awake()
 	{
 		Debug.Log("Overlay Awake");
 
@@ -909,7 +912,7 @@ private void Awake()
         }
 
         // Backward compatibility
-		if (rend != null && textures[0] == null)
+        if (rend != null && textures[0] == null)
         {
             textures[0] = rend.sharedMaterial.mainTexture;
         }
@@ -928,11 +931,11 @@ private void Awake()
         }
 
 #if UNITY_EDITOR
-		if (previewObject != null) {
+        if (previewObject != null) {
 			previewObject.SetActive(true);
 		}
 #endif
-	}
+    }
 
     private void InitOVROverlay()
 	{
@@ -1050,13 +1053,18 @@ private void Awake()
 
         if (currentOverlayShape == OverlayShape.Cubemap)
 		{
-#if UNITY_ANDROID && !UNITY_EDITOR
-			if (OVRPlugin.nativeXrApi != OVRPlugin.XrApi.OpenXR)
+			if (useLegacyCubemapRotation)
 			{
-				//HACK: VRAPI cubemaps assume are yawed 180 degrees relative to LibOVR.
+#if UNITY_ANDROID && !UNITY_EDITOR
 				pose.orientation = pose.orientation * Quaternion.AngleAxis(180, Vector3.up);
-			}
 #endif
+			}
+			else
+			{
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR
+				pose.orientation = pose.orientation * Quaternion.AngleAxis(180, Vector3.up);
+#endif
+			}
 			pose.position = headCamera.transform.position;
 		}
 
@@ -1189,9 +1197,8 @@ private void Awake()
             {
                 OpenVROverlayUpdate(scale, pose);
             }
-
             //No more Overlay processing is required if we're on OpenVR
-			return;
+            return;
 		}
 
 		OVRPlugin.LayerDesc newDesc = GetCurrentLayerDesc();
@@ -1238,7 +1245,7 @@ private void Awake()
             }
 
             // Don't populate the same frame image twice.
-			if (frameIndex > prevFrameIndex)
+            if (frameIndex > prevFrameIndex)
 			{
 				int stage = frameIndex % stageCount;
 				if (!PopulateLayer(newDesc.MipLevels, isHdr, newDesc.TextureSize, newDesc.SampleCount, stage))
@@ -1257,7 +1264,7 @@ private void Awake()
         }
 
         // Backward compatibility: show regular renderer if overlay isn't visible.
-		if (rend)
+        if (rend)
         {
             rend.enabled = !isOverlayVisible;
         }

@@ -86,8 +86,8 @@ namespace Oculus.Interaction.InterfaceSupport
             {
                 // Make sure component is of the right interface
                 if (!IsAssignableFromTypes(currentMono.GetType(), attTypes))
-                    // Component failed. Check game object.
                 {
+                    // Component failed. Check game object.
                     foreach (Type attType in attTypes)
                     {
                         currentMono = currentMono.gameObject.GetComponent(attType) as MonoBehaviour;
