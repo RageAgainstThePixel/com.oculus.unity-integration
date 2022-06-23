@@ -79,7 +79,7 @@ namespace Oculus.Platform.Samples.VrHoops
             }
 
             // check for new messages
-			Packet packet;
+            Packet packet;
 			while ((packet = Net.ReadPacket()) != null)
 			{
 				if (!m_remotePlayers.ContainsKey(packet.SenderID))
@@ -196,21 +196,21 @@ namespace Oculus.Platform.Samples.VrHoops
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region Time Synchronizaiton
+        #region Time Synchronizaiton
 
-		// This section implements some basic time synchronization between the players.
-		// The algorithm is:
-		//   -Send a time-sync message and receive a time-sync message response
-		//   -Estimate time offset
-		//   -Repeat several times
-		//   -Average values discarding any statistical anomalies
-		// Normally delays would be added in case there is intermittent network congestion
-		// however the match times are so short we don't do that here.  Also, if one client
-		// pauses their game and Unity stops their simulation, all bets are off for time
-		// synchronization.  Depending on the goals of your app, you could either reinitiate
-		// time synchronization, or just disconnect that player.
+        // This section implements some basic time synchronization between the players.
+        // The algorithm is:
+        //   -Send a time-sync message and receive a time-sync message response
+        //   -Estimate time offset
+        //   -Repeat several times
+        //   -Average values discarding any statistical anomalies
+        // Normally delays would be added in case there is intermittent network congestion
+        // however the match times are so short we don't do that here.  Also, if one client
+        // pauses their game and Unity stops their simulation, all bets are off for time
+        // synchronization.  Depending on the goals of your app, you could either reinitiate
+        // time synchronization, or just disconnect that player.
 
         private void SendTimeSyncMessage(ulong remoteID)
 		{
@@ -495,12 +495,12 @@ namespace Oculus.Platform.Samples.VrHoops
 
 			m_remotePlayers[remoteID].player.ReceiveRemoteScore(score);
 		}
-		#endregion
+        #endregion
 
-		#region Serialization
+        #region Serialization
 
-		// This region contains basic data serialization logic.  This sample doesn't warrant
-		// much optimization, but the opportunites are ripe those interested in the topic.
+        // This region contains basic data serialization logic.  This sample doesn't warrant
+        // much optimization, but the opportunites are ripe those interested in the topic.
 
         private void PackVector3(Vector3 vec, byte[] buf, ref int offset)
 		{

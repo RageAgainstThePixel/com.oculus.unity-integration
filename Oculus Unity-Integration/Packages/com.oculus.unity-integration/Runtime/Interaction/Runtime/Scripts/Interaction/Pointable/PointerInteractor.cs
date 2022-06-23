@@ -50,8 +50,9 @@ namespace Oculus.Interaction
                 args.PointerEvent == PointerEvent.Cancel &&
                 Interactable != null)
             {
-                Interactable.RemoveInteractorById(Identifier);
-                Interactable.PointableElement.WhenPointerEventRaised -=
+                TInteractable interactable = Interactable;
+                interactable.RemoveInteractorById(Identifier);
+                interactable.PointableElement.WhenPointerEventRaised -=
                     HandlePointerEventRaised;
             }
         }
@@ -80,9 +81,9 @@ namespace Oculus.Interaction
             base.InteractableUnselected(interactable);
         }
 
-        protected override void DoInteractorUpdated()
+        protected override void DoPostprocess()
         {
-            base.DoInteractorUpdated();
+            base.DoPostprocess();
             if (_interactable != null)
             {
                 GeneratePointerEvent(PointerEvent.Move, _interactable);

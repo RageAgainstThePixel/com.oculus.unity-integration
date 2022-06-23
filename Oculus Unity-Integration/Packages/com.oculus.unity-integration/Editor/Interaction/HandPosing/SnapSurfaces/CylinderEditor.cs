@@ -25,7 +25,6 @@ namespace Oculus.Interaction.HandPosing.SnapSurfaces.Editor
 
         private ArcHandle _arcHandle = new ArcHandle();
         private Vector3[] _surfaceEdges;
-
         private CylinderSurface _surface;
 
         private void OnEnable()

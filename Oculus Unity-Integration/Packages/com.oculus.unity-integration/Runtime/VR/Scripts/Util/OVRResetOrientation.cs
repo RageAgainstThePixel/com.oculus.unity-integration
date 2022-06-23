@@ -22,10 +22,10 @@ public class OVRResetOrientation : MonoBehaviour
 	/// </summary>
 	public OVRInput.RawButton resetButton = OVRInput.RawButton.Y;
 
-	/// <summary>
-	/// Check input and reset orientation if necessary
-	/// See the input mapping setup in the Unity Integration guide
-	/// </summary>
+    /// <summary>
+    /// Check input and reset orientation if necessary
+    /// See the input mapping setup in the Unity Integration guide
+    /// </summary>
     private void Update()
 	{
 		// NOTE: some of the buttons defined in OVRInput.RawButton are not available on the Android game pad controller

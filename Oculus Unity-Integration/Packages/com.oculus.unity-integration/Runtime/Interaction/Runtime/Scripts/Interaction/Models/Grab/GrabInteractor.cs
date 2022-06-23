@@ -84,7 +84,7 @@ namespace Oculus.Interaction
             this.EndStart(ref _started);
         }
 
-        protected override void DoEveryUpdate()
+        protected override void DoPreprocess()
         {
             transform.position = _grabCenter.position;
             transform.rotation = _grabCenter.rotation;

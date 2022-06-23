@@ -163,9 +163,9 @@ public class ONSPAudioSource : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Awake this instance.
-	/// </summary>
+    /// <summary>
+    /// Awake this instance.
+    /// </summary>
     private void Awake()
 	{
 		// We might iterate through multiple sources / game object
@@ -173,16 +173,16 @@ public class ONSPAudioSource : MonoBehaviour
 		SetParameters(ref source);
 	}
 
-	/// <summary>
-	/// Start this instance.
-	/// </summary>
+    /// <summary>
+    /// Start this instance.
+    /// </summary>
     private void Start()
     {
     }
 
-	/// <summary>
-	/// Update this instance.
-	/// </summary>
+    /// <summary>
+    /// Update this instance.
+    /// </summary>
     private void Update()
     {
 		// We might iterate through multiple sources / game object

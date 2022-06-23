@@ -24,10 +24,10 @@ public class OVRMonoscopic : MonoBehaviour
 
 	private bool						monoscopic = false;
 
-	/// <summary>
-	/// Check input and toggle monoscopic rendering mode if necessary
-	/// See the input mapping setup in the Unity Integration guide
-	/// </summary>
+    /// <summary>
+    /// Check input and toggle monoscopic rendering mode if necessary
+    /// See the input mapping setup in the Unity Integration guide
+    /// </summary>
     private void Update()
 	{
 		// NOTE: some of the buttons defined in OVRInput.RawButton are not available on the Android game pad controller

@@ -27,12 +27,12 @@ public class AmbienceEmitter : MonoBehaviour {
 	private float			fadeTime = 0.25f;
 	private int				lastPosIdx = -1;
 
-	/*
-	-----------------------
-	Awake()
-	-----------------------
-	*/
-    private void Awake() {
+        /*
+        -----------------------
+        Awake()
+        -----------------------
+        */
+        private void Awake() {
 		if ( autoActivate ) {
 			activated = true;
 			nextPlayTime = Time.time + Random.Range( randomRetriggerDelaySecs.x, randomRetriggerDelaySecs.y );
@@ -47,12 +47,12 @@ public class AmbienceEmitter : MonoBehaviour {
 		}
 	}
 
-	/*
-	-----------------------
-	Update()
-	-----------------------
-	*/
-    private void Update() {
+        /*
+        -----------------------
+        Update()
+        -----------------------
+        */
+        private void Update() {
 		if ( activated ) {
 			if ( ( playingIdx == -1 ) || autoRetrigger ) {
 				if ( Time.time >= nextPlayTime ) {

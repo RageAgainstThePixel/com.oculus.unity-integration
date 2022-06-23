@@ -28,7 +28,7 @@ namespace Oculus.Interaction
         private float _maxOffsetAlongNormal;
         private Vector2 _planarOffset;
 
-        private List<PokeInteractor> _pokeInteractors;
+        private HashSet<PokeInteractor> _pokeInteractors;
 
         protected bool _started = false;
 
@@ -37,7 +37,7 @@ namespace Oculus.Interaction
             this.BeginStart(ref _started);
             Assert.IsNotNull(_pokeInteractable);
             Assert.IsNotNull(_buttonBaseTransform);
-            _pokeInteractors = new List<PokeInteractor>();
+            _pokeInteractors = new HashSet<PokeInteractor>();
             _maxOffsetAlongNormal = Vector3.Dot(transform.position - _buttonBaseTransform.position, -1f * _buttonBaseTransform.forward);
             Vector3 pointOnPlane = transform.position - _maxOffsetAlongNormal * _buttonBaseTransform.forward;
             _planarOffset = new Vector2(
@@ -50,6 +50,8 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
+                _pokeInteractors.Clear();
+                _pokeInteractors.UnionWith(_pokeInteractable.Interactors);
                 _pokeInteractable.WhenInteractorAdded.Action += HandleInteractorAdded;
                 _pokeInteractable.WhenInteractorRemoved.Action += HandleInteractorRemoved;
             }
@@ -58,6 +60,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
+                _pokeInteractors.Clear();
                 _pokeInteractable.WhenInteractorAdded.Action -= HandleInteractorAdded;
                 _pokeInteractable.WhenInteractorRemoved.Action -= HandleInteractorRemoved;
             }

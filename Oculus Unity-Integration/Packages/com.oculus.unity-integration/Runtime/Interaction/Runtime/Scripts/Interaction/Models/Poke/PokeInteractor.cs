@@ -55,7 +55,7 @@ namespace Oculus.Interaction
             Assert.IsNotNull(_pointTransform);
         }
 
-        protected override void DoEveryUpdate()
+        protected override void DoPreprocess()
         {
             _hitInteractable = null;
             _previousOrigin = Origin;

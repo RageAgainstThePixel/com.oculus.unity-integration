@@ -22,6 +22,9 @@ namespace Oculus.Interaction
         private MonoBehaviour _pointable;
 
         [SerializeField]
+        private float _radius = 0.01f;
+
+        [SerializeField]
         private Color _hoverColor = Color.blue;
 
         [SerializeField]
@@ -118,7 +121,7 @@ namespace Oculus.Interaction
 
         protected virtual void LateUpdate()
         {
-            PolylineGizmos.LineWidth = 0.03f;
+            PolylineGizmos.LineWidth = _radius;
             foreach (PointData pointData in _points.Values)
             {
                 PolylineGizmos.Color = pointData.Selecting ? _selectColor : _hoverColor;

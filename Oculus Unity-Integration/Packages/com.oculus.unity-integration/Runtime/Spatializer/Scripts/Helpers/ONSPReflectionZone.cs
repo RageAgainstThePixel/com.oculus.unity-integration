@@ -38,24 +38,24 @@ public class ONSPReflectionZone : MonoBehaviour
     private static Stack<ReflectionSnapshot> snapshotList        = new Stack<ReflectionSnapshot>();
     private static ReflectionSnapshot        currentSnapshot     = new ReflectionSnapshot();
 
-	/// <summary>
-	/// Start this instance.
-	/// </summary>
+    /// <summary>
+    /// Start this instance.
+    /// </summary>
     private void Start () 
 	{
 	}
 
-	/// <summary>
-	/// Update this instance.
-	/// </summary>
+    /// <summary>
+    /// Update this instance.
+    /// </summary>
     private void Update () 
 	{
 	}
 
-	/// <summary>
-	/// Raises the trigger enter event.
-	/// </summary>
-	/// <param name="other">Other.</param>
+    /// <summary>
+    /// Raises the trigger enter event.
+    /// </summary>
+    /// <param name="other">Other.</param>
     private void OnTriggerEnter(Collider other) 
 	{
 		if(CheckForAudioListener(other.gameObject) == true)
@@ -64,10 +64,10 @@ public class ONSPReflectionZone : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Raises the trigger exit event.
-	/// </summary>
-	/// <param name="other">Other.</param>
+    /// <summary>
+    /// Raises the trigger exit event.
+    /// </summary>
+    /// <param name="other">Other.</param>
     private void OnTriggerExit(Collider other)
 	{
 		if(CheckForAudioListener(other.gameObject) == true)
@@ -77,14 +77,14 @@ public class ONSPReflectionZone : MonoBehaviour
 	}
 
 
-	// * * * * * * * * * * * * *
-	// Private functions
+    // * * * * * * * * * * * * *
+    // Private functions
 
-	/// <summary>
-	/// Checks for audio listener.
-	/// </summary>
-	/// <returns><c>true</c>, if for audio listener was checked, <c>false</c> otherwise.</returns>
-	/// <param name="gameObject">Game object.</param>
+    /// <summary>
+    /// Checks for audio listener.
+    /// </summary>
+    /// <returns><c>true</c>, if for audio listener was checked, <c>false</c> otherwise.</returns>
+    /// <param name="gameObject">Game object.</param>
     private bool CheckForAudioListener(GameObject gameObject)
 	{
 		AudioListener al = gameObject.GetComponentInChildren<AudioListener>();
@@ -95,10 +95,10 @@ public class ONSPReflectionZone : MonoBehaviour
 
         return false;
 	}
-	
-	/// <summary>
-	/// Pushs the current mixer snapshot onto the snapshot stack
-	/// </summary>
+
+    /// <summary>
+    /// Pushs the current mixer snapshot onto the snapshot stack
+    /// </summary>
     private void PushCurrentMixerShapshot()
 	{
         ReflectionSnapshot css = currentSnapshot;
@@ -111,10 +111,10 @@ public class ONSPReflectionZone : MonoBehaviour
 		SetReflectionValues();
 	}
 
-    	/// <summary>
-	/// Pops the current reflection values from reflectionsList stack.
-	/// </summary>
-        private void PopCurrentMixerSnapshot()
+    /// <summary>
+    /// Pops the current reflection values from reflectionsList stack.
+    /// </summary>
+    private void PopCurrentMixerSnapshot()
 	{
         ReflectionSnapshot snapshot = snapshotList.Pop();
 
@@ -122,9 +122,9 @@ public class ONSPReflectionZone : MonoBehaviour
         SetReflectionValues(ref snapshot);
 	}
 
-	/// <summary>
-	/// Sets the reflection values. This is done when entering a zone (use zone values).
-	/// </summary>
+    /// <summary>
+    /// Sets the reflection values. This is done when entering a zone (use zone values).
+    /// </summary>
     private void SetReflectionValues()
 	{
         if (mixerSnapshot != null)
@@ -142,10 +142,10 @@ public class ONSPReflectionZone : MonoBehaviour
         }
     }
 
-	/// <summary>
-	/// Sets the reflection values. This is done when exiting a zone (use popped values).
-	/// </summary>
-	/// <param name="rm">Rm.</param>
+    /// <summary>
+    /// Sets the reflection values. This is done when exiting a zone (use popped values).
+    /// </summary>
+    /// <param name="rm">Rm.</param>
     private void SetReflectionValues(ref ReflectionSnapshot mss)
 	{
         if(mss.mixerSnapshot != null)

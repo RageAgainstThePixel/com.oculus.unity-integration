@@ -25,7 +25,7 @@ namespace Oculus.Platform.Samples.VrHoops
 			m_leaderboards.CheckForUpdates();
 		}
 
-		#region Initialization and Shutdown
+        #region Initialization and Shutdown
 
         private void Awake()
 		{
@@ -45,7 +45,6 @@ namespace Oculus.Platform.Samples.VrHoops
 			m_leaderboards = new LeaderboardManager();
 			m_achievements = new AchievementsManager();
 		}
-
 
         private void Start()
 		{

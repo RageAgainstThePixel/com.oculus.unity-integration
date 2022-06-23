@@ -249,9 +249,9 @@ namespace Oculus.Platform.Samples.VrHoops
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region Player Setup/Teardown
+        #region Player Setup/Teardown
 
         private void SetupForIdle()
 		{
@@ -303,9 +303,9 @@ namespace Oculus.Platform.Samples.VrHoops
 			return player;
 		}
 
-		#endregion
+        #endregion
 
-		#region Main Camera Movement
+        #region Main Camera Movement
 
         private void MoveCameraToIdlePosition()
 		{
@@ -361,7 +361,7 @@ namespace Oculus.Platform.Samples.VrHoops
 			}
 		}
 
-		// notification from the Matchmaking service if we succeeded in finding an online match
+        // notification from the Matchmaking service if we succeeded in finding an online match
         private void OnMatchFoundCallback(bool success)
 		{
 			if (success)
@@ -374,7 +374,7 @@ namespace Oculus.Platform.Samples.VrHoops
 			}
 		}
 
-		// handle an offer from a remote player for a new match start time
+        // handle an offer from a remote player for a new match start time
         private float StartTimeOfferCallback(float remoteTime)
 		{
 			if (m_currentState == State.WAITING_TO_SETUP_MATCH)
@@ -389,9 +389,9 @@ namespace Oculus.Platform.Samples.VrHoops
 			return MatchStartTime;
 		}
 
-		#endregion
+        #endregion
 
-		#region Leaderboards and Achievements
+        #region Leaderboards and Achievements
 
         private void MostWinsLeaderboardCallback(SortedDictionary<int, LeaderboardEntry> entries)
 		{

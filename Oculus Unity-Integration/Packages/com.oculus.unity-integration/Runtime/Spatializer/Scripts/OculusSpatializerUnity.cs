@@ -38,23 +38,17 @@ public class OculusSpatializerUnity : MonoBehaviour
     public bool dynamicReflectionsEnabled = true;
     private float particleSize = 0.2f;
     private float particleOffset = 0.1f;
-
     private GameObject room;
     private Renderer[] wallRenderer = new Renderer[6];
-
     private float[] dims = new float[3] { 1.0f, 1.0f, 1.0f };
     private float[] coefs = new float[6];
-
     private const int HIT_COUNT = 2048;
-
     private Vector3[] points = new Vector3[HIT_COUNT];
     private Vector3[] normals = new Vector3[HIT_COUNT];
-
     private ParticleSystem sys;
     private ParticleSystem.Particle[] particles = new ParticleSystem.Particle[HIT_COUNT];
-
-
     private static LayerMask gLayerMask = -1;
+
     private static Vector3 swapHandedness(Vector3 vec) { return new Vector3(vec.x, vec.y, -vec.z); }
     [MonoPInvokeCallback(typeof(AudioRaycastCallback))]
     private static void AudioRaycast(Vector3 origin, Vector3 direction, out Vector3 point, out Vector3 normal, System.IntPtr data)

@@ -105,10 +105,10 @@ namespace Oculus.Interaction.PoseDetection.Editor
             public float ToFirstWhenBelow => ThresholdMidpoint - ThresholdWidth * 0.5f;
             public float ToSecondWhenAbove => ThresholdMidpoint + ThresholdWidth * 0.5f;
         }
-#endregion
+        #endregion
 
-private SerializedProperty _rootProperty;
-private SerializedProperty _minTimeInStateProp;
+        private SerializedProperty _rootProperty;
+        private SerializedProperty _minTimeInStateProp;
 
         private readonly bool[] _featureVisible = new bool [FeatureEnumValues.Length];
 

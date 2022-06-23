@@ -141,6 +141,7 @@ public class OVRManagerEditor : Editor
 
 			EditorGUI.indentLevel--;
 		}
+		EditorGUILayout.EndFoldoutHeaderGroup();
 #endif
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_ANDROID
@@ -164,6 +165,7 @@ public class OVRManagerEditor : Editor
 		EditorGUI.EndDisabledGroup();
 #endif
 #endif
+
 
 		if (modified)
 		{

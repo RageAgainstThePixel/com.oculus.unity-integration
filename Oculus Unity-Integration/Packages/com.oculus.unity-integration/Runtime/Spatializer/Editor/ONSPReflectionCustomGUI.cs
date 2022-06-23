@@ -126,15 +126,15 @@ public class OculusSpatializerReflectionCustomGUI : IAudioEffectPluginGUI
         return false;
     }
 
-	// Separator
+    // Separator
     private void Separator()
 	{
 		GUI.color = new Color(1, 1, 1, 0.25f);
 		GUILayout.Box("", "HorizontalSlider", GUILayout.Height(16));
 		GUI.color = Color.white;
 	}
-	
-	// Label
+
+    // Label
     private void Label(string label)
 	{
 		EditorGUILayout.LabelField (label);

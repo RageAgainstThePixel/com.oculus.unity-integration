@@ -270,7 +270,6 @@ public class OVRNetwork
 		}
 
         private TcpClient tcpClient = null;
-
         private byte[][] receivedBuffers = { new byte[OVRNetwork.MaxBufferLength], new byte[OVRNetwork.MaxBufferLength] };
         private int receivedBufferIndex = 0;
         private int receivedBufferDataSize = 0;

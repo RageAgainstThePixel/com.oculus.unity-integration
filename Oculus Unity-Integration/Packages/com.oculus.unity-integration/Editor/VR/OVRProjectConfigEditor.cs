@@ -151,6 +151,10 @@ public class OVRProjectConfigEditor : Editor
 				OVREditorUtil.SetupEnumField(projectConfig, new GUIContent("Tracked Keyboard Support",
 						"Show user's physical keyboard in correct position in VR."),
 					ref projectConfig.trackedKeyboardSupport, ref hasModified);
+
+				// Anchor Support
+				OVREditorUtil.SetupEnumField(projectConfig, "Anchor Support", ref projectConfig.anchorSupport, ref hasModified);
+
 				if (hasModified && projectConfig.trackedKeyboardSupport != OVRProjectConfig.TrackedKeyboardSupport.None)
 				{
 					projectConfig.renderModelSupport = OVRProjectConfig.RenderModelSupport.Enabled;
@@ -217,8 +221,6 @@ public class OVRProjectConfigEditor : Editor
 					"If checked, this application can use experimental features. Note that such features are for developer use only. This option must be disabled when submitting to the Oculus Store."),
 					ref projectConfig.experimentalFeaturesEnabled, ref hasModified);
 
-				// Spatial Anchors Support
-				OVREditorUtil.SetupEnumField(projectConfig, "Spatial Anchors Support", ref projectConfig.spatialAnchorsSupport, ref hasModified);
 
 			break;
 		}

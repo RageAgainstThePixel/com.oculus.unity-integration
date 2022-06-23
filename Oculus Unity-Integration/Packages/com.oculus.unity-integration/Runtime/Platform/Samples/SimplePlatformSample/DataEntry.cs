@@ -19,7 +19,7 @@ namespace Oculus.Platform.Samples.SimplePlatformSample
 			checkEntitlement();
 		}
 
-		// Update is called once per frame
+        // Update is called once per frame
         private void Update()
 		{
 			string currentText = GetComponent<InputField>().text;
@@ -333,7 +333,7 @@ namespace Oculus.Platform.Samples.SimplePlatformSample
 		}
 
 
-		// Callbacks
+        // Callbacks
         private void userProofCallback(Message<UserProof> msg)
 		{
 			if (!msg.IsError)

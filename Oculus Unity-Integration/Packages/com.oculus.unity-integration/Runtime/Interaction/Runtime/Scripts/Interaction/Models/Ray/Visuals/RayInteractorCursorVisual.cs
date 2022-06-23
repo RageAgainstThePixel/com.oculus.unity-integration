@@ -108,7 +108,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                _rayInteractor.WhenInteractorUpdated += UpdateVisual;
+                _rayInteractor.WhenPostprocessed += UpdateVisual;
                 _rayInteractor.WhenStateChanged += UpdateVisualState;
                 UpdateVisual();
             }
@@ -118,7 +118,7 @@ namespace Oculus.Interaction
         {
             if (_started)
             {
-                _rayInteractor.WhenInteractorUpdated -= UpdateVisual;
+                _rayInteractor.WhenPostprocessed -= UpdateVisual;
                 _rayInteractor.WhenStateChanged -= UpdateVisualState;
             }
         }

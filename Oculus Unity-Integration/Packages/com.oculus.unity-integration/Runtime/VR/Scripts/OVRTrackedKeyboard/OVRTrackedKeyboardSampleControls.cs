@@ -10,6 +10,7 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,6 +28,7 @@ public class OVRTrackedKeyboardSampleControls : MonoBehaviour
     public Toggle TrackingToggle;
     public Toggle ConnectionToggle;
     public Toggle RemoteKeyboardToggle;
+    public Button[] ShaderButtons;
 
     private void Start()
     {
@@ -43,6 +45,7 @@ public class OVRTrackedKeyboardSampleControls : MonoBehaviour
         if (RemoteKeyboardToggle.isOn != trackedKeyboard.RemoteKeyboard) {
             RemoteKeyboardToggle.isOn = trackedKeyboard.RemoteKeyboard;
         }
+
     }
 
     private void Update()
@@ -76,6 +79,25 @@ public class OVRTrackedKeyboardSampleControls : MonoBehaviour
     public void SetPresentationKeyLabels()
     {
         trackedKeyboard.Presentation = OVRTrackedKeyboard.KeyboardPresentation.PreferKeyLabels;
+    }
+
+    public void SetUnlitShader()
+    {
+        StartCoroutine(SetShaderCoroutine("Unlit/Texture"));
+    }
+
+    public void SetDiffuseShader()
+    {
+        StartCoroutine(SetShaderCoroutine("Mobile/Diffuse"));
+    }
+
+    private IEnumerator SetShaderCoroutine(string shaderName)
+    {
+        bool trackingWasEnabled = trackedKeyboard.TrackingEnabled;
+        trackedKeyboard.TrackingEnabled = false;
+        yield return new WaitWhile(() => trackedKeyboard.TrackingState != OVRTrackedKeyboard.TrackedKeyboardState.Offline);
+        trackedKeyboard.keyboardModelShader = Shader.Find(shaderName);
+        trackedKeyboard.TrackingEnabled = trackingWasEnabled;
     }
 
     public void LaunchKeyboardSelection()

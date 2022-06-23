@@ -63,7 +63,7 @@ namespace Oculus.Interaction
             Assert.IsNotNull(_rayOrigin);
         }
 
-        protected override void DoEveryUpdate()
+        protected override void DoPreprocess()
         {
             Origin = _rayOrigin.transform.position;
             Rotation = _rayOrigin.transform.rotation;
