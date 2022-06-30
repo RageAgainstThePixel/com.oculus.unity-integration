@@ -177,8 +177,8 @@ public class OVRPlayerController : MonoBehaviour
         }
 
         // We use OVRCameraRig to set rotations to cameras,
-        // and to be influenced by rotation
-        OVRCameraRig[] CameraRigs = gameObject.GetComponentsInChildren<OVRCameraRig>();
+		// and to be influenced by rotation
+		OVRCameraRig[] CameraRigs = gameObject.GetComponentsInChildren<OVRCameraRig>();
 
 		if (CameraRigs.Length == 0)
         {
@@ -248,7 +248,7 @@ public class OVRPlayerController : MonoBehaviour
             buttonRotation += RotationRatchet;
         }
 #endif
-    }
+	}
 
 	protected virtual void UpdateController()
 	{
@@ -385,7 +385,7 @@ public class OVRPlayerController : MonoBehaviour
             }
 
             // No positional movement if we are in the air
-            if (!Controller.isGrounded)
+			if (!Controller.isGrounded)
             {
                 MoveScale = 0.0f;
             }
@@ -426,6 +426,7 @@ public class OVRPlayerController : MonoBehaviour
                 MoveThrottle += ort * (transform.lossyScale.x * moveInfluence * BackAndSideDampen * Vector3.right);
             }
 
+
             moveInfluence = Acceleration * 0.1f * MoveScale * MoveScaleMultiplier;
 
 #if !UNITY_ANDROID // LeftTrigger not avail on Android game pad
@@ -449,19 +450,19 @@ public class OVRPlayerController : MonoBehaviour
             if (primaryAxis.y < 0.0f)
             {
                 MoveThrottle += ort * (Mathf.Abs(primaryAxis.y) * transform.lossyScale.z * moveInfluence *
-									   BackAndSideDampen * Vector3.back);
+                                       BackAndSideDampen * Vector3.back);
             }
 
             if (primaryAxis.x < 0.0f)
             {
                 MoveThrottle += ort * (Mathf.Abs(primaryAxis.x) * transform.lossyScale.x * moveInfluence *
-									   BackAndSideDampen * Vector3.left);
+                                       BackAndSideDampen * Vector3.left);
             }
 
             if (primaryAxis.x > 0.0f)
             {
                 MoveThrottle += ort * (primaryAxis.x * transform.lossyScale.x * moveInfluence * BackAndSideDampen *
-									   Vector3.right);
+                                       Vector3.right);
             }
         }
 
@@ -499,7 +500,7 @@ public class OVRPlayerController : MonoBehaviour
             }
 #endif
 
-            if (SnapRotation)
+			if (SnapRotation)
 			{
 				if (OVRInput.Get(OVRInput.Button.SecondaryThumbstickLeft) ||
 					(RotationEitherThumbstick && OVRInput.Get(OVRInput.Button.PrimaryThumbstickLeft)))

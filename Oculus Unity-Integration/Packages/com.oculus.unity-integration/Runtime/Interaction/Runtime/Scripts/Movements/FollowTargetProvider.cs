@@ -12,7 +12,7 @@ permissions and limitations under the License.
 
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing
+namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
     /// This IPoseMovement constantly moves the pose at a fixed rate

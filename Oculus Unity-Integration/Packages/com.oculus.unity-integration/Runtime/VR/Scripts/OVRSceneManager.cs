@@ -207,16 +207,19 @@ public class OVRSceneManager : MonoBehaviour
   internal static class Development
   {
     [Conditional("DEVELOPMENT_BUILD")]
+    [Conditional("UNITY_EDITOR")]
     public static void Log(string context, string message) => Debug.Log($"[{context}] {message}");
 
     [Conditional("DEVELOPMENT_BUILD")]
+    [Conditional("UNITY_EDITOR")]
     public static void LogWarning(string context, string message) => Debug.LogWarning($"[{context}] {message}");
 
     [Conditional("DEVELOPMENT_BUILD")]
+    [Conditional("UNITY_EDITOR")]
     public static void LogError(string context, string message) => Debug.LogError($"[{context}] {message}");
   }
 
-    private void Awake()
+  private void Awake()
   {
     // Only allow one instance at runtime.
     if (FindObjectsOfType<OVRSceneManager>().Length > 1)
@@ -232,20 +235,14 @@ public class OVRSceneManager : MonoBehaviour
   /// Loads the scene model from the Guardian.
   /// </summary>
   /// <remarks>
-  /// This function currently does not work in Editor. When running on Quest, the Scene API is queried to retrieve the
-  /// entities describing the Scene.
+  /// When running on Quest, Scene is queried to retrieve the entities describing the Scene Model. In the Editor,
+  /// the Scene Model is loaded over Link.
   /// </remarks>
   /// <returns>Returns true if the query was successfully registered</returns>
   public bool LoadSceneModel()
   {
-#if !UNITY_EDITOR
     _currentQueryMode = QueryMode.QueryAllRoomLayoutEnabledForAllEntitiesInside;
     return LoadSpatialEntities();
-#else
-    // TODO: Update this as link support comes online. See: T112509536
-    Debug.LogWarning("Scene API is not currently supported in the Editor.");
-    return false;
-#endif
   }
 
   /// <summary>
@@ -257,8 +254,11 @@ public class OVRSceneManager : MonoBehaviour
 #if !UNITY_EDITOR
     var requestString = "";
     return OVRPlugin.RequestSceneCapture(requestString, out _sceneCaptureRequestId);
+#elif UNITY_EDITOR_WIN
+    Development.LogWarning(nameof(OVRSceneManager),
+      "Scene Capture does not work over Link. Please capture a scene with the HMD in standalone mode, then access the scene model over Link.");
+    return false;
 #else
-    // Cannot invoke Room Capture when running in the editor
     return false;
 #endif
   }
@@ -334,15 +334,20 @@ public class OVRSceneManager : MonoBehaviour
       }
     }
 
-    bool success = OVRPlugin.QuerySpaces(queryInfo, out var requestId);
+    if (OVRPlugin.QuerySpaces(queryInfo, out var requestId))
+    {
+      // We save this request id to ensure that when we trap a SpaceQueryResults event
+      // it's indeed one of our requests.
+      _individualRequestIds.Add(requestId);
+      Verbose?.Log(nameof(OVRSceneManager),
+          $"{nameof(LoadSpatialEntities)}() calling {nameof(OVRPlugin)}.{nameof(OVRPlugin.QuerySpaces)}(). Request id [{requestId}] added to the request list.");
 
-    // We save this request id to ensure that when we trap a SpatialEntityQueryResults event
-    // it's indeed one of our requests.
-    _individualRequestIds.Add(requestId);
-    Verbose?.Log(nameof(OVRSceneManager),
-      $"{nameof(LoadSpatialEntities)}() calling {nameof(OVRPlugin)}.{nameof(OVRPlugin.QuerySpaces)}(). Request id [{requestId}] added to the request list.");
+      return true;
+    }
 
-    return success;
+    Verbose?.LogWarning(nameof(OVRSceneManager),
+      $"{nameof(LoadSpatialEntities)}() {nameof(OVRPlugin)}.{nameof(OVRPlugin.QuerySpaces)}() failed.");
+    return false;
   }
 
   /// <summary>
@@ -415,12 +420,12 @@ public class OVRSceneManager : MonoBehaviour
       {
         // Skip empty labels
         if (string.IsNullOrEmpty(label))
-                {
-                    continue;
-                }
+        {
+            continue;
+        }
 
-                // Search the prefab override for an entry matching the label
-                foreach (var @override in PrefabOverrides)
+        // Search the prefab override for an entry matching the label
+        foreach (var @override in PrefabOverrides)
         {
           if (@override.Prefab &&
               @override.ClassificationLabel == label)
@@ -486,11 +491,11 @@ public class OVRSceneManager : MonoBehaviour
     _individualRequestIds.Remove(requestId);
 
     if (!result)
-        {
-            return;
-        }
+    {
+        return;
+    }
 
-        if (!OVRPlugin.RetrieveSpaceQueryResults(requestId, out var results))
+    if (!OVRPlugin.RetrieveSpaceQueryResults(requestId, out var results))
     {
       Development.LogError(nameof(OVRSceneManager),
         $"{nameof(OVRPlugin.RetrieveSpaceQueryResults)}() Could not retrieve results.");
@@ -566,21 +571,21 @@ public class OVRSceneManager : MonoBehaviour
     IEnumerable<string> EnabledComponents()
     {
       if (IsComponentEnabled(space, OVRPlugin.SpaceComponentType.Locatable))
-            {
-                yield return nameof(OVRPlugin.SpaceComponentType.Locatable);
-            }
+      {
+          yield return nameof(OVRPlugin.SpaceComponentType.Locatable);
+      }
 
-            if (bounded2dEnabled)
-            {
-                yield return nameof(OVRPlugin.SpaceComponentType.Bounded2D);
-            }
+      if (bounded2dEnabled)
+      {
+          yield return nameof(OVRPlugin.SpaceComponentType.Bounded2D);
+      }
 
-            if (bounded3dEnabled)
-            {
-                yield return nameof(OVRPlugin.SpaceComponentType.Bounded3D);
-            }
+      if (bounded3dEnabled)
+      {
+          yield return nameof(OVRPlugin.SpaceComponentType.Bounded3D);
+      }
 
-            if (IsComponentEnabled(space, OVRPlugin.SpaceComponentType.SemanticLabels))
+      if (IsComponentEnabled(space, OVRPlugin.SpaceComponentType.SemanticLabels))
       {
         if (OVRPlugin.GetSpaceSemanticLabels(space, out var labels))
         {
@@ -592,10 +597,10 @@ public class OVRSceneManager : MonoBehaviour
         }
       }
       if (roomLayoutEnabled)
-            {
-                yield return nameof(OVRPlugin.SpaceComponentType.RoomLayout);
-            }
-        }
+      {
+          yield return nameof(OVRPlugin.SpaceComponentType.RoomLayout);
+      }
+    }
 
     Verbose?.Log(nameof(OVRSceneManager),
       $"[{uuid}] {nameof(OVRManager_SpaceQueryComplete)}() Enabled components: {string.Join(", ", EnabledComponents())}");

@@ -16,7 +16,7 @@ namespace Oculus.Platform.Samples.VrBoardGame
 		// my Oculus user name
 		private string m_myOculusID;
 
-        #region Initialization and Shutdown
+		#region Initialization and Shutdown
 
         private void Awake()
 		{

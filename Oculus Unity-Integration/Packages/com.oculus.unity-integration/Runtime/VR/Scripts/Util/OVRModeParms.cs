@@ -24,11 +24,11 @@ public class OVRModeParms : MonoBehaviour
 	/// </summary>
 	public OVRInput.RawButton	resetButton = OVRInput.RawButton.X;
 
-    #endregion
+#endregion
 
-    /// <summary>
-    /// Invoke power state mode test.
-    /// </summary>
+	/// <summary>
+	/// Invoke power state mode test.
+	/// </summary>
     private void Start()
 	{
 		if (!OVRManager.isHmdPresent)
@@ -42,9 +42,9 @@ public class OVRModeParms : MonoBehaviour
 		InvokeRepeating ( "TestPowerStateMode", 10, 10.0f );
 	}
 
-    /// <summary>
-    /// Change default vr mode parms dynamically.
-    /// </summary>
+	/// <summary>
+	/// Change default vr mode parms dynamically.
+	/// </summary>
     private void Update()
 	{
 		// NOTE: some of the buttons defined in OVRInput.RawButton are not available on the Android game pad controller
@@ -60,9 +60,9 @@ public class OVRModeParms : MonoBehaviour
 		}
 	}
 
-    /// <summary>
-    /// Check current power state mode.
-    /// </summary>
+	/// <summary>
+	/// Check current power state mode.
+	/// </summary>
     private void TestPowerStateMode()
 	{
 		//*************************

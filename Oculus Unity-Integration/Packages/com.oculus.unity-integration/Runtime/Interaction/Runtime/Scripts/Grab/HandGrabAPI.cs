@@ -16,6 +16,11 @@ using UnityEngine.Assertions;
 
 namespace Oculus.Interaction.GrabAPI
 {
+    /// <summary>
+    /// The HandGrabAPI wraps under the hood several IFingerAPIs to detect if
+    /// the fingers are grabbing or not. It differentiates between pinch and
+    /// palm grabs but via Inject it is possible to modify the detectors.
+    /// </summary>
     public class HandGrabAPI : MonoBehaviour
     {
         [SerializeField, Interface(typeof(IHand))]

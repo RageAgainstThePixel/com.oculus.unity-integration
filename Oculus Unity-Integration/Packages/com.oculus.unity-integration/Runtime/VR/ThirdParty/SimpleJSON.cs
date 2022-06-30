@@ -318,12 +318,10 @@ namespace OVRSimpleJSON // SimpleJSON
             get
             {
                 foreach (var C in Children)
-                {
                     foreach (var D in C.DeepChildren)
                     {
                         yield return D;
                     }
-                }
             }
         }
 

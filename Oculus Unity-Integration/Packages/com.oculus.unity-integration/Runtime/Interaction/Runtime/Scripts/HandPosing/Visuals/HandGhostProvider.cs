@@ -13,7 +13,7 @@ permissions and limitations under the License.
 using Oculus.Interaction.Input;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.Visuals
+namespace Oculus.Interaction.HandGrab.Visuals
 {
     /// <summary>
     /// Holds references to the prefabs for Ghost-Hands, so they can be instantiated

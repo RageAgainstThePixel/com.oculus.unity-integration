@@ -14,7 +14,7 @@ using Oculus.Interaction.Input;
 using System.Linq;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing
+namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
     /// Data for the pose of a hand for grabbing an object.

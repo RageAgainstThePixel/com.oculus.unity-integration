@@ -98,6 +98,7 @@ namespace Oculus.Platform.Samples.NetChat
 	public class DataEntry : MonoBehaviour {
 
 		public Text dataOutput;
+
         private states currentState;
         private User localUser;
         private User remoteUser;
@@ -105,7 +106,7 @@ namespace Oculus.Platform.Samples.NetChat
         private int lastPacketID;
         private bool ratedMatchStarted;
 
-        // Use this for initialization
+		// Use this for initialization
         private void Start () {
 			currentState = states.NOT_INIT;
 			localUser = null;
@@ -125,7 +126,7 @@ namespace Oculus.Platform.Samples.NetChat
 
 		}
 
-        // Update is called once per frame
+		// Update is called once per frame
         private void Update()
 		{
 			string currentText = GetComponent<InputField>().text;

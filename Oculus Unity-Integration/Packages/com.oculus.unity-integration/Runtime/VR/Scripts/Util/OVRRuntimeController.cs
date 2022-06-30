@@ -38,7 +38,7 @@ public class OVRRuntimeController : MonoBehaviour
 	private bool m_hasInputFocusPrev = false;
 	private bool m_controllerConnectedPrev = false;
 
-    // Start is called before the first frame update
+	// Start is called before the first frame update
     private void Start()
 	{
 		if (m_controller == OVRInput.Controller.LTouch)
@@ -61,7 +61,7 @@ public class OVRRuntimeController : MonoBehaviour
 		OVRManager.InputFocusLost += InputFocusLost;
 	}
 
-    // Update is called once per frame
+	// Update is called once per frame
     private void Update()
 	{
 		bool controllerConnected = OVRInput.IsControllerConnected(m_controller);

@@ -67,11 +67,11 @@ namespace Oculus.Platform.Samples.VrVoiceChat
 			}
 		}
 
-        #region Launched Application from Accepting Invite
+		#region Launched Application from Accepting Invite
 
-        // Callback to check whether the User accepted the invite as
-        // a notification which caused the Application to launch.  If so, then
-        // we know we need to try to join that room.
+		// Callback to check whether the User accepted the invite as
+		// a notification which caused the Application to launch.  If so, then
+		// we know we need to try to join that room.
         private void LaunchedFromAcceptingInviteCallback(Message<string> msg)
 		{
 			if (msg.IsError)
@@ -155,7 +155,7 @@ namespace Oculus.Platform.Samples.VrVoiceChat
 			Notifications.GetRoomInviteNotifications().OnComplete(GetRoomInviteNotificationsCallback);
 		}
 
-        // task 13572454: add the type to callback definition
+		// task 13572454: add the type to callback definition
         private void GetRoomInviteNotificationsCallback(Message msg_untyped)
 		{
 			Message<RoomInviteNotificationList> msg = (Message<RoomInviteNotificationList>)msg_untyped;
@@ -257,9 +257,9 @@ namespace Oculus.Platform.Samples.VrVoiceChat
 			m_nextPollTime = Time.time;
 		}
 
-        #endregion
+		#endregion
 
-        #region Room Updates
+		#region Room Updates
 
         private void RoomUpdateCallback(Message<Room> msg)
 		{

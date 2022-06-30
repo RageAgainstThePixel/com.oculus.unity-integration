@@ -14,7 +14,7 @@ using Oculus.Interaction.Input;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.Visuals
+namespace Oculus.Interaction.HandGrab.Visuals
 {
     /// <summary>
     /// Stores the translation between hand tracked data and the represented joint.

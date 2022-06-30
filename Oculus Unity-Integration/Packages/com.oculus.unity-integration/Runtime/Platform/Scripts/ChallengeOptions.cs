@@ -65,6 +65,6 @@ namespace Oculus.Platform
       CAPI.ovr_ChallengeOptions_Destroy(Handle);
     }
 
-        private IntPtr Handle;
+    private IntPtr Handle;
   }
 }

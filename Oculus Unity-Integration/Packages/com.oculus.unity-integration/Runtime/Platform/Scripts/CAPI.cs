@@ -57,7 +57,7 @@ namespace Oculus.Platform
       }
 
       public string key_;
-            private KeyValuePairType valueType_;
+      private KeyValuePairType valueType_;
 
       public string stringValue_;
       public int intValue_;

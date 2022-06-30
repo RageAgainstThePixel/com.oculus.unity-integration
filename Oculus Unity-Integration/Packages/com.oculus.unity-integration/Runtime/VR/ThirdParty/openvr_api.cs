@@ -1689,7 +1689,7 @@ public struct IVRSpatialAnchors
 
 public class CVRSystem
 {
-        private IVRSystem FnTable;
+    private IVRSystem FnTable;
 	internal CVRSystem(IntPtr pInterface)
 	{
 		FnTable = (IVRSystem)Marshal.PtrToStructure(pInterface, typeof(IVRSystem));
@@ -1852,7 +1852,7 @@ public class CVRSystem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate bool _PollNextEventPacked(ref VREvent_t_Packed pEvent,uint uncbVREvent);
 	[StructLayout(LayoutKind.Explicit)]
-        private struct PollNextEventUnion
+    private struct PollNextEventUnion
 	{
 		[FieldOffset(0)]
 		public IVRSystem._PollNextEvent pPollNextEvent;
@@ -1898,7 +1898,7 @@ public class CVRSystem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate bool _GetControllerStatePacked(uint unControllerDeviceIndex,ref VRControllerState_t_Packed pControllerState,uint unControllerStateSize);
 	[StructLayout(LayoutKind.Explicit)]
-        private struct GetControllerStateUnion
+    private struct GetControllerStateUnion
 	{
 		[FieldOffset(0)]
 		public IVRSystem._GetControllerState pGetControllerState;
@@ -1929,7 +1929,7 @@ public class CVRSystem
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate bool _GetControllerStateWithPosePacked(ETrackingUniverseOrigin eOrigin,uint unControllerDeviceIndex,ref VRControllerState_t_Packed pControllerState,uint unControllerStateSize,ref TrackedDevicePose_t pTrackedDevicePose);
 	[StructLayout(LayoutKind.Explicit)]
-        private struct GetControllerStateWithPoseUnion
+    private struct GetControllerStateWithPoseUnion
 	{
 		[FieldOffset(0)]
 		public IVRSystem._GetControllerStateWithPose pGetControllerStateWithPose;
@@ -2012,7 +2012,7 @@ public class CVRSystem
 
 public class CVRExtendedDisplay
 {
-        private IVRExtendedDisplay FnTable;
+    private IVRExtendedDisplay FnTable;
 	internal CVRExtendedDisplay(IntPtr pInterface)
 	{
 		FnTable = (IVRExtendedDisplay)Marshal.PtrToStructure(pInterface, typeof(IVRExtendedDisplay));
@@ -2044,7 +2044,7 @@ public class CVRExtendedDisplay
 
 public class CVRTrackedCamera
 {
-        private IVRTrackedCamera FnTable;
+    private IVRTrackedCamera FnTable;
 	internal CVRTrackedCamera(IntPtr pInterface)
 	{
 		FnTable = (IVRTrackedCamera)Marshal.PtrToStructure(pInterface, typeof(IVRTrackedCamera));
@@ -2122,7 +2122,7 @@ public class CVRTrackedCamera
 
 public class CVRApplications
 {
-        private IVRApplications FnTable;
+    private IVRApplications FnTable;
 	internal CVRApplications(IntPtr pInterface)
 	{
 		FnTable = (IVRApplications)Marshal.PtrToStructure(pInterface, typeof(IVRApplications));
@@ -2287,7 +2287,7 @@ public class CVRApplications
 
 public class CVRChaperone
 {
-        private IVRChaperone FnTable;
+    private IVRChaperone FnTable;
 	internal CVRChaperone(IntPtr pInterface)
 	{
 		FnTable = (IVRChaperone)Marshal.PtrToStructure(pInterface, typeof(IVRChaperone));
@@ -2335,7 +2335,7 @@ public class CVRChaperone
 
 public class CVRChaperoneSetup
 {
-        private IVRChaperoneSetup FnTable;
+    private IVRChaperoneSetup FnTable;
 	internal CVRChaperoneSetup(IntPtr pInterface)
 	{
 		FnTable = (IVRChaperoneSetup)Marshal.PtrToStructure(pInterface, typeof(IVRChaperoneSetup));
@@ -2453,7 +2453,7 @@ public class CVRChaperoneSetup
 
 public class CVRCompositor
 {
-        private IVRCompositor FnTable;
+    private IVRCompositor FnTable;
 	internal CVRCompositor(IntPtr pInterface)
 	{
 		FnTable = (IVRCompositor)Marshal.PtrToStructure(pInterface, typeof(IVRCompositor));
@@ -2659,7 +2659,7 @@ public class CVRCompositor
 
 public class CVROverlay
 {
-        private IVROverlay FnTable;
+    private IVROverlay FnTable;
 	internal CVROverlay(IntPtr pInterface)
 	{
 		FnTable = (IVROverlay)Marshal.PtrToStructure(pInterface, typeof(IVROverlay));
@@ -2911,7 +2911,7 @@ public class CVROverlay
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate bool _PollNextOverlayEventPacked(ulong ulOverlayHandle,ref VREvent_t_Packed pEvent,uint uncbVREvent);
 	[StructLayout(LayoutKind.Explicit)]
-        private struct PollNextOverlayEventUnion
+    private struct PollNextOverlayEventUnion
 	{
 		[FieldOffset(0)]
 		public IVROverlay._PollNextOverlayEvent pPollNextOverlayEvent;
@@ -3127,7 +3127,7 @@ public class CVROverlay
 
 public class CVRRenderModels
 {
-        private IVRRenderModels FnTable;
+    private IVRRenderModels FnTable;
 	internal CVRRenderModels(IntPtr pInterface)
 	{
 		FnTable = (IVRRenderModels)Marshal.PtrToStructure(pInterface, typeof(IVRRenderModels));
@@ -3204,7 +3204,7 @@ public class CVRRenderModels
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate bool _GetComponentStatePacked(string pchRenderModelName,string pchComponentName,ref VRControllerState_t_Packed pControllerState,ref RenderModel_ControllerMode_State_t pState,ref RenderModel_ComponentState_t pComponentState);
 	[StructLayout(LayoutKind.Explicit)]
-        private struct GetComponentStateUnion
+    private struct GetComponentStateUnion
 	{
 		[FieldOffset(0)]
 		public IVRRenderModels._GetComponentState pGetComponentState;
@@ -3255,7 +3255,7 @@ public class CVRRenderModels
 
 public class CVRNotifications
 {
-        private IVRNotifications FnTable;
+    private IVRNotifications FnTable;
 	internal CVRNotifications(IntPtr pInterface)
 	{
 		FnTable = (IVRNotifications)Marshal.PtrToStructure(pInterface, typeof(IVRNotifications));
@@ -3276,7 +3276,7 @@ public class CVRNotifications
 
 public class CVRSettings
 {
-        private IVRSettings FnTable;
+    private IVRSettings FnTable;
 	internal CVRSettings(IntPtr pInterface)
 	{
 		FnTable = (IVRSettings)Marshal.PtrToStructure(pInterface, typeof(IVRSettings));
@@ -3339,7 +3339,7 @@ public class CVRSettings
 
 public class CVRScreenshots
 {
-        private IVRScreenshots FnTable;
+    private IVRScreenshots FnTable;
 	internal CVRScreenshots(IntPtr pInterface)
 	{
 		FnTable = (IVRScreenshots)Marshal.PtrToStructure(pInterface, typeof(IVRScreenshots));
@@ -3386,7 +3386,7 @@ public class CVRScreenshots
 
 public class CVRResources
 {
-        private IVRResources FnTable;
+    private IVRResources FnTable;
 	internal CVRResources(IntPtr pInterface)
 	{
 		FnTable = (IVRResources)Marshal.PtrToStructure(pInterface, typeof(IVRResources));
@@ -3406,7 +3406,7 @@ public class CVRResources
 
 public class CVRDriverManager
 {
-        private IVRDriverManager FnTable;
+    private IVRDriverManager FnTable;
 	internal CVRDriverManager(IntPtr pInterface)
 	{
 		FnTable = (IVRDriverManager)Marshal.PtrToStructure(pInterface, typeof(IVRDriverManager));
@@ -3431,7 +3431,7 @@ public class CVRDriverManager
 
 public class CVRInput
 {
-        private IVRInput FnTable;
+    private IVRInput FnTable;
 	internal CVRInput(IntPtr pInterface)
 	{
 		FnTable = (IVRInput)Marshal.PtrToStructure(pInterface, typeof(IVRInput));
@@ -3535,7 +3535,7 @@ public class CVRInput
 
 public class CVRIOBuffer
 {
-        private IVRIOBuffer FnTable;
+    private IVRIOBuffer FnTable;
 	internal CVRIOBuffer(IntPtr pInterface)
 	{
 		FnTable = (IVRIOBuffer)Marshal.PtrToStructure(pInterface, typeof(IVRIOBuffer));
@@ -3572,7 +3572,7 @@ public class CVRIOBuffer
 
 public class CVRSpatialAnchors
 {
-        private IVRSpatialAnchors FnTable;
+    private IVRSpatialAnchors FnTable;
 	internal CVRSpatialAnchors(IntPtr pInterface)
 	{
 		FnTable = (IVRSpatialAnchors)Marshal.PtrToStructure(pInterface, typeof(IVRSpatialAnchors));
@@ -5746,11 +5746,11 @@ public class OpenVR
 	public const uint k_ulInvalidSpatialAnchorHandle = 0;
 	public const string IVRSpatialAnchors_Version = "IVRSpatialAnchors_001";
 
-        private static uint VRToken { get; set; }
+    private static uint VRToken { get; set; }
 
-        private const string FnTable_Prefix = "FnTable:";
+    private const string FnTable_Prefix = "FnTable:";
 
-        private class COpenVRContext
+    private class COpenVRContext
 	{
 		public COpenVRContext() { Clear(); }
 
@@ -5771,7 +5771,7 @@ public class OpenVR
 			m_pVRSpatialAnchors = null;
 		}
 
-            private void CheckClear()
+        private void CheckClear()
 		{
 			if (VRToken != GetInitToken())
 			{
@@ -5788,10 +5788,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRSystem_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRSystem = new CVRSystem(pInterface);
-                    }
+                {
+                    m_pVRSystem = new CVRSystem(pInterface);
                 }
+            }
 			return m_pVRSystem;
 		}
 
@@ -5803,10 +5803,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRChaperone_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRChaperone = new CVRChaperone(pInterface);
-                    }
+                {
+                    m_pVRChaperone = new CVRChaperone(pInterface);
                 }
+            }
 			return m_pVRChaperone;
 		}
 
@@ -5818,10 +5818,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRChaperoneSetup_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRChaperoneSetup = new CVRChaperoneSetup(pInterface);
-                    }
+                {
+                    m_pVRChaperoneSetup = new CVRChaperoneSetup(pInterface);
                 }
+            }
 			return m_pVRChaperoneSetup;
 		}
 
@@ -5833,10 +5833,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRCompositor_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRCompositor = new CVRCompositor(pInterface);
-                    }
+                {
+                    m_pVRCompositor = new CVRCompositor(pInterface);
                 }
+            }
 			return m_pVRCompositor;
 		}
 
@@ -5848,10 +5848,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVROverlay_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVROverlay = new CVROverlay(pInterface);
-                    }
+                {
+                    m_pVROverlay = new CVROverlay(pInterface);
                 }
+            }
 			return m_pVROverlay;
 		}
 
@@ -5863,10 +5863,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRRenderModels_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRRenderModels = new CVRRenderModels(pInterface);
-                    }
+                {
+                    m_pVRRenderModels = new CVRRenderModels(pInterface);
                 }
+            }
 			return m_pVRRenderModels;
 		}
 
@@ -5878,10 +5878,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRExtendedDisplay_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRExtendedDisplay = new CVRExtendedDisplay(pInterface);
-                    }
+                {
+                    m_pVRExtendedDisplay = new CVRExtendedDisplay(pInterface);
                 }
+            }
 			return m_pVRExtendedDisplay;
 		}
 
@@ -5893,10 +5893,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRSettings_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRSettings = new CVRSettings(pInterface);
-                    }
+                {
+                    m_pVRSettings = new CVRSettings(pInterface);
                 }
+            }
 			return m_pVRSettings;
 		}
 
@@ -5908,10 +5908,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRApplications_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRApplications = new CVRApplications(pInterface);
-                    }
+                {
+                    m_pVRApplications = new CVRApplications(pInterface);
                 }
+            }
 			return m_pVRApplications;
 		}
 
@@ -5923,10 +5923,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRScreenshots_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRScreenshots = new CVRScreenshots(pInterface);
-                    }
+                {
+                    m_pVRScreenshots = new CVRScreenshots(pInterface);
                 }
+            }
 			return m_pVRScreenshots;
 		}
 
@@ -5938,10 +5938,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRTrackedCamera_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRTrackedCamera = new CVRTrackedCamera(pInterface);
-                    }
+                {
+                    m_pVRTrackedCamera = new CVRTrackedCamera(pInterface);
                 }
+            }
 			return m_pVRTrackedCamera;
 		}
 
@@ -5953,10 +5953,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix+IVRInput_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRInput = new CVRInput(pInterface);
-                    }
+                {
+                    m_pVRInput = new CVRInput(pInterface);
                 }
+            }
 			return m_pVRInput;
 		}
 
@@ -5968,10 +5968,10 @@ public class OpenVR
 				var eError = EVRInitError.None;
 				var pInterface = OpenVRInterop.GetGenericInterface(FnTable_Prefix + IVRSpatialAnchors_Version, ref eError);
 				if (pInterface != IntPtr.Zero && eError == EVRInitError.None)
-                    {
-                        m_pVRSpatialAnchors = new CVRSpatialAnchors(pInterface);
-                    }
+                {
+                    m_pVRSpatialAnchors = new CVRSpatialAnchors(pInterface);
                 }
+            }
 			return m_pVRSpatialAnchors;
 		}
 
@@ -5992,16 +5992,16 @@ public class OpenVR
 
 	private static COpenVRContext _OpenVRInternal_ModuleContext = null;
 
-        private static COpenVRContext OpenVRInternal_ModuleContext
+    private static COpenVRContext OpenVRInternal_ModuleContext
 	{
 		get
 		{
 			if (_OpenVRInternal_ModuleContext == null)
-                {
-                    _OpenVRInternal_ModuleContext = new COpenVRContext();
-                }
+            {
+                _OpenVRInternal_ModuleContext = new COpenVRContext();
+            }
 
-                return _OpenVRInternal_ModuleContext;
+            return _OpenVRInternal_ModuleContext;
 		}
 	}
 
@@ -6034,11 +6034,11 @@ public class OpenVR
 		OpenVRInternal_ModuleContext.Clear();
 
 		if (peError != EVRInitError.None)
-            {
-                return null;
-            }
+        {
+            return null;
+        }
 
-            bool bInterfaceValid = IsInterfaceVersionValid(IVRSystem_Version);
+        bool bInterfaceValid = IsInterfaceVersionValid(IVRSystem_Version);
 		if (!bInterfaceValid)
 		{
 			ShutdownInternal();

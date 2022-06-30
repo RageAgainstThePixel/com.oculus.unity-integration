@@ -26,6 +26,14 @@ permissions and limitations under the License.
 #error Oculus Utilities require Unity 2018.3 or higher.
 #endif
 
+#if !USING_XR_MANAGEMENT
+#warning XR Plug-in Management is not enabled. Your project would not launch in XR mode. Please install it through "Project Settings".
+#endif
+
+#if !(USING_XR_SDK_OCULUS || USING_XR_SDK_OPENXR)
+#warning Either "Oculus XR Plugin" or "OpenXR Plugin" must be installed for the project to run properly on Oculus/Meta XR Devices. Please install one of them through "XR Plug-in Management" settings, or Package Manager.
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -846,6 +854,8 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 	[HideInInspector, Tooltip("Specify if Insight Passthrough should be enabled. Passthrough layers can only be used if passthrough is enabled.")]
 	public bool isInsightPassthroughEnabled = false;
 
+#region Feature Fidelity System
+#endregion
 
 	/// <summary>
 	/// The native XR API being used
@@ -1007,7 +1017,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 	}
 
 	/// <summary>
-	/// Gets or sets the current suggested CPU performance level, which can be overriden by the Power Management system.
+	/// Gets or sets the current suggested GPU performance level, which can be overriden by the Power Management system.
 	/// </summary>
 	public static ProcessorPerformanceLevel suggestedGpuPerfLevel
 	{
@@ -1587,7 +1597,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 
 	public static string UnityAlphaOrBetaVersionWarningMessage = "WARNING: It's not recommended to use Unity alpha/beta release in Oculus development. Use a stable release if you encounter any issue.";
 
-	#region Unity Messages
+#region Unity Messages
 
 #if UNITY_EDITOR
 	[AOT.MonoPInvokeCallback(typeof(OVRPlugin.LogCallback2DelegateType))]
@@ -1653,8 +1663,8 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
         }
 #endif
 
-        // Detect whether this platform is a supported platform
-        RuntimePlatform currPlatform = Application.platform;
+		// Detect whether this platform is a supported platform
+		RuntimePlatform currPlatform = Application.platform;
 		if (currPlatform == RuntimePlatform.Android ||
 			// currPlatform == RuntimePlatform.LinuxPlayer ||
 			currPlatform == RuntimePlatform.OSXEditor ||
@@ -1793,7 +1803,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
             InitOVRManager();
         }
 #endif
-    }
+	}
 
 #if UNITY_EDITOR
 	private static bool _scriptsReloaded;
@@ -1927,8 +1937,9 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
             {
                 return;
             }
+
             //If we're using the XR SDK and the display subsystem is present, and OVRPlugin is initialized, we can init OVRManager
-            InitOVRManager();
+			InitOVRManager();
 		}
 #endif
 
@@ -2256,6 +2267,7 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 
 	private void UpdateHMDEvents()
 	{
+
 		while(OVRPlugin.PollEvent(ref eventDataBuffer))
 		{
 			switch(eventDataBuffer.EventType)
@@ -2624,42 +2636,42 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 	}
 
     private enum PassthroughInitializationState
-    {
-        Unspecified,
-        Pending,
-        Initialized,
-        Failed
-    };
-    private static PassthroughInitializationState _passthroughInitializationState = PassthroughInitializationState.Unspecified;
-    private static bool PassthroughInitializedOrPending(PassthroughInitializationState state)
-    {
-        return state == PassthroughInitializationState.Pending || state == PassthroughInitializationState.Initialized;
-    }
-    private static bool InitializeInsightPassthrough()
 	{
-        if (PassthroughInitializedOrPending(_passthroughInitializationState))
+		Unspecified,
+		Pending,
+		Initialized,
+		Failed
+	};
+	private static PassthroughInitializationState _passthroughInitializationState = PassthroughInitializationState.Unspecified;
+	private static bool PassthroughInitializedOrPending(PassthroughInitializationState state)
+	{
+		return state == PassthroughInitializationState.Pending || state == PassthroughInitializationState.Initialized;
+	}
+	private static bool InitializeInsightPassthrough()
+	{
+		if (PassthroughInitializedOrPending(_passthroughInitializationState))
         {
             return false;
         }
 
         bool passthroughResult = OVRPlugin.InitializeInsightPassthrough();
-        OVRPlugin.Result result = OVRPlugin.GetInsightPassthroughInitializationState();
+		OVRPlugin.Result result = OVRPlugin.GetInsightPassthroughInitializationState();
 		if (result < 0)
 		{
-            _passthroughInitializationState = PassthroughInitializationState.Failed;
+			_passthroughInitializationState = PassthroughInitializationState.Failed;
 			Debug.LogError("Failed to initialize Insight Passthrough. Passthrough will be unavailable. Error " + result.ToString() + ".");
 		}
-        else
-        {
-            if (result == OVRPlugin.Result.Success_Pending)
-            {
-                _passthroughInitializationState = PassthroughInitializationState.Pending;
-            }
-            else
-            {
-                _passthroughInitializationState = PassthroughInitializationState.Initialized;
-            }
-        }
+		else
+		{
+			if (result == OVRPlugin.Result.Success_Pending)
+			{
+				_passthroughInitializationState = PassthroughInitializationState.Pending;
+			}
+			else
+			{
+				_passthroughInitializationState = PassthroughInitializationState.Initialized;
+			}
+		}
 		return PassthroughInitializedOrPending(_passthroughInitializationState);
 	}
 
@@ -2679,10 +2691,10 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 				{
 					Debug.LogError("Failed to shut down passthrough. It may be still in use.");
 				}
-                else
-                {
-                    _passthroughInitializationState = PassthroughInitializationState.Unspecified;
-                }
+				else
+				{
+					_passthroughInitializationState = PassthroughInitializationState.Unspecified;
+				}
 			}
 		}
 		else
@@ -2709,23 +2721,23 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 				ShutdownInsightPassthrough();
 			}
 		}
-        else
-        {
-            // If the initialization was pending, it may have successfully completed.
-            if (_passthroughInitializationState == PassthroughInitializationState.Pending)
-            {
-                OVRPlugin.Result result = OVRPlugin.GetInsightPassthroughInitializationState();
-                if (result == OVRPlugin.Result.Success)
-                {
-                    _passthroughInitializationState = PassthroughInitializationState.Initialized;
-                }
-                else if (result < 0)
-                {
-                    _passthroughInitializationState = PassthroughInitializationState.Failed;
-                    Debug.LogError("Failed to initialize Insight Passthrough. Passthrough will be unavailable. Error " + result.ToString() + ".");
-                }
-            }
-        }
+		else
+		{
+			// If the initialization was pending, it may have successfully completed.
+			if (_passthroughInitializationState == PassthroughInitializationState.Pending)
+			{
+				OVRPlugin.Result result = OVRPlugin.GetInsightPassthroughInitializationState();
+				if (result == OVRPlugin.Result.Success)
+				{
+					_passthroughInitializationState = PassthroughInitializationState.Initialized;
+				}
+				else if (result < 0)
+				{
+					_passthroughInitializationState = PassthroughInitializationState.Failed;
+					Debug.LogError("Failed to initialize Insight Passthrough. Passthrough will be unavailable. Error " + result.ToString() + ".");
+				}
+			}
+		}
 	}
 
 	/// Checks whether the passthrough is initialized.
@@ -2742,8 +2754,8 @@ public class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfiguration
 
 	/// Checks whether the passthrough is in the process of initialization.
 	/// \return Boolean value to indicate the current state of passthrough. If the value returned is true, the passthrough is initializing.
-    public static bool IsInsightPassthroughInitPending()
-    {
-        return _passthroughInitializationState == PassthroughInitializationState.Pending;
-    }
+	public static bool IsInsightPassthroughInitPending()
+	{
+		return _passthroughInitializationState == PassthroughInitializationState.Pending;
+	}
 }

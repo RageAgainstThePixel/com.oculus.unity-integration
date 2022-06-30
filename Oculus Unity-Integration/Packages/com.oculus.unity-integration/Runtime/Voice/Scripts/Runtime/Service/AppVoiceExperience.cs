@@ -152,7 +152,7 @@ namespace Oculus.Voice
 
 #if UNITY_ANDROID && !UNITY_EDITOR
             platformService?.SetRuntimeConfiguration(witRuntimeConfiguration);
-#endif
+            #endif
         }
     }
 }

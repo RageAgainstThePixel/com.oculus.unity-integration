@@ -117,8 +117,11 @@ namespace Oculus.Interaction
             Vector3 surfacePosition = ComputeSurfacePosition(_pokeInteractor.Origin, _pokeInteractor.SelectedInteractable);
             _maxDeltaFromTouchPoint = Mathf.Max((surfacePosition - _initialTouchPoint).magnitude, _maxDeltaFromTouchPoint);
 
-            float deltaAsPercent =
-                Mathf.Clamp01(_maxDeltaFromTouchPoint / _maxDistanceFromTouchPoint);
+            float deltaAsPercent = 1;
+            if (_maxDistanceFromTouchPoint != 0f)
+            {
+                deltaAsPercent = Mathf.Clamp01(_maxDeltaFromTouchPoint / _maxDistanceFromTouchPoint);
+            }
 
             Vector3 fullDelta = surfacePosition - _initialTouchPoint;
             Vector3 easedPosition = _initialTouchPoint + fullDelta * deltaAsPercent;
