@@ -814,9 +814,9 @@ public class OVRPassthroughLayer : MonoBehaviour
 				OVROverlay.OverlayShape.ReconstructionPassthrough;
 		}
 	}
-    #endregion
+	#endregion
 
-    #region Unity Messages
+	#region Unity Messages
 
     private void Update()
 	{

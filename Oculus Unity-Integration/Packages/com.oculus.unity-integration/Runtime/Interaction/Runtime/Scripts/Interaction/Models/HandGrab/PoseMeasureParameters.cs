@@ -13,7 +13,7 @@ permissions and limitations under the License.
 using System;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing
+namespace Oculus.Interaction.HandGrab
 {
     [Serializable]
     public struct PoseMeasureParameters

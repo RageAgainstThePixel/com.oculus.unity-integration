@@ -19,7 +19,8 @@ namespace Oculus.Interaction.DistanceReticles
     {
         [SerializeField, Interface(typeof(IDistanceInteractor))]
         private MonoBehaviour _distanceInteractor;
-        protected override IDistanceInteractor DistanceInteractor { get; set; }
+        private IDistanceInteractor DistanceInteractor { get; set; }
+        protected override IInteractorView Interactor => DistanceInteractor;
 
         [SerializeField]
         private MeshRenderer _renderer;
@@ -100,8 +101,9 @@ namespace Oculus.Interaction.DistanceReticles
             _renderer.enabled = true;
         }
 
-        protected override void Align(ReticleDataIcon data, ConicalFrustum frustum)
+        protected override void Align(ReticleDataIcon data)
         {
+            ConicalFrustum frustum = DistanceInteractor.PointerFrustum;
             this.transform.position = data.GetTargetHit(frustum);
 
             if (_renderer.enabled)

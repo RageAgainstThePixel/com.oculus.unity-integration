@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Oculus.Interaction.HandPosing.Visuals
+namespace Oculus.Interaction.HandGrab.Visuals
 {
     /// <summary>
     /// This class is a visual representation of a rigged hand (typically a skin-mesh renderer)

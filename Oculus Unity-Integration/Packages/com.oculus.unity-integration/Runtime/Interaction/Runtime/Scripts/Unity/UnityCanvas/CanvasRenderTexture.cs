@@ -274,6 +274,11 @@ namespace Oculus.Interaction.UnityCanvas
 
         protected void UpdateCamera()
         {
+            if (!Application.isPlaying || !_started)
+            {
+                return;
+            }
+
             Profiler.BeginSample("InterfaceRenderer.UpdateCamera");
             try
             {

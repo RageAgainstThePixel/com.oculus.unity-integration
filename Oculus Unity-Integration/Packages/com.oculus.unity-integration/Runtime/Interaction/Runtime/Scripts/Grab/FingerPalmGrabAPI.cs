@@ -16,6 +16,9 @@ using UnityEngine;
 
 namespace Oculus.Interaction.GrabAPI
 {
+    /// <summary>
+    /// This Finger API uses the curl value of the fingers to detect if they are grabbing
+    /// </summary>
     public class FingerPalmGrabAPI : IFingerAPI
     {
         private Vector3 _poseVolumeCenterOffset = Vector3.zero;

@@ -30,12 +30,14 @@ namespace Oculus.Interaction
         [SerializeField]
         private float _glowLerpSpeed = 2f;
         [SerializeField]
-        private float _glowColorLerpSpeed = 0.2f;
+        private float _glowColorLerpSpeed = 2f;
 
         [SerializeField]
         private Color _fingerGlowColorWithInteractable;
         [SerializeField]
         private Color _fingerGlowColorWithNoInteractable;
+        [SerializeField]
+        private Color _fingerGlowColorHover;
 
         #region public properties
         public float GlowLerpSpeed
@@ -86,7 +88,19 @@ namespace Oculus.Interaction
                 _fingerGlowColorWithNoInteractable = value;
             }
         }
-#endregion
+
+        public Color FingerGlowColorHover
+        {
+            get
+            {
+                return _fingerGlowColorHover;
+            }
+            set
+            {
+                _fingerGlowColorHover = value;
+            }
+        }
+        #endregion
 
         private readonly int[] _handShaderGlowPropertyIds = new int[]
         {
@@ -143,9 +157,13 @@ namespace Oculus.Interaction
             bool isSelectingInteractable = Interactor.HasSelectedInteractable;
             bool hasHoverTarget = Interactor.HasCandidate;
 
-            Color desiredGlowColor = isSelectingInteractable
-                ? _fingerGlowColorWithInteractable
-                : _fingerGlowColorWithNoInteractable;
+            Color desiredGlowColor = _fingerGlowColorHover;
+            if (isSelecting)
+            {
+                desiredGlowColor = isSelectingInteractable
+                    ? _fingerGlowColorWithInteractable
+                    : _fingerGlowColorWithNoInteractable;
+            }
 
             _currentGlowColor = Color.Lerp(_currentGlowColor, desiredGlowColor,
                 Time.deltaTime * _glowColorLerpSpeed);

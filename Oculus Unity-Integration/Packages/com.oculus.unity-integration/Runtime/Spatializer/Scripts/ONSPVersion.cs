@@ -30,9 +30,9 @@ public class ONSPVersion : MonoBehaviour
 	[DllImport(strONSPS)]
     private static extern void ONSP_GetVersion(ref int Major, ref int Minor, ref int Patch);
 
-    /// <summary>
-    /// Awake this instance.
-    /// </summary>
+	/// <summary>
+	/// Awake this instance.
+	/// </summary>
     private void Awake()
 	{
         int major = 0;
@@ -47,16 +47,16 @@ public class ONSPVersion : MonoBehaviour
         Debug.Log(version);
 	}
 
-    /// <summary>
-    /// Start this instance.
-    /// </summary>
+	/// <summary>
+	/// Start this instance.
+	/// </summary>
     private void Start()
     {
     }
 
-    /// <summary>
-    /// Update this instance.
-    /// </summary>
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
     private void Update()
     {
     }		

@@ -167,6 +167,10 @@ public class OVROverlayEditor : Editor
 		EditorGUILayout.LabelField("Layer Properties", EditorStyles.boldLabel);
 		overlay.useBicubicFiltering = EditorGUILayout.Toggle(new GUIContent("Bicubic Filtering",
 			"Whether this layer should use bicubic filtering. This can increase quality for small details on text and icons being viewed at farther distances."), overlay.useBicubicFiltering);
+		overlay.useEfficientSupersample = EditorGUILayout.Toggle(new GUIContent("Super Sample",
+			"Whether this layer should use an efficient super sample filter. This can help reduce flicker artifacts."), overlay.useEfficientSupersample);
+		overlay.useEfficientSharpen = EditorGUILayout.Toggle(new GUIContent("Sharpen",
+			"Whether this layer should use a sharpen filter. This amplifies contrast and fine details"), overlay.useEfficientSharpen);
 
 		EditorGUILayout.Space();
 

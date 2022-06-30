@@ -227,7 +227,7 @@ namespace Oculus.Interaction
         /// <param name="to">Second pose to compare.</param>
         /// <param name="maxDistance">The max distance in which the poses can be similar.</param>
         /// <returns>0 indicates no similitude, 1 for equal poses</returns>
-        public static float Similarity(in Pose from, in Pose to, HandPosing.PoseMeasureParameters scoringModifier)
+        public static float Similarity(in Pose from, in Pose to, HandGrab.PoseMeasureParameters scoringModifier)
         {
             float rotationDifference = RotationalSimilarity(from.rotation, to.rotation);
             float positionDifference = PositionalSimilarity(from.position, to.position, scoringModifier.MaxDistance);
@@ -278,12 +278,12 @@ namespace Oculus.Interaction
         public static Pose MirrorPoseRotation(this in Pose pose, Vector3 normal, Vector3 tangent)
         {
             Pose mirrorPose = pose;
-            Vector3 forward = pose.rotation * Vector3.forward;
+            Vector3 forward = pose.rotation * -Vector3.forward;
             Vector3 projectedForward = Vector3.ProjectOnPlane(forward, normal);
             float angleForward = Vector3.SignedAngle(projectedForward, tangent, normal);
             Vector3 mirrorForward = Quaternion.AngleAxis(2 * angleForward, normal) * forward;
 
-            Vector3 up = pose.rotation * Vector3.up;
+            Vector3 up = pose.rotation * -Vector3.up;
             Vector3 projectedUp = Vector3.ProjectOnPlane(up, normal);
             float angleUp = Vector3.SignedAngle(projectedUp, tangent, normal);
             Vector3 mirrorUp = Quaternion.AngleAxis(2 * angleUp, normal) * up;

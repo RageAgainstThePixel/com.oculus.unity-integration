@@ -46,6 +46,6 @@ namespace Oculus.Platform
       CAPI.ovr_AdvancedAbuseReportOptions_Destroy(Handle);
     }
 
-        private IntPtr Handle;
+    private IntPtr Handle;
   }
 }

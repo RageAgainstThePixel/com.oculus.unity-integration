@@ -64,11 +64,6 @@ namespace Oculus.Interaction
         public void Initialize(IGrabbable grabbable)
         {
             _grabbable = grabbable;
-
-            if (!_constraints.ConstraintsAreRelative)
-            {
-                _activeScale = grabbable.Transform.localScale.x;
-            }
         }
 
         public void BeginTransform()
@@ -80,6 +75,10 @@ namespace Oculus.Interaction
             Vector3 diff = grabB.position - grabA.position;
             _activeRotation = Quaternion.LookRotation(diff, Vector3.up).normalized;
             _initialDistance = diff.magnitude;
+            if (!_constraints.ConstraintsAreRelative)
+            {
+                _activeScale = _grabbable.Transform.localScale.x;
+            }
             _initialScale = _activeScale;
             _initialLocalScale = _grabbable.Transform.localScale / _initialScale;
 

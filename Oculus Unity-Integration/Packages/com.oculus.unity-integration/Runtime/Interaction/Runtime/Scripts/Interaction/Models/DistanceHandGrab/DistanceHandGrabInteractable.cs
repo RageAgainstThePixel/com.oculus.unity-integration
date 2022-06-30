@@ -18,26 +18,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Oculus.Interaction.HandPosing
+namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
     /// The DistanceHandGrabInteractable allows grabbing the marked object from far away.
-    /// Internally it uses HandGrabPoints to specify not only the poses of the hands but the
+    /// Internally it uses HandGrabPoses to specify not only the poses of the hands but the
     /// required gestures to perform the grab. It is possible (and recommended) to reuse the same
-    /// HandGrabPoints used by the HandGrabInteractable, and even select just a few so they become
+    /// HandGrabPoses used by the HandGrabInteractable, and even select just a few so they become
     /// the default poses when distant grabbing.
     /// </summary>
     [Serializable]
     public class DistanceHandGrabInteractable : PointerInteractable<DistanceHandGrabInteractor, DistanceHandGrabInteractable>,
-        ISnappable, IRigidbodyRef, IHandGrabbable, IDistanceInteractable
+        IRigidbodyRef, IHandGrabbable, IDistanceInteractable
     {
         [Header("Grab")]
-        /// <summary>
-        /// The transform of the object this HandGrabInteractable refers to.
-        /// Typically the parent.
-        /// </summary>
-        [SerializeField]
-        private Transform _relativeTo;
 
         [SerializeField]
         private Rigidbody _rigidbody;
@@ -72,6 +66,10 @@ namespace Oculus.Interaction.HandPosing
         [SerializeField]
         private GrabbingRule _palmGrabRules = GrabbingRule.DefaultPalmRule;
 
+        /// <summary>
+        /// The movement provider specifies how the selected interactable will
+        /// align with the grabber.
+        /// </summary>
         [Header("Snap")]
         [SerializeField, Optional, Interface(typeof(IMovementProvider))]
         private MonoBehaviour _movementProvider;
@@ -92,40 +90,38 @@ namespace Oculus.Interaction.HandPosing
         }
 
         [SerializeField, Optional]
-        private List<HandGrabPoint> _handGrabPoints = new List<HandGrabPoint>();
+        [UnityEngine.Serialization.FormerlySerializedAs("_handGrabPoints")]
+        private List<HandGrabPose> _handGrabPoses = new List<HandGrabPose>();
         /// <summary>
         /// General getter for the transform of the object this interactable refers to.
         /// </summary>
-        public Transform RelativeTo => _relativeTo != null ? _relativeTo : this.transform.parent;
+        public Transform RelativeTo => _rigidbody.transform;
 
         public GrabTypeFlags SupportedGrabTypes => _supportedGrabTypes;
         public GrabbingRule PinchGrabRules => _pinchGrabRules;
         public GrabbingRule PalmGrabRules => _palmGrabRules;
 
-        public List<HandGrabPoint> GrabPoints => _handGrabPoints;
+        public List<HandGrabPose> HandGrabPoses => _handGrabPoses;
         public Collider[] Colliders { get; private set; }
 
-        private GrabPointsPoseFinder _grabPointsPoseFinder;
+        private GrabPoseFinder _grabPoseFinder;
 
         private readonly PoseMeasureParameters _distanceScoreModifier = new PoseMeasureParameters(0f, 1f);
 
         #region editor events
         protected virtual void Reset()
         {
-            _relativeTo = this.transform.parent;
             if (this.TryGetComponent(out HandGrabInteractable handGrabInteractable))
             {
-                _relativeTo = handGrabInteractable.RelativeTo;
                 _pinchGrabRules = handGrabInteractable.PinchGrabRules;
                 _palmGrabRules = handGrabInteractable.PalmGrabRules;
                 _supportedGrabTypes = handGrabInteractable.SupportedGrabTypes;
-                _handGrabPoints = new List<HandGrabPoint>(handGrabInteractable.GrabPoints);
+                _handGrabPoses = new List<HandGrabPose>(handGrabInteractable.HandGrabPoses);
                 _rigidbody = handGrabInteractable.Rigidbody;
             }
             else
             {
                 _rigidbody = this.GetComponentInParent<Rigidbody>();
-                _relativeTo = _rigidbody.transform;
                 _physicsGrabbable = this.GetComponentInParent<PhysicsGrabbable>();
             }
         }
@@ -140,7 +136,7 @@ namespace Oculus.Interaction.HandPosing
         protected override void Start()
         {
             this.BeginStart(ref _started, base.Start);
-            Assert.IsNotNull(Rigidbody);
+            Assert.IsNotNull(Rigidbody, "The rigidbody is missing");
             Colliders = Rigidbody.GetComponentsInChildren<Collider>();
             Assert.IsTrue(Colliders.Length > 0,
                 "The associated Rigidbody must have at least one Collider.");
@@ -149,7 +145,7 @@ namespace Oculus.Interaction.HandPosing
                 MoveTowardsTargetProvider movementProvider = this.gameObject.AddComponent<MoveTowardsTargetProvider>();
                 InjectOptionalMovementProvider(movementProvider);
             }
-            _grabPointsPoseFinder = new GrabPointsPoseFinder(_handGrabPoints, _relativeTo, this.transform);
+            _grabPoseFinder = new GrabPoseFinder(_handGrabPoses, RelativeTo, this.transform);
             this.EndStart(ref _started);
         }
 
@@ -165,14 +161,14 @@ namespace Oculus.Interaction.HandPosing
             ref HandPose result, ref Pose snapPoint,
             out bool usesHandPose, out float score)
         {
-            return _grabPointsPoseFinder.FindBestPose(userPose, handScale, handedness,
+            return _grabPoseFinder.FindBestPose(userPose, handScale, handedness,
                 ref result, ref snapPoint, _distanceScoreModifier,
                 out usesHandPose, out score);
         }
 
         public bool UsesHandPose()
         {
-            return _grabPointsPoseFinder.UsesHandPose();
+            return _grabPoseFinder.UsesHandPose();
         }
 
         public void ApplyVelocities(Vector3 linearVelocity, Vector3 angularVelocity)
@@ -186,21 +182,14 @@ namespace Oculus.Interaction.HandPosing
 
         #region Inject
 
-        public void InjectAllDistanceHandGrabInteractable(Transform relativeTo,
-            Rigidbody rigidbody,
+        public void InjectAllDistanceHandGrabInteractable(Rigidbody rigidbody,
             GrabTypeFlags supportedGrabTypes,
             GrabbingRule pinchGrabRules, GrabbingRule palmGrabRules)
         {
-            InjectRelativeTo(relativeTo);
             InjectRigidbody(rigidbody);
             InjectSupportedGrabTypes(supportedGrabTypes);
             InjectPinchGrabRules(pinchGrabRules);
             InjectPalmGrabRules(palmGrabRules);
-        }
-
-        public void InjectRelativeTo(Transform relativeTo)
-        {
-            _relativeTo = relativeTo;
         }
 
         public void InjectOptionalPhysicsObject(PhysicsGrabbable physicsObject)
@@ -228,9 +217,9 @@ namespace Oculus.Interaction.HandPosing
             _palmGrabRules = palmGrabRules;
         }
 
-        public void InjectOptionalHandGrabPoints(List<HandGrabPoint> handGrabPoints)
+        public void InjectOptionalHandGrabPoses(List<HandGrabPose> handGrabPoses)
         {
-            _handGrabPoints = handGrabPoints;
+            _handGrabPoses = handGrabPoses;
         }
 
         public void InjectOptionalMovementProvider(IMovementProvider provider)

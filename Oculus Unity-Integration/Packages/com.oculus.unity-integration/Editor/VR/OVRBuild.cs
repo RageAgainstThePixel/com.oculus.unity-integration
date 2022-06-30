@@ -114,13 +114,16 @@ internal partial class OculusBuildApp : EditorWindow
     private static bool isDevelopmentBuild;
     private static string productName;
     private static string dataPath;
+
     private static string gradleTempExport;
     private static string gradleExport;
     private static bool showCancel;
     private static bool buildInProgress;
+
     private static DirectorySyncer.CancellationTokenSource syncCancelToken;
     private static Process gradleBuildProcess;
     private static Thread buildThread;
+
     private static bool? apkOutputSuccessful;
 
     [MenuItem("Oculus/OVR Build/OVR Build APK... %#k", false, 20)]

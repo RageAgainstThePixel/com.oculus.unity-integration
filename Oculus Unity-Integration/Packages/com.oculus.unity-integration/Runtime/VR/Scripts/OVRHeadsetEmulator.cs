@@ -29,7 +29,9 @@ public class OVRHeadsetEmulator : MonoBehaviour {
 	public KeyCode[] activateKeys = new KeyCode[] { KeyCode.LeftControl, KeyCode.RightControl };
 
 	public KeyCode[] pitchKeys = new KeyCode[] { KeyCode.LeftAlt, KeyCode.RightAlt };
+
     private OVRManager manager;
+
     private const float MOUSE_SCALE_X = -2.0f;
     private const float MOUSE_SCALE_X_PITCH = -2.0f;
     private const float MOUSE_SCALE_Y = 2.0f;
@@ -46,11 +48,11 @@ public class OVRHeadsetEmulator : MonoBehaviour {
 
 	private CursorLockMode previousCursorLockMode = CursorLockMode.None;
 
-    // Use this for initialization
+	// Use this for initialization
     private void Start () {
 	}
 
-    // Update is called once per frame
+	// Update is called once per frame
     private void Update () {
 		//todo: enable for Unity Input System
 #if ENABLE_LEGACY_INPUT_MANAGER

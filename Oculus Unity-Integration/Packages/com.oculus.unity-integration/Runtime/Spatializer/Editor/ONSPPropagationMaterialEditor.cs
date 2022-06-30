@@ -133,11 +133,11 @@ internal sealed class ONSPPropagationMaterialEditor : Editor{
 
       HandleEvent(r, e);
       if(IsFocus)
-            {
-                DrawSelected(r);
-            }
+      {
+          DrawSelected(r);
+      }
 
-            AudioCurveRendering.EndCurveFrame();
+      AudioCurveRendering.EndCurveFrame();
 
     }
         
@@ -165,16 +165,16 @@ internal sealed class ONSPPropagationMaterialEditor : Editor{
         } else if(newCount > oldCount){
 
           if(newCount > points.Capacity)
-                    {
-                        points.Capacity = newCount;
-                    }
+          {
+              points.Capacity = newCount;
+          }
 
-                    for (int i = oldCount; i < newCount; i++)
-                    {
-                        points.Add(new Point(125 * (1 << i)));
-                    }
+          for(int i = oldCount; i < newCount; i++)
+          {
+              points.Add(new Point(125 * (1 << i)));
+          }
 
-                    Undo.SetCurrentGroupName("Points Added");
+          Undo.SetCurrentGroupName("Points Added");
           GUI.changed = true;
 
         }
@@ -416,11 +416,11 @@ internal sealed class ONSPPropagationMaterialEditor : Editor{
       spectrum.points.RemoveAt(index);
 
       if(spectrum.selection == index)
-            {
-                spectrum.selection = spectrum.points.Count;
-            }
+      {
+          spectrum.selection = spectrum.points.Count;
+      }
 
-            Undo.SetCurrentGroupName("Point Removed");
+      Undo.SetCurrentGroupName("Point Removed");
       GUI.changed = true;
 
     }
@@ -491,14 +491,14 @@ internal sealed class ONSPPropagationMaterialEditor : Editor{
     private static string FrequencyToString(float frequency){
 
       if(frequency < 1000)
-            {
-                return string.Format("{0:F0} Hz", frequency);
-            }
-            else
-            {
-                return string.Format("{0:F0} kHz", frequency * .001f);
-            }
-        }
+      {
+          return string.Format("{0:F0} Hz", frequency);
+      }
+      else
+      {
+          return string.Format("{0:F0} kHz", frequency * .001f);
+      }
+    }
 
   }
 
@@ -549,24 +549,24 @@ internal sealed class ONSPPropagationMaterialEditor : Editor{
       Undo.RegisterCompleteObjectUndo(material, groupName);
 
       if(groupName == "Point Added")
-            {
-                Undo.CollapseUndoOperations(Undo.GetCurrentGroup() - 1);
-            }
+      {
+          Undo.CollapseUndoOperations(Undo.GetCurrentGroup() - 1);
+      }
 
-            if (material.preset != newPreset)
-            {
-                material.preset = newPreset;
-            }
-            else
-            {
-                material.preset = ONSPPropagationMaterial.Preset.Custom;
-            }
+      if(material.preset != newPreset)
+      {
+          material.preset = newPreset;
+      }
+      else
+      {
+          material.preset = ONSPPropagationMaterial.Preset.Custom;
+      }
 
-            if (Application.isPlaying)
-            {
-                material.UploadMaterial();
-            }
-        }
+      if(Application.isPlaying)
+      {
+          material.UploadMaterial();
+      }
+    }
 
   }
 

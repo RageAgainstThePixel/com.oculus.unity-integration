@@ -39,9 +39,9 @@ public class OVRGridCube : MonoBehaviour
 	// Handle to OVRCameraRig
 	private OVRCameraRig CameraController = null;
 
-    /// <summary>
-    /// Update this instance.
-    /// </summary>
+	/// <summary>
+	/// Update this instance.
+	/// </summary>
     private void Update ()
 	{
 		UpdateCubeGrid();
@@ -113,10 +113,8 @@ public class OVRGridCube : MonoBehaviour
 		CubeGrid.layer = CameraController.gameObject.layer;
 
 		for (int x = -gridSizeX; x <= gridSizeX; x++)
-        {
-            for (int y = -gridSizeY; y <= gridSizeY; y++)
-            {
-                for (int z = -gridSizeZ; z <= gridSizeZ; z++)
+			for (int y = -gridSizeY; y <= gridSizeY; y++)
+				for (int z = -gridSizeZ; z <= gridSizeZ; z++)
 			{
 				// Set the cube type:
 				// 0 = non-axis cube
@@ -126,14 +124,14 @@ public class OVRGridCube : MonoBehaviour
 				if ((x == 0 && y == 0) || (x == 0 && z == 0) || (y == 0 && z == 0))
 				{
 					if((x == 0) && (y == 0) && (z == 0))
-                        {
-                            CubeType = 2;
-                        }
-                        else
-                        {
-                            CubeType = 1;
-                        }
+                    {
+                        CubeType = 2;
                     }
+                    else
+                    {
+                        CubeType = 1;
+                    }
+                }
 
 				GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
@@ -156,19 +154,19 @@ public class OVRGridCube : MonoBehaviour
 
 				// Cube line is white down the middle
 				if (CubeType == 0)
-                    {
-                        r.material.color = Color.red;
-                    }
-                    else if (CubeType == 1)
-                    {
-                        r.material.color = Color.white;
-                    }
-                    else
-                    {
-                        r.material.color = Color.yellow;
-                    }
+                {
+                    r.material.color = Color.red;
+                }
+                else if (CubeType == 1)
+                {
+                    r.material.color = Color.white;
+                }
+                else
+                {
+                    r.material.color = Color.yellow;
+                }
 
-                    cube.transform.position =
+                cube.transform.position =
 					new Vector3(((float)x * gridScale),
 					            ((float)y * gridScale),
 					            ((float)z * gridScale));
@@ -177,28 +175,27 @@ public class OVRGridCube : MonoBehaviour
 
 				// Axis cubes are bigger
 				if(CubeType == 1)
-                    {
-                        s = 1.0f;
-                    }
-                    // Center cube is the largest
-                    if (CubeType == 2)
-                    {
-                        s = 2.0f;
-                    }
+                {
+                    s = 1.0f;
+                }
 
-                    cube.transform.localScale =
+                // Center cube is the largest
+				if(CubeType == 2)
+                {
+                    s = 2.0f;
+                }
+
+                cube.transform.localScale =
 					new Vector3(cubeScale * s, cubeScale * s, cubeScale * s);
 
 				cube.transform.parent = CubeGrid.transform;
 			}
-            }
-        }
-    }
+	}
 
-    /// <summary>
-    /// Switch the Cube grid color.
-    /// </summary>
-    /// <param name="CubeSwitchColor">If set to <c>true</c> cube switch color.</param>
+	/// <summary>
+	/// Switch the Cube grid color.
+	/// </summary>
+	/// <param name="CubeSwitchColor">If set to <c>true</c> cube switch color.</param>
     private void CubeGridSwitchColor(bool CubeSwitchColor)
 	{
 		Color c = Color.red;
@@ -207,8 +204,10 @@ public class OVRGridCube : MonoBehaviour
             c = Color.blue;
         }
 
-        foreach (Transform child in CubeGrid.transform)
+        var cachedTransform = CubeGrid.transform;
+		for (int i = 0; i < cachedTransform.childCount; i++)
 		{
+			var child = cachedTransform.GetChild(i);
 			Material m = child.GetComponent<Renderer>().material;
 			// Cube line is white down the middle
 			if(m.color == Color.red || m.color == Color.blue)

@@ -12,7 +12,7 @@ permissions and limitations under the License.
 
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces
+namespace Oculus.Interaction.HandGrab.SnapSurfaces
 {
     public static class SnapSurfaceHelper
     {

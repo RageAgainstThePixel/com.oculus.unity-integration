@@ -85,7 +85,7 @@ namespace Oculus.Interaction
             Transform pivot = _pivotTransform != null ? _pivotTransform : targetTransform;
             Vector3 worldAxis = Vector3.zero;
             worldAxis[(int)_rotationAxis] = 1f;
-            Vector3 rotationAxis = pivot.InverseTransformDirection(worldAxis);
+            Vector3 rotationAxis = pivot.TransformDirection(worldAxis);
 
             // Project our positional offsets onto a plane with normal equal to the rotation axis
             Vector3 initialOffset = _previousGrabPose.position - pivot.position;

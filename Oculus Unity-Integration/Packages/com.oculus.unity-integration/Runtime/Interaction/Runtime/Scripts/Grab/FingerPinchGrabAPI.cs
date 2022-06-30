@@ -15,6 +15,10 @@ using UnityEngine;
 
 namespace Oculus.Interaction.GrabAPI
 {
+    /// <summary>
+    /// This Finger API uses an advanced calculation for the pinch value of the fingers
+    /// to detect if they are grabbing
+    /// </summary>
     public class FingerPinchGrabAPI : IFingerAPI
     {
         private bool _isPinchVisibilityGood;
@@ -290,6 +294,7 @@ namespace Oculus.Interaction.GrabAPI
             float closestT = Mathf.Clamp01(normalizedProjection);
             Vector3 closestPoint = p0 + closestT * lineVec;
             return (closestPoint - position).magnitude;
+
         }
 
         private bool PinchHasGoodVisibility(IHand hand)

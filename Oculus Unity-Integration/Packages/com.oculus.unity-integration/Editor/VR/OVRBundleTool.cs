@@ -42,6 +42,7 @@ public class OVRBundleTool : EditorWindow
 
 	// Needed to ensure that APK checking does happen during editor start up, but will still happen when the window is opened/updated
 	private static bool panelInitialized = false;
+
     private const float spacesPerIndent = 12;
 
 	private enum ApkStatus

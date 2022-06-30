@@ -12,9 +12,9 @@ permissions and limitations under the License.
 
 using UnityEditor;
 using UnityEngine;
-using Oculus.Interaction.HandPosing.Visuals;
+using Oculus.Interaction.HandGrab.Visuals;
 
-namespace Oculus.Interaction.HandPosing.Editor
+namespace Oculus.Interaction.HandGrab.Editor
 {
     public class HandGhostProviderUtils
     {

@@ -13,6 +13,7 @@ permissions and limitations under the License.
 using Oculus.Interaction.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Oculus.Interaction.PoseDetection
@@ -121,37 +122,49 @@ namespace Oculus.Interaction.PoseDetection
             }
         }
 
-        protected float ComputeAngleSum(HandJointId[] joints, IHand hand)
+        private static float PosesCurlValue(Pose p0, Pose p1, Pose p2)
+        {
+            Vector3 bone1 = p0.position - p1.position;
+            Vector3 bone2 = p2.position - p1.position;
+            float angle = Vector3.SignedAngle(bone1, bone2, p1.forward * -1f);
+            if (angle < 0f)
+            {
+                angle += 360f;
+            }
+
+            return angle;
+        }
+
+        public static float PosesListCurlValue(Pose[] poses)
+        {
+            float angleSum = 0;
+            for (int i = 0; i < poses.Length - 2; i++)
+            {
+                angleSum += PosesCurlValue(poses[i], poses[i+1], poses[i+2]);
+            }
+            return angleSum;
+        }
+
+        protected float JointsCurlValue(HandJointId[] joints, IHand hand)
         {
             if (!hand.GetJointPosesFromWrist(out ReadOnlyHandJointPoses poses))
             {
                 return 0.0f;
             }
 
-            float angleSum = 0;
-            for (int i = 0; i < joints.Length - 2; i++)
+            Pose[] jointPoses = new Pose[joints.Length];
+            for (int i = 0; i < joints.Length; i++)
             {
-                ref readonly Pose midpointPose = ref poses[joints[i + 1]];
-                Vector3 pos0 = poses[joints[i]].position;
-                Vector3 pos1 = midpointPose.position;
-                Vector3 pos2 = poses[joints[i + 2]].position;
-                Vector3 bone1 = pos0 - pos1;
-                Vector3 bone2 = pos2 - pos1;
-                float angle = Vector3.SignedAngle(bone1, bone2, midpointPose.forward * -1f);
-                if (angle < 0f)
-                {
-                    angle += 360f;
-                }
-
-                angleSum += angle;
+                jointPoses[i] = poses[(int)joints[i]];
             }
-            return angleSum;
+
+            return PosesListCurlValue(jointPoses);
         }
 
         public float GetCurlValue(HandFinger finger, IHand hand)
         {
             HandJointId[] handJointIds = CURL_ANGLE_JOINTS[(int)finger];
-            return ComputeAngleSum(handJointIds, hand) / (handJointIds.Length - 2);
+            return JointsCurlValue(handJointIds, hand) / (handJointIds.Length - 2);
         }
 
         public float GetFlexionValue(HandFinger finger, IHand hand)

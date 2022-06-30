@@ -16,7 +16,10 @@ namespace Oculus.Interaction.DistanceReticles
 {
     public class ReticleDataGhost : MonoBehaviour, IReticleData
     {
-        public Transform Target => this.transform;
+        [SerializeField, Optional]
+        private Transform _targetPoint;
+
+        public Transform Target => _targetPoint != null ? _targetPoint : this.transform;
 
         public Vector3 GetTargetHit(ConicalFrustum frustum)
         {

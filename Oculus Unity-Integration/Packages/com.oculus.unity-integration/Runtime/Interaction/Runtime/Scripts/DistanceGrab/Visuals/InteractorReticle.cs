@@ -18,7 +18,21 @@ namespace Oculus.Interaction.DistanceReticles
     public abstract class InteractorReticle<TReticleData> : MonoBehaviour
         where TReticleData : IReticleData
     {
-        protected abstract IDistanceInteractor DistanceInteractor { get; set; }
+        [SerializeField]
+        private bool _showOnSelect = false;
+        private bool ShowOnSelect
+        {
+            get
+            {
+                return _showOnSelect;
+            }
+            set
+            {
+                _showOnSelect = value;
+            }
+        }
+
+        protected abstract IInteractorView Interactor { get; }
 
         private TReticleData _targetData;
         private bool _drawing;
@@ -27,7 +41,7 @@ namespace Oculus.Interaction.DistanceReticles
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            Assert.IsNotNull(DistanceInteractor);
+            Assert.IsNotNull(Interactor);
             Hide();
             this.EndStart(ref _started);
         }
@@ -35,7 +49,7 @@ namespace Oculus.Interaction.DistanceReticles
         {
             if (_started)
             {
-                DistanceInteractor.WhenStateChanged += HandleStateChanged;
+                Interactor.WhenStateChanged += HandleStateChanged;
             }
         }
 
@@ -43,7 +57,7 @@ namespace Oculus.Interaction.DistanceReticles
         {
             if (_started)
             {
-                DistanceInteractor.WhenStateChanged -= HandleStateChanged;
+                Interactor.WhenStateChanged -= HandleStateChanged;
             }
         }
 
@@ -56,18 +70,21 @@ namespace Oculus.Interaction.DistanceReticles
             }
             else if(args.NewState == InteractorState.Select)
             {
-                InteractableUnset();
+                if (!_showOnSelect)
+                {
+                    InteractableUnset();
+                }
             }
             else if (args.NewState == InteractorState.Hover)
             {
-                InteractableSet(DistanceInteractor.Candidate as MonoBehaviour);
+                InteractableSet(Interactor.Candidate as MonoBehaviour);
             }
         }
 
         #region Drawing
         protected abstract void Draw(TReticleData data);
         protected abstract void Hide();
-        protected abstract void Align(TReticleData data, ConicalFrustum frustum);
+        protected abstract void Align(TReticleData data);
         #endregion
 
         private void InteractableSet(MonoBehaviour interactableComponent)
@@ -77,7 +94,7 @@ namespace Oculus.Interaction.DistanceReticles
             {
                 _targetData = reticleData;
                 Draw(reticleData);
-                Align(reticleData, DistanceInteractor.PointerFrustum);
+                Align(reticleData);
                 _drawing = true;
             }
         }
@@ -96,7 +113,7 @@ namespace Oculus.Interaction.DistanceReticles
         {
             if (_drawing)
             {
-                Align(_targetData, DistanceInteractor.PointerFrustum);
+                Align(_targetData);
             }
         }
     }

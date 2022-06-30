@@ -16,7 +16,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.Editor
+namespace Oculus.Interaction.HandGrab.Editor
 {
     [CustomPropertyDrawer(typeof(HandPose))]
     public class HandPoseEditor : PropertyDrawer

@@ -14,7 +14,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using System;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces
+namespace Oculus.Interaction.HandGrab.SnapSurfaces
 {
     [Serializable]
     public class SphereSurfaceData : ICloneable
@@ -158,9 +158,9 @@ namespace Oculus.Interaction.HandPosing.SnapSurfaces
         private void Reset()
         {
             _gripPoint = this.transform;
-            if (this.TryGetComponent(out HandGrabPoint grabPoint))
+            if (this.TryGetComponent(out HandGrabPose grabPose))
             {
-                _relativeTo = grabPoint.RelativeTo;
+                _relativeTo = grabPose.RelativeTo;
             }
         }
         #endregion

@@ -15,7 +15,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces.Editor
+namespace Oculus.Interaction.HandGrab.SnapSurfaces.Editor
 {
     [CustomEditor(typeof(BoxSurface))]
     [CanEditMultipleObjects]

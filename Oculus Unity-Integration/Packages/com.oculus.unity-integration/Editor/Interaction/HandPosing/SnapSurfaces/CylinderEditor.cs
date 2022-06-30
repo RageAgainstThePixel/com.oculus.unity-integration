@@ -15,7 +15,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces.Editor
+namespace Oculus.Interaction.HandGrab.SnapSurfaces.Editor
 {
     [CustomEditor(typeof(CylinderSurface))]
     [CanEditMultipleObjects]
@@ -25,6 +25,7 @@ namespace Oculus.Interaction.HandPosing.SnapSurfaces.Editor
 
         private ArcHandle _arcHandle = new ArcHandle();
         private Vector3[] _surfaceEdges;
+
         private CylinderSurface _surface;
 
         private void OnEnable()

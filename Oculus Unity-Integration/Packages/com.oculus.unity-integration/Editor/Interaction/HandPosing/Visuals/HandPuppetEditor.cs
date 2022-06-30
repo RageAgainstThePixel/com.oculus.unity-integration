@@ -19,7 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System;
 
-namespace Oculus.Interaction.HandPosing.Visuals.Editor
+namespace Oculus.Interaction.HandGrab.Visuals.Editor
 {
     [CustomEditor(typeof(HandPuppet))]
     public class HandPuppetEditor : UnityEditor.Editor

@@ -11,15 +11,15 @@ namespace Oculus.Platform
     public class FilterReadDelegate : MonoBehaviour
     {
       public VoipAudioSourceHiLevel parent;
-            private float[] scratchBuffer;
+      private float[] scratchBuffer;
 
-            private void Awake()
+      private void Awake()
       {
         int bufferSizeElements = (int)CAPI.ovr_Voip_GetOutputBufferMaxSize();
         scratchBuffer = new float[bufferSizeElements];
       }
 
-            private void OnAudioFilterRead(float[] data, int channels)
+      private void OnAudioFilterRead(float[] data, int channels)
       {
         int sizeToFetch = data.Length / channels;
         int sourceBufferSize = sizeToFetch;
@@ -72,7 +72,8 @@ namespace Oculus.Platform
       }
     }
 
-        private int initialPlaybackDelayMS;
+
+    private int initialPlaybackDelayMS;
     public UInt64 senderID
     {
       set
@@ -85,12 +86,13 @@ namespace Oculus.Platform
     public float peakAmplitude;
 
     protected IVoipPCMSource pcmSource;
-        private static int audioSystemPlaybackFrequency;
-        private static bool verboseLogging = false;
+
+    private static int audioSystemPlaybackFrequency;
+    private static bool verboseLogging = false;
 
     protected void Stop() {}
 
-        private VoipSampleRate SampleRateToEnum(int rate) {
+    private VoipSampleRate SampleRateToEnum(int rate) {
       switch(rate) {
       case 48000:
         return VoipSampleRate.HZ48000;
@@ -122,7 +124,7 @@ namespace Oculus.Platform
       }
     }
 
-        private void Start() {
+    private void Start() {
       audioSource.Stop();
     }
 
@@ -135,7 +137,7 @@ namespace Oculus.Platform
       return ms * audioSystemPlaybackFrequency / 1000;
     }
 
-        private void Update()
+    private void Update()
     {
       pcmSource.Update();
 

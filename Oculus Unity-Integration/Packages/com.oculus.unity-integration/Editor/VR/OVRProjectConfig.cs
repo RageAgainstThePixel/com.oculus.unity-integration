@@ -172,6 +172,8 @@ public class OVRProjectConfig : ScriptableObject
 			projectConfig.handTrackingFrequency = HandTrackingFrequency.LOW;
 			projectConfig.handTrackingVersion = HandTrackingVersion.Default;
 			projectConfig.anchorSupport = AnchorSupport.Disabled;
+			projectConfig.trackedKeyboardSupport = TrackedKeyboardSupport.None;
+			projectConfig.renderModelSupport = RenderModelSupport.Disabled;
 			projectConfig.disableBackups = true;
 			projectConfig.enableNSCConfig = true;
 			projectConfig.skipUnneededShaders = false;

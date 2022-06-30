@@ -36,6 +36,7 @@ namespace Oculus.Interaction
         InteractorState State { get; }
         event Action<InteractorStateChangeArgs> WhenStateChanged;
         event Action WhenPreprocessed;
+        event Action WhenProcessed;
         event Action WhenPostprocessed;
     }
 
@@ -47,8 +48,10 @@ namespace Oculus.Interaction
     {
 
         void Preprocess();
+        void Process();
         void Postprocess();
-        void UpdateCandidate();
+
+        void ProcessCandidate();
         void Enable();
         void Disable();
         void Hover();

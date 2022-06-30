@@ -82,7 +82,7 @@ namespace Oculus.Interaction.Input
 
         #region Inject
 
-        public void InjectAllJointRotationHistoryModifier(UpdateModeFlags updateMode, IDataSource updateAfter,
+        public void InjectAllJointHistoryHand(UpdateModeFlags updateMode, IDataSource updateAfter,
             DataModifier<HandDataAsset> modifyDataFromSource, bool applyModifier,
             Component[] aspects, int historyLength, int historyOffset)
         {
