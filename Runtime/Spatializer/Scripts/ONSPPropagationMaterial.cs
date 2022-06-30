@@ -167,11 +167,11 @@ public sealed class ONSPPropagationMaterial : MonoBehaviour
 			preset_ = value;
 		}
 	}
-
-    //***********************************************************************
-    // Start / Destroy
-
-    /// Initialize the audio material. This is called after Awake() and before the first Update().
+	
+	//***********************************************************************
+	// Start / Destroy
+	
+	/// Initialize the audio material. This is called after Awake() and before the first Update().
     private void Start()
 	{
 		StartInternal();
@@ -186,16 +186,16 @@ public sealed class ONSPPropagationMaterial : MonoBehaviour
         }
 
         // Create the internal material.
-        if (ONSPPropagation.Interface.CreateAudioMaterial( out materialHandle ) != ONSPPropagationGeometry.OSPSuccess)
+		if (ONSPPropagation.Interface.CreateAudioMaterial( out materialHandle ) != ONSPPropagationGeometry.OSPSuccess)
         {
             throw new Exception("Unable to create internal audio material");
         }
 
         // Run the updates to initialize the material.
-        UploadMaterial();
+		UploadMaterial();
 	}
-
-    /// Destroy the audio scene. This is called when the scene is deleted.
+	
+	/// Destroy the audio scene. This is called when the scene is deleted.
     private void OnDestroy()
 	{
 		DestroyInternal();
@@ -227,7 +227,7 @@ public sealed class ONSPPropagationMaterial : MonoBehaviour
 		foreach ( Point p in absorption.points )
         {
             ONSPPropagation.Interface.AudioMaterialSetFrequency(materialHandle, MaterialProperty.ABSORPTION, 
-                                                          p.frequency, p.data );
+                p.frequency, p.data );
         }
 
         // Transmission
@@ -236,7 +236,7 @@ public sealed class ONSPPropagationMaterial : MonoBehaviour
         foreach (Point p in transmission.points)
         {
             ONSPPropagation.Interface.AudioMaterialSetFrequency(materialHandle, MaterialProperty.TRANSMISSION, 
-                                                          p.frequency, p.data);
+                p.frequency, p.data);
         }
 
         // Scattering
@@ -245,7 +245,7 @@ public sealed class ONSPPropagationMaterial : MonoBehaviour
         foreach (Point p in scattering.points)
         {
             ONSPPropagation.Interface.AudioMaterialSetFrequency(materialHandle, MaterialProperty.SCATTERING,
-                                                          p.frequency, p.data);
+                p.frequency, p.data);
         }
     }
 

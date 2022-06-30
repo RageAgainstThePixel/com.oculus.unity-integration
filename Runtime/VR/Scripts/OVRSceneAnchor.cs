@@ -136,26 +136,26 @@ public sealed class OVRSceneAnchor : MonoBehaviour
         }
 
         // NOTE: This transformation performs the following steps:
-        // 1. Flip Z to convert from OpenXR's right-handed to Unity's left-handed coordinate system.
-        //    OpenXR             Unity
-        //       | y          y |  / z
-        //       |              | /
-        //       +----> x       +----> x
-        //      /
-        //    z/ (normal)
-        //
-        // 2. (1) means that Z now points in the opposite direction from OpenXR. However, the design is such that a
-        //    plane's normal should coincide with +Z, so we rotate 180 degrees around the +Y axis to make Z now point
-        //    in the intended direction.
-        //    OpenXR           Unity
-        //       | y           y |
-        //       |               |
-        //       +---->  x  <----+
-        //      /               /
-        //    z/             z / (normal)
-        //
-        // 3. Convert from tracking space to world space.
-        var worldSpacePose = new OVRPose
+		// 1. Flip Z to convert from OpenXR's right-handed to Unity's left-handed coordinate system.
+		//    OpenXR             Unity
+		//       | y          y |  / z
+		//       |              | /
+		//       +----> x       +----> x
+		//      /
+		//    z/ (normal)
+		//
+		// 2. (1) means that Z now points in the opposite direction from OpenXR. However, the design is such that a
+		//    plane's normal should coincide with +Z, so we rotate 180 degrees around the +Y axis to make Z now point
+		//    in the intended direction.
+		//    OpenXR           Unity
+		//       | y           y |
+		//       |               |
+		//       +---->  x  <----+
+		//      /               /
+		//    z/             z / (normal)
+		//
+		// 3. Convert from tracking space to world space.
+		var worldSpacePose = new OVRPose
 		{
 			position = pose.Position.FromFlippedZVector3f(),
 			orientation = pose.Orientation.FromFlippedZQuatf() * RotateY180

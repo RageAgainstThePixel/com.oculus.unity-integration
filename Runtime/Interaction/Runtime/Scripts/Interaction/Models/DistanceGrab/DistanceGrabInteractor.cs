@@ -17,6 +17,11 @@ using Oculus.Interaction.Throw;
 
 namespace Oculus.Interaction
 {
+    /// <summary>
+    /// This interactor allows grabbing objects at a distance.
+    /// It uses a series of conical frustums to find the best interactable.
+    /// Upon selection the object will move with the hand following the interactable movement.
+    /// </summary>
     public class DistanceGrabInteractor : PointerInteractor<DistanceGrabInteractor, DistanceGrabInteractable>,
         IDistanceInteractor
     {
@@ -52,8 +57,8 @@ namespace Oculus.Interaction
         protected override void Start()
         {
             this.BeginStart(ref _started, base.Start);
-            Assert.IsNotNull(Selector);
-            Assert.IsNotNull(_selectionFrustum);
+            Assert.IsNotNull(Selector, "The selector is missing");
+            Assert.IsNotNull(_selectionFrustum, "The selection frustum is missing");
 
             if (_grabCenter == null)
             {
@@ -67,7 +72,7 @@ namespace Oculus.Interaction
 
             if (_velocityCalculator != null)
             {
-                Assert.IsNotNull(VelocityCalculator);
+                Assert.IsNotNull(VelocityCalculator, "Velocity Calculator was not the right type");
             }
             this.EndStart(ref _started);
         }

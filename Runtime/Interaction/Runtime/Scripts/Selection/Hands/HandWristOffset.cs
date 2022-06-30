@@ -112,14 +112,19 @@ namespace Oculus.Interaction
                 return;
             }
 
-            if (Hand.Handedness == Handedness.Left)
+            GetOffset(ref pose, Hand.Handedness, Hand.Scale);
+        }
+
+        public void GetOffset(ref Pose pose, Handedness handedness, float scale)
+        {
+            if (handedness == Handedness.Left)
             {
-                pose.position = -_offset * Hand.Scale;
+                pose.position = -_offset * scale;
                 pose.rotation = _rotation * LEFT_MIRROR_ROTATION;
             }
             else
             {
-                pose.position = _offset * Hand.Scale;
+                pose.position = _offset * scale;
                 pose.rotation = _rotation;
             }
         }

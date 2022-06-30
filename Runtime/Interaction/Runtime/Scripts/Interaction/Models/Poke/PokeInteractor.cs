@@ -57,9 +57,33 @@ namespace Oculus.Interaction
 
         protected override void DoPreprocess()
         {
-            _hitInteractable = null;
             _previousOrigin = Origin;
             Origin = _pointTransform.position;
+        }
+
+        public override bool ShouldSelect
+        {
+            get
+            {
+                if (State != InteractorState.Hover)
+                {
+                    return false;
+                }
+
+                return _candidate == _interactable && _hitInteractable != null;
+            }
+        }
+
+        public override bool ShouldUnselect {
+            get
+            {
+                if (State != InteractorState.Select)
+                {
+                    return false;
+                }
+
+                return _hitInteractable == null;
+            }
         }
 
         protected override void DoHoverUpdate()
@@ -68,17 +92,12 @@ namespace Oculus.Interaction
             {
                 TouchPoint = _interactable.ComputeClosestPoint(Origin);
             }
-
-            if (_hitInteractable != null)
-            {
-                _hitInteractable = null;
-                ShouldSelect = true;
-                _dragging = false;
-            }
         }
 
         protected override PokeInteractable ComputeCandidate()
         {
+            _hitInteractable = null;
+
             // First, see if we trigger a press on any interactable
             PokeInteractable closestInteractable = ComputeSelectCandidate();
             if (closestInteractable != null)
@@ -246,6 +265,7 @@ namespace Oculus.Interaction
 
         protected override void InteractableSelected(PokeInteractable interactable)
         {
+            _dragging = false;
             if (interactable != null)
             {
                 Vector3 worldPosition = interactable.ClosestSurfacePoint(Origin);
@@ -287,7 +307,7 @@ namespace Oculus.Interaction
             PokeInteractable interactable = _selectedInteractable;
             if (interactable == null)
             {
-                ShouldUnselect = true;
+                _hitInteractable = null;
                 return;
             }
 
@@ -298,7 +318,8 @@ namespace Oculus.Interaction
             // Unselect our interactor if it is above the surface by at least releaseDistancePadding
             if (Vector3.Dot(surfaceToInteractor, closestSurfaceNormal) > _touchReleaseThreshold)
             {
-                ShouldUnselect = true;
+                _hitInteractable = null;
+                return;
             }
 
             Vector3 worldPositionOnSurface = interactable.ClosestSurfacePoint(Origin);
@@ -365,7 +386,7 @@ namespace Oculus.Interaction
                     GeneratePointerEvent(PointerEvent.Cancel, interactable);
                     _previousCandidate = null;
                     _previousOrigin = Origin;
-                    ShouldUnselect = true;
+                    _hitInteractable = null;
                 }
             }
         }

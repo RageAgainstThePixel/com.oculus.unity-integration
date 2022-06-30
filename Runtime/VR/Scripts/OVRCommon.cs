@@ -268,8 +268,9 @@ public static class OVRExtensions
 
 	public static Transform FindChildRecursive(this Transform parent, string name)
 	{
-		foreach (Transform child in parent)
+		for (int i = 0; i < parent.childCount; i++)
 		{
+			var child = parent.GetChild(i);
 			if (child.name.Contains(name))
             {
                 return child;
@@ -357,10 +358,10 @@ public static class OVRNodeStateProperties
             return OVRPlugin.hmdPresent;
         }
 #if USING_XR_SDK
-        XRDisplaySubsystem currentDisplaySubsystem = OVRManager.GetCurrentDisplaySubsystem();
+		XRDisplaySubsystem currentDisplaySubsystem = OVRManager.GetCurrentDisplaySubsystem();
 		if (currentDisplaySubsystem != null)
         {
-            return currentDisplaySubsystem.running;             //In 2019.3, this should be changed to currentDisplaySubsystem.isConnected, but this is a fine placeholder for now.
+            return currentDisplaySubsystem.running;				//In 2019.3, this should be changed to currentDisplaySubsystem.isConnected, but this is a fine placeholder for now.
         }
 
         return false;

@@ -190,6 +190,8 @@ namespace Oculus.Interaction
             return _grabTarget.GetPose();
         }
 
+        private bool _outsideReleaseDist = false;
+
         protected override void DoSelectUpdate()
         {
             GrabInteractable interactable = _selectedInteractable;
@@ -201,6 +203,7 @@ namespace Oculus.Interaction
             _tween.UpdateTarget(_grabTarget.GetPose());
             _tween.Tick();
 
+            _outsideReleaseDist = false;
             if (interactable.ReleaseDistance > 0.0f)
             {
                 float closestSqrDist = float.MaxValue;
@@ -216,8 +219,25 @@ namespace Oculus.Interaction
 
                 if (closestSqrDist > sqrReleaseDistance)
                 {
-                    ShouldUnselect = true;
+                    _outsideReleaseDist = true;
                 }
+            }
+        }
+
+        public override bool ShouldUnselect {
+            get
+            {
+                if (State != InteractorState.Select)
+                {
+                    return false;
+                }
+
+                if (_outsideReleaseDist)
+                {
+                    return true;
+                }
+
+                return base.ShouldUnselect;
             }
         }
 

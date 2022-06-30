@@ -50,8 +50,8 @@ namespace Oculus.Interaction
         public bool FilterMonoBehaviour(MonoBehaviour monoBehaviour)
         {
             GameObject gameObject = monoBehaviour.gameObject;
-            TagSet tagSet = gameObject.GetComponent<TagSet>();
-            if (tagSet == null && _requireTagSet.Count > 0)
+            if (!gameObject.TryGetComponent(out TagSet tagSet)
+                && _requireTagSet.Count > 0)
             {
                 return false;
             }

@@ -29,6 +29,10 @@ namespace Oculus.Interaction.Input
         [Tooltip("Increase beta from zero to reduce lag")]
         public float _beta;
 
+        [SerializeField]
+        [Tooltip("Smaller values of dCutoff smooth more but slow accuracy")]
+        public float _dCutoff;
+
         /// <summary>
         /// The minimum cutoff frequency of the filter, in Hertz
         /// </summary>
@@ -42,15 +46,28 @@ namespace Oculus.Interaction.Input
         /// <summary>
         /// Cutoff frequency for derivative, in Hertz
         /// </summary>
-        public float DCutoff => 1f;
+        public float DCutoff => _dCutoff;
+
+
+        static private float DefaultMinCutoff => 1;
+        static private float DefaultBeta => 0;
+        static private float DefaultDCutoff => 1;
+
+        public OneEuroFilterPropertyBlock(float minCutoff, float beta, float dCutoff)
+        {
+            _minCutoff = minCutoff;
+            _beta = beta;
+            _dCutoff = dCutoff;
+        }
 
         public OneEuroFilterPropertyBlock(float minCutoff, float beta)
         {
             _minCutoff = minCutoff;
             _beta = beta;
+            _dCutoff = DefaultDCutoff;
         }
 
         public static OneEuroFilterPropertyBlock Default =>
-             new OneEuroFilterPropertyBlock() { _minCutoff = 1, _beta = 0 };
+             new OneEuroFilterPropertyBlock() { _minCutoff = DefaultMinCutoff, _beta = DefaultBeta, _dCutoff = DefaultDCutoff };
     }
 }

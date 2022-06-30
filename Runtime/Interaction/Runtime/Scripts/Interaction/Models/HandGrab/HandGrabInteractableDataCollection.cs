@@ -13,7 +13,7 @@ permissions and limitations under the License.
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing
+namespace Oculus.Interaction.HandGrab
 {
     /// <summary>
     /// A collection of HandGrabInteractable Data, to be used to store the information of several HandGrabInteractable

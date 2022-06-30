@@ -46,7 +46,10 @@ namespace Oculus.Interaction.Input
         public bool IsConnected => GetData().IsDataValidAndConnected;
         public bool IsHighConfidence => GetData().IsHighConfidence;
         public bool IsDominantHand => GetData().IsDominantHand;
-        public float Scale => GetData().HandScale * TrackingToWorldTransformer.Transform.localScale.x;
+
+        public float Scale => GetData().HandScale * (TrackingToWorldTransformer != null
+            ? TrackingToWorldTransformer.Transform.localScale.x
+            : 1);
 
         private static readonly Vector3 PALM_LOCAL_OFFSET = new Vector3(0.08f, -0.01f, 0.0f);
 
@@ -201,7 +204,8 @@ namespace Oculus.Interaction.Input
         public bool GetCenterEyePose(out Pose pose)
         {
             HmdDataAsset hmd = HmdData.GetData();
-            if (!hmd.IsTracked)
+
+            if (hmd == null || !hmd.IsTracked)
             {
                 pose = Pose.identity;
                 return false;
@@ -218,6 +222,10 @@ namespace Oculus.Interaction.Input
         {
             get
             {
+                if (TrackingToWorldSpace == null)
+                {
+                    return null;
+                }
                 return TrackingToWorldTransformer.Transform;
             }
         }
@@ -229,7 +237,11 @@ namespace Oculus.Interaction.Input
                 pose = Pose.identity;
                 return false;
             }
-            pose = TrackingToWorldTransformer.ToWorldPose(sourcePose);
+
+            pose = TrackingToWorldTransformer != null
+                ? TrackingToWorldTransformer.ToWorldPose(sourcePose)
+                : sourcePose;
+
             return true;
         }
 

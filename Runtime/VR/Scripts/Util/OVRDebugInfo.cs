@@ -21,6 +21,7 @@ using UnityEngine.UI;
 public class OVRDebugInfo : MonoBehaviour
 {
     #region GameObjects for Debug Information UIs
+
     private GameObject debugUIManager;
     private GameObject debugUIObject;
     private GameObject riftPresent;
@@ -35,6 +36,7 @@ public class OVRDebugInfo : MonoBehaviour
     #endregion
 
     #region Debug strings
+
     private string strRiftPresent            = null; // "VR DISABLED"
     private string strFPS                    = null; // "FPS: 0";
     private string strIPD                    = null; // "IPD: 0.000";
@@ -49,6 +51,7 @@ public class OVRDebugInfo : MonoBehaviour
     /// Variables for FPS
     /// </summary>
     private float updateInterval = 0.5f;
+
     private float accum          = 0.0f;
     private int   frames         = 0;
     private float timeLeft       = 0.0f;
@@ -57,6 +60,7 @@ public class OVRDebugInfo : MonoBehaviour
     /// Managing for UI initialization
     /// </summary>
     private bool  initUIComponent = false;
+
     private bool  isInited        = false;
 
     /// <summary>
@@ -138,9 +142,9 @@ public class OVRDebugInfo : MonoBehaviour
     {
         isInited = false;
     }
-    #endregion
+#endregion
 
-    #region Private Functions
+#region Private Functions
     /// <summary>
     /// Initialize UI GameObjects
     /// </summary>
@@ -240,23 +244,6 @@ public class OVRDebugInfo : MonoBehaviour
 
         if (!string.IsNullOrEmpty(strFOV))
         {
-
-/* Unmerged change from project 'Oculus.VR.Player'
-Before:
-            fov.GetComponentInChildren<Text>().text = strFOV;
-        if (!string.IsNullOrEmpty(strResolutionEyeTexture))
-            resolutionEyeTexture.GetComponentInChildren<Text>().text = strResolutionEyeTexture;
-        if (!string.IsNullOrEmpty(strLatencies))
-After:
-            fov.GetComponentInChildren<Text>().text = strFOV;
-        }
-
-        if (!string.IsNullOrEmpty(strResolutionEyeTexture))
-            resolutionEyeTexture.GetComponentInChildren<Text>().text = strResolutionEyeTexture;
-        }
-
-        if (!string.IsNullOrEmpty(strLatencies))
-*/
             fov.GetComponentInChildren<Text>().text = strFOV;
         }
 
@@ -281,7 +268,7 @@ After:
         }
     }
 
-    /// <summary>
+	/// <summary>
     /// It's for rift present GUI
     /// </summary>
     private void RiftPresentGUI(GameObject guiMainOBj)
@@ -359,9 +346,9 @@ After:
 
         return GO;
     }
-    #endregion
+#endregion
 
-    #region Debugging variables handler
+#region Debugging variables handler
     /// <summary>
     /// Updates the IPD.
     /// </summary>
@@ -379,17 +366,17 @@ After:
         strHeight = System.String.Format("Eye Height (m): {0:F3}", eyeHeight);
 	}
 
-    /// <summary>
-    /// Updates the eye depth offset.
-    /// </summary>
+	/// <summary>
+	/// Updates the eye depth offset.
+	/// </summary>
     private void UpdateEyeDepthOffset()
 	{
 		float eyeDepth = OVRManager.profile.eyeDepth;
 		strDepth = System.String.Format("Eye Depth (m): {0:F3}", eyeDepth);
 	}
 
-    /// <summary>
-    /// Updates the FOV.
+	/// <summary>
+	/// Updates the FOV.
     /// </summary>
     private void UpdateFOV()
     {
@@ -420,18 +407,18 @@ After:
 #if !UNITY_ANDROID || UNITY_EDITOR
             OVRDisplay.LatencyData latency = OVRManager.display.latency;
             if (latency.render < 0.000001f && latency.timeWarp < 0.000001f && latency.postPresent < 0.000001f)
-        {
-            strLatencies = System.String.Format("Latency values are not available.");
-        }
-        else
-        {
-            strLatencies = System.String.Format("Render: {0:F3} TimeWarp: {1:F3} Post-Present: {2:F3}\nRender Error: {3:F3} TimeWarp Error: {4:F3}",
+            {
+                strLatencies = System.String.Format("Latency values are not available.");
+            }
+            else
+            {
+                strLatencies = System.String.Format("Render: {0:F3} TimeWarp: {1:F3} Post-Present: {2:F3}\nRender Error: {3:F3} TimeWarp Error: {4:F3}",
                     latency.render,
                     latency.timeWarp,
                     latency.postPresent,
                     latency.renderError,
                     latency.timeWarpError);
-        }
+            }
 #endif
     }
 

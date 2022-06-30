@@ -69,5 +69,28 @@ namespace Oculus.Voice.Utility
 
         }
         #endregion
+
+        #region Scriptable Objects
+        [MenuItem("Assets/Create/Voice SDK/Dynamic Entities")]
+        public static void CreateDynamicEntities()
+        {
+            WitDynamicEntitiesData asset =
+                ScriptableObject.CreateInstance<WitDynamicEntitiesData>();
+
+            var path = EditorUtility.SaveFilePanel("Save Dynamic Entity", Application.dataPath,
+                "DynamicEntities", "asset");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = "Assets/" + path.Replace(Application.dataPath, "");
+                AssetDatabase.CreateAsset(asset, path);
+                AssetDatabase.SaveAssets();
+
+                EditorUtility.FocusProjectWindow();
+
+                Selection.activeObject = asset;
+            }
+        }
+        #endregion
     }
 }

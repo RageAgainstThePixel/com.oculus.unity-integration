@@ -39,24 +39,27 @@ public class OVRSystemProfilerPanel : EditorWindow {
     private OVRNetwork.OVRNetworkTcpClient tcpClient = new OVRNetwork.OVRNetworkTcpClient();
     private int remoteListeningPort = OVRSystemPerfMetrics.TcpListeningPort;
 
-    //OVRSystemPerfMetrics.PerfMetrics lastReceivedMetrics;
+	//OVRSystemPerfMetrics.PerfMetrics lastReceivedMetrics;
 
     private const int maxMetricsFrames = 120;
     private const float metricsHistoryDuration = 1.0f;
+
     private List<OVRSystemPerfMetrics.PerfMetrics> receivedMetricsList = new List<OVRSystemPerfMetrics.PerfMetrics>();
     private bool pauseReceiveMetrics = false;
     private bool repaintRequested = false;
+
     private const float labelWidth = 140.0f;
     private const float panelInnerRightPad = 6.0f;
     private const float progressBarPad = 5.0f;
     private const float progressBarHeight = 18.0f;
+
     private string androidSdkRootPath;
     private OVRADBTool adbTool;
 	
 	private static GUIStyle odhCalloutBackgroundStyle;
 	private static GUIStyle odhCalloutTextStyle;
 
-    // The actual window code goes here
+	// The actual window code goes here
     private void OnGUI()
 	{
 		if (odhCalloutBackgroundStyle == null)

@@ -14,7 +14,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using System;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces
+namespace Oculus.Interaction.HandGrab.SnapSurfaces
 {
     [Serializable]
     public class CylinderSurfaceData : ICloneable
@@ -38,7 +38,7 @@ namespace Oculus.Interaction.HandPosing.SnapSurfaces
         public Vector3 endPoint = new Vector3(0f, -0.1f, 0f);
 
         [Range(0f, 360f)]
-        public float angle = 120f;
+        public float angle = 360f;
     }
 
     /// <summary>
@@ -252,9 +252,9 @@ namespace Oculus.Interaction.HandPosing.SnapSurfaces
         private void Reset()
         {
             _gripPoint = this.transform;
-            if (this.TryGetComponent(out HandGrabPoint grabPoint))
+            if (this.TryGetComponent(out HandGrabPose grabPose))
             {
-                _relativeTo = grabPoint.RelativeTo;
+                _relativeTo = grabPose.RelativeTo;
             }
         }
         #endregion

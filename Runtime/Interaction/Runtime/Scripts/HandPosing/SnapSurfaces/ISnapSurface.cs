@@ -12,7 +12,7 @@ permissions and limitations under the License.
 
 using UnityEngine;
 
-namespace Oculus.Interaction.HandPosing.SnapSurfaces
+namespace Oculus.Interaction.HandGrab.SnapSurfaces
 {
     /// <summary>
     /// This interface defines the method needed to use snap surfaces. They allow finding the

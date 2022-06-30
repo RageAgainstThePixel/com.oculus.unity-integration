@@ -64,6 +64,9 @@ namespace Oculus.Interaction.DistanceReticles
         [SerializeField]
         private Material _lineMaterial;
 
+        [SerializeField]
+        private bool _visibleDuringNormal;
+
         private PolylineRenderer _polylineRenderer;
 
         private List<Vector4> _linePoints;
@@ -75,7 +78,6 @@ namespace Oculus.Interaction.DistanceReticles
         protected bool _started;
         private bool _shouldDrawLine;
         private DummyPointReticle _dummyTarget = new DummyPointReticle();
-
 
         private void Awake()
         {
@@ -146,9 +148,13 @@ namespace Oculus.Interaction.DistanceReticles
             {
                 _shouldDrawLine = false;
             }
-            else
+            else if (args.NewState == InteractorState.Hover)
             {
                 _shouldDrawLine = true;
+            }
+            else if (args.NewState == InteractorState.Normal)
+            {
+                _shouldDrawLine = _visibleDuringNormal;
             }
         }
         private void InteractableSet(MonoBehaviour interactable)

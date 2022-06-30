@@ -25,7 +25,14 @@ namespace Oculus.Interaction.Samples
         private RectTransform _content;
 
         [SerializeField]
-        private AnimationCurve _easeCurve;
+        private AnimationCurve _easeCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+        [SerializeField, Optional]
+        private GameObject _emptyCarouselVisuals;
+
+        public int CurrentChildIndex => _currentChildIndex;
+
+        public RectTransform ContentArea => _content;
 
         private int _currentChildIndex = 0;
         private float _scrollVal = 0;
@@ -75,6 +82,7 @@ namespace Oculus.Interaction.Samples
             }
             _scrollVal = Time.time;
         }
+
         private RectTransform GetCurrentChild()
         {
             return _content.GetChild(_currentChildIndex) as RectTransform;
@@ -82,6 +90,11 @@ namespace Oculus.Interaction.Samples
 
         private void ScrollToChild(RectTransform child, float amount01)
         {
+            if (child == null)
+            {
+                return;
+            }
+
             amount01 = Mathf.Clamp01(amount01);
 
             Vector3 viewportCenter = _viewport.TransformPoint(_viewport.rect.center);
@@ -98,8 +111,20 @@ namespace Oculus.Interaction.Samples
 
         protected virtual void Update()
         {
-            RectTransform currentImage = _content.GetChild(_currentChildIndex) as RectTransform;
-            ScrollToChild(currentImage, Time.time - _scrollVal);
+            _currentChildIndex = Mathf.Clamp(
+                _currentChildIndex, 0, _content.childCount - 1);
+
+            bool hasImages = _content.childCount > 0;
+            if (hasImages)
+            {
+                RectTransform currentImage = GetCurrentChild();
+                ScrollToChild(currentImage, Time.time - _scrollVal);
+            }
+
+            if (_emptyCarouselVisuals != null)
+            {
+                _emptyCarouselVisuals.SetActive(!hasImages);
+            }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Oculus.Interaction.Editor
             Incomplete,
         }
 
-        public const string PACKAGE_VERSION = "0.40.0";
+        public const string PACKAGE_VERSION = "0.41.0";
         public const string DEPRECATED_TAG = "oculus_interaction_deprecated";
         private const string MENU_NAME = "Oculus/Interaction/Remove Deprecated Assets";
         private const string AUTO_UPDATE_KEY = "Oculus_Interaction_AutoRemoveDeprecated_" + PACKAGE_VERSION;
@@ -218,11 +218,15 @@ namespace Oculus.Interaction.Editor
 
                 // Remove non-empty folders from delete list
                 skippedFolders.UnionWith(foldersToDelete
-                    .Where((path) => Directory.EnumerateFiles(path).Any()));
+                    .Where((path) => AssetDatabase.FindAssets("", new[] { path })
+                    .Select((guid) => AssetDatabase.GUIDToAssetPath(guid))
+                    .Any((path) => !AssetDatabase.IsValidFolder(path))));
                 foldersToDelete.ExceptWith(skippedFolders);
 
-                // Delete folders
-                AssetDatabase.DeleteAssets(foldersToDelete.ToArray(), failed);
+                // Delete folders, removing longest paths (subfolders) first
+                List<string> sortedFolders = new List<string>(foldersToDelete);
+                sortedFolders.Sort((a, b) => b.Length.CompareTo(a.Length));
+                AssetDatabase.DeleteAssets(sortedFolders.ToArray(), failed);
                 failedPaths.UnionWith(failed);
 #else
                 // Delete files

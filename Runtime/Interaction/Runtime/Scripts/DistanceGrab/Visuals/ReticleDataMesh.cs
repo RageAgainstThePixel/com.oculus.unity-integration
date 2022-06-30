@@ -30,7 +30,7 @@ namespace Oculus.Interaction.DistanceReticles
             }
         }
 
-        public Transform Target => this.transform;
+        public Transform Target => Filter.transform;
 
 
         public Vector3 GetTargetHit(ConicalFrustum frustum)

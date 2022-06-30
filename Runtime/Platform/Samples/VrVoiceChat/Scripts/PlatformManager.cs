@@ -53,7 +53,7 @@ namespace Oculus.Platform.Samples.VrVoiceChat
 			m_p2pManager.GetRemoteHeadTransform(m_remoteHead.transform);
 		}
 
-        #region Initialization and Shutdown
+		#region Initialization and Shutdown
 
         private void Awake()
 		{

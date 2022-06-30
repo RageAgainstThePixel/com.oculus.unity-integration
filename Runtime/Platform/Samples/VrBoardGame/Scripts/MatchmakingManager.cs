@@ -242,10 +242,10 @@ namespace Oculus.Platform.Samples.VrBoardGame
 			}
 		}
 
-        // Room Datastore updates are used to send moves between players.  So if the MatchRoomState
-        // is RemoteTurn I'm looking for the other player's move in the Datastore.  If the
-        // MatchRoomState is MyTurn I'm waiting for the room ownership to change so that
-        // I have authority to write to the datastore.
+		// Room Datastore updates are used to send moves between players.  So if the MatchRoomState
+		// is RemoteTurn I'm looking for the other player's move in the Datastore.  If the
+		// MatchRoomState is MyTurn I'm waiting for the room ownership to change so that
+		// I have authority to write to the datastore.
         private void MatchmakingRoomUpdateCallback(Message<Room> msg)
 		{
 			if (msg.IsError)

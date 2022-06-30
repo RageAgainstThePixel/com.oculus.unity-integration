@@ -10,7 +10,7 @@ ANY KIND, either express or implied. See the License for the specific language g
 permissions and limitations under the License.
 ************************************************************************************/
 
-using Oculus.Interaction.HandPosing;
+using Oculus.Interaction.HandGrab;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -20,14 +20,7 @@ namespace Oculus.Interaction.DistanceReticles
     {
         [SerializeField]
         private DistanceHandGrabInteractor _distanceInteractor;
-        protected override IDistanceInteractor DistanceInteractor
-        {
-            get
-            {
-                return _distanceInteractor;
-            }
-            set { }
-        }
+        protected override IInteractorView Interactor => _distanceInteractor;
 
         [SerializeField]
         private MeshFilter _filter;
@@ -60,6 +53,7 @@ namespace Oculus.Interaction.DistanceReticles
         protected override void Start()
         {
             this.BeginStart(ref _started, base.Start);
+            Assert.IsNotNull(_distanceInteractor);
             Assert.IsNotNull(_filter);
             Assert.IsNotNull(_renderer);
             this.EndStart(ref _started);
@@ -81,13 +75,13 @@ namespace Oculus.Interaction.DistanceReticles
             _renderer.enabled = false;
         }
 
-        protected override void Align(ReticleDataMesh data, ConicalFrustum frustum)
+        protected override void Align(ReticleDataMesh data)
         {
-            ISnapData snap = _distanceInteractor.SnapData;
+            HandGrabTarget grabTarget = _distanceInteractor.HandGrabTarget;
 
-            if (snap != null && _distanceInteractor.HasInteractable)
+            if (grabTarget != null && _distanceInteractor.HasInteractable)
             {
-                Pose pose = DestinationPose(data, snap.WorldSnapPose);
+                Pose pose = DestinationPose(data, grabTarget.WorldGrabPose);
                 _tween.UpdateTarget(pose);
             }
 
@@ -99,7 +93,7 @@ namespace Oculus.Interaction.DistanceReticles
         {
             Pose targetOffset = PoseUtils.RelativeOffset(data.Target.GetPose(), worldSnapPose);
             _distanceInteractor.Hand.GetRootPose(out Pose pose);
-            pose.Premultiply(_distanceInteractor.WristToSnapOffset);
+            pose.Premultiply(_distanceInteractor.WristToGrabPoseOffset);
             pose.Premultiply(targetOffset);
 
             return pose;

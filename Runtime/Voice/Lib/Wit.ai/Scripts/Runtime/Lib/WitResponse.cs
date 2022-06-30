@@ -131,11 +131,9 @@ namespace Facebook.WitAi.Lib
             get
             {
                 foreach (var C in Childs)
+                foreach (var D in C.DeepChilds)
                 {
-                    foreach (var D in C.DeepChilds)
-                    {
-                        yield return D;
-                    }
+                    yield return D;
                 }
             }
         }
@@ -626,11 +624,11 @@ namespace Facebook.WitAi.Lib
                     int count = aReader.ReadInt32();
                     WitResponseArray tmp = new WitResponseArray();
                     for (int i = 0; i < count; i++)
-                        {
-                            tmp.Add(Deserialize(aReader));
-                        }
+                    {
+                        tmp.Add(Deserialize(aReader));
+                    }
 
-                        return tmp;
+                    return tmp;
                 }
                 case JSONBinaryTag.Class:
                 {
@@ -880,6 +878,8 @@ namespace Facebook.WitAi.Lib
         private Dictionary<string, WitResponseNode> m_Dict = new Dictionary<string, WitResponseNode>();
 
         public string[] ChildNodeNames => m_Dict.Keys.ToArray();
+
+        public bool HasChild(string child) => m_Dict.ContainsKey(child);
 
         public override WitResponseNode this[string aKey]
         {
