@@ -1,14 +1,22 @@
-/************************************************************************************
-Copyright : Copyright (c) Facebook Technologies, LLC and its affiliates. All rights reserved.
-
-Your use of this SDK or tool is subject to the Oculus SDK License Agreement, available at
-https://developer.oculus.com/licenses/oculussdk/
-
-Unless required by applicable law or agreed to in writing, the Utilities SDK distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-ANY KIND, either express or implied. See the License for the specific language governing
-permissions and limitations under the License.
-************************************************************************************/
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * Licensed under the Oculus SDK License Agreement (the "License");
+ * you may not use the Oculus SDK except in compliance with the License,
+ * which is provided at the time of installation or download, or which
+ * otherwise accompanies this software in either electronic or hard copy form.
+ *
+ * You may obtain a copy of the License at
+ *
+ * https://developer.oculus.com/licenses/oculussdk/
+ *
+ * Unless required by applicable law or agreed to in writing, the Oculus SDK
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -65,7 +73,7 @@ namespace Oculus.Interaction
 
         protected override void Start()
         {
-            this.BeginStart(ref _started, base.Start);
+            this.BeginStart(ref _started, () => base.Start());
             Assert.IsNotNull(_pointableElement, "Pointable element can not be null");
             Assert.IsNotNull(Rigidbody, "Rigidbody can not be null");
             if (_snapPoint == null)
@@ -156,7 +164,7 @@ namespace Oculus.Interaction
                 {
                     _movement.UpdateTarget(targetPose);
                     _movement.Tick();
-                    GeneratePointerEvent(PointerEvent.Move);
+                    GeneratePointerEvent(PointerEventType.Move);
                 }
                 else
                 {
@@ -179,7 +187,7 @@ namespace Oculus.Interaction
             base.InteractableSet(interactable);
             if (interactable != null)
             {
-                GeneratePointerEvent(PointerEvent.Hover);
+                GeneratePointerEvent(PointerEventType.Hover);
             }
         }
 
@@ -187,7 +195,7 @@ namespace Oculus.Interaction
         {
             if (interactable != null)
             {
-                GeneratePointerEvent(PointerEvent.Unhover);
+                GeneratePointerEvent(PointerEventType.Unhover);
             }
             base.InteractableUnset(interactable);
         }
@@ -200,7 +208,7 @@ namespace Oculus.Interaction
                 _movement = interactable.GenerateMovement(_snapPoint.GetPose(), this);
                 if (_movement != null)
                 {
-                    GeneratePointerEvent(PointerEvent.Select);
+                    GeneratePointerEvent(PointerEventType.Select);
                 }
             }
         }
@@ -210,7 +218,7 @@ namespace Oculus.Interaction
             _movement?.StopAndSetPose(_movement.Pose);
             if (interactable != null)
             {
-                GeneratePointerEvent(PointerEvent.Unselect);
+                GeneratePointerEvent(PointerEventType.Unselect);
             }
             base.InteractableUnselected(interactable);
             _movement = null;
@@ -220,12 +228,12 @@ namespace Oculus.Interaction
 
         #region Pointable
 
-        protected virtual void HandlePointerEventRaised(PointerArgs args)
+        protected virtual void HandlePointerEventRaised(PointerEvent evt)
         {
             if (_pointableElement.PointsCount == 0
-                && (args.PointerEvent == PointerEvent.Cancel
-                    || args.PointerEvent == PointerEvent.Unhover
-                    || args.PointerEvent == PointerEvent.Unselect))
+                && (evt.Type == PointerEventType.Cancel
+                    || evt.Type == PointerEventType.Unhover
+                    || evt.Type == PointerEventType.Unselect))
             {
                 _idleStarted = Time.time;
             }
@@ -234,24 +242,24 @@ namespace Oculus.Interaction
                 _idleStarted = -1f;
             }
 
-            if (args.Identifier == Identifier
-                && args.PointerEvent == PointerEvent.Cancel
+            if (evt.Identifier == Identifier
+                && evt.Type == PointerEventType.Cancel
                 && Interactable != null)
             {
-                Interactable.RemoveInteractorById(Identifier);
+                Interactable.RemoveInteractorByIdentifier(Identifier);
             }
         }
 
 
-        public void GeneratePointerEvent(PointerEvent pointerEvent, Pose pose)
+        public void GeneratePointerEvent(PointerEventType pointerEventType, Pose pose)
         {
-            _pointableElement.ProcessPointerEvent(new PointerArgs(Identifier, pointerEvent, pose));
+            _pointableElement.ProcessPointerEvent(new PointerEvent(Identifier, pointerEventType, pose));
         }
 
-        private void GeneratePointerEvent(PointerEvent pointerEvent)
+        private void GeneratePointerEvent(PointerEventType pointerEventType)
         {
             Pose pose = ComputePointerPose();
-            _pointableElement.ProcessPointerEvent(new PointerArgs(Identifier, pointerEvent, pose));
+            _pointableElement.ProcessPointerEvent(new PointerEvent(Identifier, pointerEventType, pose));
         }
 
         protected Pose ComputePointerPose()
@@ -284,9 +292,11 @@ namespace Oculus.Interaction
 
         private SnapInteractable ComputeIntersectingCandidate()
         {
+            Vector3 position = Rigidbody.transform.position;
             SnapInteractable closestInteractable = null;
-            float bestScore = float.MinValue;
-            float score;
+            float bestScore = float.MaxValue;
+            float score = bestScore;
+            bool closestPointIsInside = false;
 
             IEnumerable<SnapInteractable> interactables = SnapInteractable.Registry.List(this);
             foreach (SnapInteractable interactable in interactables)
@@ -294,23 +304,18 @@ namespace Oculus.Interaction
                 Collider[] colliders = interactable.Colliders;
                 foreach (Collider collider in colliders)
                 {
-                    if (Collisions.IsPointWithinCollider(Rigidbody.transform.position, collider))
+                    bool isPointInsideCollider = Collisions.IsPointWithinCollider(position, collider);
+                    if (!isPointInsideCollider && closestPointIsInside)
                     {
-                        float sqrDistanceFromCenter =
-                            (Rigidbody.transform.position - collider.bounds.center).magnitude;
-                        score = float.MaxValue - sqrDistanceFromCenter;
+                        continue;
                     }
-                    else
-                    {
-                        var position = Rigidbody.transform.position;
-                        Vector3 closestPointOnInteractable = collider.ClosestPoint(position);
-                        score = -1f * (position - closestPointOnInteractable).magnitude;
-                    }
-
-                    if (score > bestScore)
+                    Vector3 measuringPoint = isPointInsideCollider ? collider.bounds.center : collider.ClosestPoint(position);
+                    score = (position - measuringPoint).sqrMagnitude;
+                    if (score < bestScore || (isPointInsideCollider && !closestPointIsInside))
                     {
                         bestScore = score;
                         closestInteractable = interactable;
+                        closestPointIsInside = isPointInsideCollider;
                     }
                 }
             }

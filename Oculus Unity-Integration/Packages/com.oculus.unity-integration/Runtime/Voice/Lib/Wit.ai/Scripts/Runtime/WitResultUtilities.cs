@@ -1,5 +1,6 @@
 ﻿/*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -22,6 +23,23 @@ namespace Facebook.WitAi
         public static string GetFirstEntityValue(this WitResponseNode witResponse, string name)
         {
             return witResponse?["entities"]?[name]?[0]?["value"]?.Value;
+        }
+
+        /// <summary>
+        /// Gets a collection of string value containing the selected value from
+        /// each entity in the response.
+        /// </summary>
+        /// <param name="witResponse"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string[] GetAllEntityValues(this WitResponseNode witResponse, string name)
+        {
+            var values = new string[witResponse?["entities"]?[name]?.Count ?? 0];
+            for (var i = 0; i < witResponse?["entities"]?[name]?.Count; i++)
+            {
+                values[i] = witResponse?["entities"]?[name]?[i]?["value"]?.Value;
+            }
+            return values;
         }
 
         /// <summary>

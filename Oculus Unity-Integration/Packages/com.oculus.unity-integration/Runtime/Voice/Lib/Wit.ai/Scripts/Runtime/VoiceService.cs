@@ -1,5 +1,6 @@
 ﻿/*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -41,7 +42,7 @@ namespace Facebook.WitAi
         /// </summary>
         public abstract bool MicActive { get; }
 
-        public VoiceEvents VoiceEvents
+        public virtual VoiceEvents VoiceEvents
         {
             get => events;
             set => events = value;
@@ -103,12 +104,12 @@ namespace Facebook.WitAi
 
         protected virtual void OnEnable()
         {
-            events.OnResponse.AddListener(OnResponse);
+            VoiceEvents.OnResponse.AddListener(OnResponse);
         }
 
         protected virtual void OnDisable()
         {
-            events.OnResponse.RemoveListener(OnResponse);
+            VoiceEvents.OnResponse.RemoveListener(OnResponse);
         }
 
         protected virtual void OnResponse(WitResponseNode response)
@@ -156,7 +157,7 @@ namespace Facebook.WitAi
         }
     }
 
-    public interface IVoiceService
+    public interface IVoiceService : IVoiceEventProvider
     {
         /// <summary>
         /// Returns true if this voice service is currently active and listening with the mic
@@ -167,7 +168,7 @@ namespace Facebook.WitAi
 
         bool MicActive { get; }
 
-        VoiceEvents VoiceEvents { get; set; }
+        new VoiceEvents VoiceEvents { get; set; }
 
         ITranscriptionProvider TranscriptionProvider { get; set; }
 

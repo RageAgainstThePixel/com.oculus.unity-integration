@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.4074815, g: 0.40707275, b: 0.41266513, a: 1}
+  m_IndirectSpecularColor: {r: 0.40748143, g: 0.40707275, b: 0.41266507, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -829,7 +829,7 @@ MonoBehaviour:
     _pinkyRequirement: 0
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 343007803}
   - {fileID: 1790920180}
@@ -919,7 +919,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.16992265, z: 0}
     endPoint: {x: 0, y: 0.16850531, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 394249851}
 --- !u!114 &394249849
@@ -1511,7 +1512,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 854328346}
 --- !u!1 &854328349
@@ -1597,7 +1599,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.12848479, z: 0}
     endPoint: {x: 0, y: 0.12678295, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 856886796}
 --- !u!1 &856886799
@@ -1726,7 +1729,7 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 1115446236}
   - {fileID: 856886794}
@@ -1746,7 +1749,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.14765477, z: 0}
     endPoint: {x: 0, y: 0.14594954, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 1115446225}
 --- !u!1001 &1129233009
@@ -2152,7 +2156,7 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 1356177274}
   - {fileID: 854328344}
@@ -2172,7 +2176,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 1356177279}
 --- !u!1 &1356177278
@@ -2748,7 +2753,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 1852785691}
 --- !u!114 &1852785689
@@ -3273,6 +3279,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pointable: {fileID: 1551646517987401748}
+  _whenRelease:
+    m_PersistentCalls:
+      m_Calls: []
   _whenHover:
     m_PersistentCalls:
       m_Calls: []
@@ -3330,7 +3339,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.12848479, z: 0}
     endPoint: {x: 0, y: 0.12678295, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 8275431943731175679}
 --- !u!4 &868067429118550059
@@ -3471,7 +3481,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 868067429118550059}
 --- !u!114 &1798685866095294519
@@ -3511,7 +3522,7 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 5458879556301824106}
   - {fileID: 7938348815140088590}
@@ -3730,7 +3741,7 @@ MonoBehaviour:
     _pinkyRequirement: 0
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 2599682945589133258}
   - {fileID: 6842566449074828864}
@@ -3864,7 +3875,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.14765477, z: 0}
     endPoint: {x: 0, y: 0.14594954, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 3390984311547889796}
 --- !u!4 &3838937391347160176
@@ -4383,7 +4395,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 1806393559225847577}
 --- !u!4 &8275431943731175679
@@ -4437,7 +4450,7 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
+  _handAligment: 1
   _handGrabPoses:
   - {fileID: 8612917568699290685}
   - {fileID: 5664397723478908998}
@@ -4457,7 +4470,8 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.0026399456, z: 0}
     endPoint: {x: 0, y: 0.0002505742, z: 0}
-    angle: 98.05295
+    arcOffset: 0
+    arcLength: 98.05295
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 5594023334309902113}
 --- !u!54 &8580307721887672292
@@ -4527,6 +4541,7 @@ MonoBehaviour:
   _data:
     startPoint: {x: 0, y: 0.16992265, z: 0}
     endPoint: {x: 0, y: 0.16850531, z: 0}
-    angle: 360
+    arcOffset: 0
+    arcLength: 360
   _relativeTo: {fileID: 3292654314392453898}
   _gripPoint: {fileID: 1745172746285604793}

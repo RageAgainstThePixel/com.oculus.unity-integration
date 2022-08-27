@@ -1,14 +1,22 @@
-/************************************************************************************
-Copyright : Copyright (c) Facebook Technologies, LLC and its affiliates. All rights reserved.
-
-Your use of this SDK or tool is subject to the Oculus SDK License Agreement, available at
-https://developer.oculus.com/licenses/oculussdk/
-
-Unless required by applicable law or agreed to in writing, the Utilities SDK distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-ANY KIND, either express or implied. See the License for the specific language governing
-permissions and limitations under the License.
-************************************************************************************/
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * Licensed under the Oculus SDK License Agreement (the "License");
+ * you may not use the Oculus SDK except in compliance with the License,
+ * which is provided at the time of installation or download, or which
+ * otherwise accompanies this software in either electronic or hard copy form.
+ *
+ * You may obtain a copy of the License at
+ *
+ * https://developer.oculus.com/licenses/oculussdk/
+ *
+ * Unless required by applicable law or agreed to in writing, the Oculus SDK
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using Oculus.Interaction.Grab;
 using Oculus.Interaction.GrabAPI;
@@ -106,7 +114,7 @@ namespace Oculus.Interaction.HandGrab
 
         private GrabPoseFinder _grabPoseFinder;
 
-        private readonly PoseMeasureParameters _distanceScoreModifier = new PoseMeasureParameters(0f, 1f);
+        private readonly PoseMeasureParameters SCORE_MODIFIER = new PoseMeasureParameters(0.1f, 1f);
 
         #region editor events
         protected virtual void Reset()
@@ -135,7 +143,7 @@ namespace Oculus.Interaction.HandGrab
 
         protected override void Start()
         {
-            this.BeginStart(ref _started, base.Start);
+            this.BeginStart(ref _started, () => base.Start());
             Assert.IsNotNull(Rigidbody, "The rigidbody is missing");
             Colliders = Rigidbody.GetComponentsInChildren<Collider>();
             Assert.IsTrue(Colliders.Length > 0,
@@ -158,12 +166,9 @@ namespace Oculus.Interaction.HandGrab
         }
 
         public bool CalculateBestPose(in Pose userPose, float handScale, Handedness handedness,
-            ref HandPose result, ref Pose snapPoint,
-            out bool usesHandPose, out float score)
+            ref HandGrabResult result)
         {
-            return _grabPoseFinder.FindBestPose(userPose, handScale, handedness,
-                ref result, ref snapPoint, _distanceScoreModifier,
-                out usesHandPose, out score);
+            return _grabPoseFinder.FindBestPose(userPose, handScale, handedness, SCORE_MODIFIER, ref result);
         }
 
         public bool UsesHandPose()

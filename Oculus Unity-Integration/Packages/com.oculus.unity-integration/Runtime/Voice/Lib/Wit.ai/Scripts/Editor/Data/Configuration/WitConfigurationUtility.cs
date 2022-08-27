@@ -1,5 +1,6 @@
 ﻿/*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -133,8 +134,8 @@ namespace Facebook.WitAi.Data.Configuration
             // Return new index
             return index;
         }
-        // Save configuration after determining path
-        public static int SaveConfiguration(string serverToken, WitConfiguration configurationAsset)
+        // Get asset save directory
+        public static string GetFileSaveDirectory(string title, string fileName, string fileExt)
         {
             // Determine root directory with selection if possible
             string rootDirectory = Application.dataPath;
@@ -155,9 +156,13 @@ namespace Facebook.WitAi.Data.Configuration
                     }
                 }
             }
-
-            // Determine save path
-            string savePath = EditorUtility.SaveFilePanel(WitTexts.Texts.ConfigurationFileManagerLabel, rootDirectory, WitTexts.Texts.ConfigurationFileNameLabel, "asset");
+            // Save panel
+            return EditorUtility.SaveFilePanel(title, rootDirectory, fileName, fileExt);
+        }
+        // Save configuration after determining path
+        public static int SaveConfiguration(string serverToken, WitConfiguration configurationAsset)
+        {
+            string savePath = GetFileSaveDirectory(WitTexts.Texts.ConfigurationFileManagerLabel, WitTexts.Texts.ConfigurationFileNameLabel, "asset");
             return SaveConfiguration(savePath, serverToken, configurationAsset);
         }
         // Save configuration to selected location

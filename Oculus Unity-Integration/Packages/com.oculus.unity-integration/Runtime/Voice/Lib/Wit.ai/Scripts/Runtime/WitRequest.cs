@@ -1,5 +1,6 @@
 ﻿/*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -77,7 +78,7 @@ namespace Facebook.WitAi
         public const int URI_DEFAULT_PORT = 0;
 
         public const string WIT_API_VERSION = "20220222";
-        public const string WIT_SDK_VERSION = "0.0.36";
+        public const string WIT_SDK_VERSION = "0.0.38";
 
         public const string WIT_ENDPOINT_SPEECH = "speech";
         public const string WIT_ENDPOINT_MESSAGE = "message";
@@ -202,10 +203,6 @@ namespace Facebook.WitAi
 
         public IRequest RequestProvider { get; internal set; }
 
-        private static string operatingSystem;
-        private static string deviceModel;
-        private static string deviceName;
-        private static string appIdentifier;
         private bool configurationRequired;
         private string serverToken;
         private string callingStackTrace;
@@ -230,26 +227,6 @@ namespace Facebook.WitAi
             this.command = path.Split('/').First();
             this.path = path;
             this.queryParams = queryParams;
-
-            if (null == operatingSystem)
-            {
-                operatingSystem = SystemInfo.operatingSystem;
-            }
-
-            if (null == deviceModel)
-            {
-                deviceModel = SystemInfo.deviceModel;
-            }
-
-            if (null == deviceName)
-            {
-                deviceName = SystemInfo.deviceName;
-            }
-
-            if (null == appIdentifier)
-            {
-                appIdentifier = Application.identifier;
-            }
         }
 
         public WitRequest(WitConfiguration configuration, string path, bool isServerAuthRequired,
@@ -403,13 +380,7 @@ namespace Facebook.WitAi
             }
 #endif
 
-            _request.UserAgent = $"voice-sdk-41.0.0.126.353,wit-unity-{WIT_SDK_VERSION},{operatingSystem},{deviceModel},{configId},{appIdentifier}";
-
-#if UNITY_EDITOR
-            _request.UserAgent += ",Editor";
-#else
-            _request.UserAgent += ",Runtime";
-#endif
+            _request.UserAgent = GetUserAgent(configuration);
 
             requestStartTime = DateTime.UtcNow;
             isActive = true;
@@ -445,6 +416,75 @@ namespace Facebook.WitAi
             {
                 StartResponse();
             }
+        }
+
+        // Get config user agent
+        private static string _operatingSystem;
+        private static string _deviceModel;
+        private static string _appIdentifier;
+        private static string _unityVersion;
+        public static event Func<string> OnProvideCustomUserAgent;
+        public static string GetUserAgent(WitConfiguration configuration)
+        {
+            // Setup if needed
+            if (_operatingSystem == null)
+            {
+                _operatingSystem = SystemInfo.operatingSystem;
+            }
+
+            if (_deviceModel == null)
+            {
+                _deviceModel = SystemInfo.deviceModel;
+            }
+
+            if (_appIdentifier == null)
+            {
+                _appIdentifier = Application.identifier;
+            }
+
+            if (_unityVersion == null)
+            {
+                _unityVersion = Application.unityVersion;
+            }
+
+            // Use config id if found
+            string configId = configuration?.configId;
+
+#if UNITY_EDITOR
+            string userEditor = "Editor";
+            if (configuration != null && string.IsNullOrEmpty(configuration.configId))
+            {
+                configuration.configId = Guid.NewGuid().ToString();
+                UnityEditor.EditorUtility.SetDirty(configuration);
+                UnityEditor.AssetDatabase.SaveAssets();
+                configId = configuration.configId;
+            }
+#else
+            string userEditor = "Runtime";
+#endif
+
+            // If null, set not configured
+            if (string.IsNullOrEmpty(configId))
+            {
+                configId = "not-yet-configured";
+            }
+
+            // Append custom user agents
+            string customUserAgents = string.Empty;
+            if (OnProvideCustomUserAgent != null)
+            {
+                foreach (Func<string> del in OnProvideCustomUserAgent.GetInvocationList())
+                {
+                    string custom = del();
+                    if (!string.IsNullOrEmpty(custom))
+                    {
+                        customUserAgents += $",{custom}";
+                    }
+                }
+            }
+
+            // Return full string
+            return $"voice-sdk-42.0.0.127.285,wit-unity-{WIT_SDK_VERSION},{_operatingSystem},{_deviceModel},{configId},{_appIdentifier},{userEditor},{_unityVersion}{customUserAgents}";
         }
 
         private bool RequestRequiresBody(string command)
@@ -680,7 +720,7 @@ namespace Facebook.WitAi
                     }
                 }
 
-                new Thread(ExecuteWriteThread).Start(stream);
+                writeStream = stream;
             }
             catch (WebException e)
             {
@@ -689,59 +729,6 @@ namespace Facebook.WitAi
                     statusCode = (int) e.Status;
                     statusDescription = e.Message;
                     SafeInvoke(onResponse);
-                }
-            }
-        }
-
-        private void ExecuteWriteThread(object obj)
-        {
-            bytesWritten = 0;
-            Stream stream = (Stream) obj;
-
-            try
-            {
-                while (isRequestStreamActive)
-                {
-                    FlushBuffer(stream);
-                    Thread.Yield();
-                }
-
-                FlushBuffer(stream);
-                stream.Close();
-            }
-            catch (ObjectDisposedException)
-            {
-                // Handling edge case where stream is closed remotely
-                // This problem occurs when the Web server resets or closes the connection after
-                // the client application sends the HTTP header.
-                // https://support.microsoft.com/en-us/topic/fix-you-receive-a-system-objectdisposedexception-exception-when-you-try-to-access-a-stream-object-that-is-returned-by-the-endgetrequeststream-method-in-the-net-framework-2-0-bccefe57-0a61-517a-5d5f-2dce0cc63265
-                Debug.LogWarning(
-                    "Stream already disposed. It is likely the server reset the connection before streaming started.");
-            }
-            catch (IOException e)
-            {
-                Debug.LogWarning(e.Message);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-
-            if (requestRequiresBody && bytesWritten == 0)
-            {
-                Debug.LogWarning("Stream was closed with no data written. Aborting request.");
-                AbortRequest();
-            }
-        }
-
-        private void FlushBuffer(Stream stream)
-        {
-            while (writeBuffer.Count > 0)
-            {
-                if (writeBuffer.TryDequeue(out var buffer))
-                {
-                    bytesWritten += buffer.Length;
-                    stream.Write(buffer, 0, buffer.Length);
                 }
             }
         }
@@ -789,7 +776,6 @@ namespace Facebook.WitAi
             if (requestRequiresBody && bytesWritten == 0)
             {
                 AbortRequest();
-                Debug.LogWarning("Stream was closed with no data written. Aborting request.");
             }
             else
             {
@@ -802,6 +788,11 @@ namespace Facebook.WitAi
             lock (streamLock)
             {
                 isRequestStreamActive = false;
+                if (null != writeStream)
+                {
+                    writeStream.Close();
+                    writeStream = null;
+                }
             }
         }
 
@@ -816,10 +807,34 @@ namespace Facebook.WitAi
         /// <param name="length"></param>
         public void Write(byte[] data, int offset, int length)
         {
-            // TODO: This is going to cause additional allocations, we can probably improve this
-            var buffer = new byte[data.Length];
-            Array.Copy(data, offset, buffer, 0, length);
-            writeBuffer.Enqueue(buffer);
+            try
+            {
+                writeStream.Write(data, offset, length);
+                bytesWritten += length;
+            }
+            catch (ObjectDisposedException)
+            {
+                // Handling edge case where stream is closed remotely
+                // This problem occurs when the Web server resets or closes the connection after
+                // the client application sends the HTTP header.
+                // https://support.microsoft.com/en-us/topic/fix-you-receive-a-system-objectdisposedexception-exception-when-you-try-to-access-a-stream-object-that-is-returned-by-the-endgetrequeststream-method-in-the-net-framework-2-0-bccefe57-0a61-517a-5d5f-2dce0cc63265
+                Debug.LogWarning(
+                    "Stream already disposed. It is likely the server reset the connection before streaming started.");
+            }
+            catch (IOException e)
+            {
+                Debug.LogWarning(e.Message);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+
+            if (requestRequiresBody && bytesWritten == 0)
+            {
+                Debug.LogWarning("Stream was closed with no data written. Aborting request.");
+                AbortRequest();
+            }
         }
 
         #region CALLBACKS
@@ -827,6 +842,7 @@ namespace Facebook.WitAi
         private bool _performing = false;
         // All actions
         private ConcurrentQueue<Action> _mainThreadCallbacks = new ConcurrentQueue<Action>();
+        private Stream writeStream;
 
         // Called from background thread
         private void MainThreadCallback(Action action)

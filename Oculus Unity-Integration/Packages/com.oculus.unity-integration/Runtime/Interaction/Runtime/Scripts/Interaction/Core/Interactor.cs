@@ -1,14 +1,22 @@
-/************************************************************************************
-Copyright : Copyright (c) Facebook Technologies, LLC and its affiliates. All rights reserved.
-
-Your use of this SDK or tool is subject to the Oculus SDK License Agreement, available at
-https://developer.oculus.com/licenses/oculussdk/
-
-Unless required by applicable law or agreed to in writing, the Utilities SDK distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-ANY KIND, either express or implied. See the License for the specific language governing
-permissions and limitations under the License.
-************************************************************************************/
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * Licensed under the Oculus SDK License Agreement (the "License");
+ * you may not use the Oculus SDK except in compliance with the License,
+ * which is provided at the time of installation or download, or which
+ * otherwise accompanies this software in either electronic or hard copy form.
+ *
+ * You may obtain a copy of the License at
+ *
+ * https://developer.oculus.com/licenses/oculussdk/
+ *
+ * Unless required by applicable law or agreed to in writing, the Oculus SDK
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using System;
 using System.Collections.Generic;
@@ -33,9 +41,9 @@ namespace Oculus.Interaction
         private MonoBehaviour _activeState;
         private IActiveState ActiveState = null;
 
-        [SerializeField, Interface(typeof(IMonoBehaviourFilter)), Optional]
+        [SerializeField, Interface(typeof(IGameObjectFilter)), Optional]
         private List<MonoBehaviour> _interactableFilters = new List<MonoBehaviour>();
-        private List<IMonoBehaviourFilter> InteractableFilters = null;
+        private List<IGameObjectFilter> InteractableFilters = null;
 
         protected virtual void DoPreprocess() { }
         protected virtual void DoNormalUpdate() { }
@@ -172,7 +180,6 @@ namespace Oculus.Interaction
         protected TInteractable _selectedInteractable;
 
         public virtual object Candidate => _candidate;
-
         public TInteractable Interactable => _interactable;
         public TInteractable SelectedInteractable => _selectedInteractable;
 
@@ -221,13 +228,13 @@ namespace Oculus.Interaction
             _identifier = UniqueIdentifier.Generate();
             ActiveState = _activeState as IActiveState;
             InteractableFilters =
-                _interactableFilters.ConvertAll(mono => mono as IMonoBehaviourFilter);
+                _interactableFilters.ConvertAll(mono => mono as IGameObjectFilter);
         }
 
         protected virtual void Start()
         {
             this.BeginStart(ref _started);
-            foreach (IMonoBehaviourFilter filter in InteractableFilters)
+            foreach (IGameObjectFilter filter in InteractableFilters)
             {
                 Assert.IsNotNull(filter);
             }
@@ -387,20 +394,21 @@ namespace Oculus.Interaction
         // Returns the best interactable for selection or null
         protected abstract TInteractable ComputeCandidate();
 
-        public virtual bool IsFilterPassedBy(TInteractable interactable)
+        public virtual bool CanSelect(TInteractable interactable)
         {
             if (InteractableFilters == null)
             {
                 return true;
             }
 
-            foreach (IMonoBehaviourFilter interactableFilter in InteractableFilters)
+            foreach (IGameObjectFilter interactableFilter in InteractableFilters)
             {
-                if (!interactableFilter.FilterMonoBehaviour(interactable))
+                if (!interactableFilter.Filter(interactable.gameObject))
                 {
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -588,7 +596,7 @@ namespace Oculus.Interaction
             ActiveState = activeState;
         }
 
-        public void InjectOptionalInteractableFilters(List<IMonoBehaviourFilter> interactableFilters)
+        public void InjectOptionalInteractableFilters(List<IGameObjectFilter> interactableFilters)
         {
             InteractableFilters = interactableFilters;
             _interactableFilters = interactableFilters.ConvertAll(interactableFilter =>

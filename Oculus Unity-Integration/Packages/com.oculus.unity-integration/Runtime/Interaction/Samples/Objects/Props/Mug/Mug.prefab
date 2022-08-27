@@ -225,8 +225,8 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 617279258}
   - {fileID: 1436924620}
   - {fileID: 1909027519}
@@ -356,8 +356,8 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 912468924}
   - {fileID: 1415229662}
   - {fileID: 148500703}
@@ -811,8 +811,8 @@ MonoBehaviour:
     _pinkyRequirement: 0
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 1925666557}
   - {fileID: 201978162}
   - {fileID: 1416413293}
@@ -1281,8 +1281,8 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 5458879556951053484}
   - {fileID: 7938348815636488136}
   - {fileID: 2449656073841179036}
@@ -1936,8 +1936,8 @@ MonoBehaviour:
     _pinkyRequirement: 1
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 8612917568207610107}
   - {fileID: 5664397722846450816}
   - {fileID: 3596968753758646776}
@@ -2066,8 +2066,8 @@ MonoBehaviour:
     _pinkyRequirement: 0
     _unselectMode: 0
   _movementProvider: {fileID: 0}
-  _handAligment: 0
-  _handGrabPoints:
+  _handAligment: 1
+  _handGrabPoses:
   - {fileID: 2599682947171584780}
   - {fileID: 6842566450661212806}
   - {fileID: 4615491486895974725}

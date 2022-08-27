@@ -1,14 +1,22 @@
-/************************************************************************************
-Copyright : Copyright (c) Facebook Technologies, LLC and its affiliates. All rights reserved.
-
-Your use of this SDK or tool is subject to the Oculus SDK License Agreement, available at
-https://developer.oculus.com/licenses/oculussdk/
-
-Unless required by applicable law or agreed to in writing, the Utilities SDK distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-ANY KIND, either express or implied. See the License for the specific language governing
-permissions and limitations under the License.
-************************************************************************************/
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * Licensed under the Oculus SDK License Agreement (the "License");
+ * you may not use the Oculus SDK except in compliance with the License,
+ * which is provided at the time of installation or download, or which
+ * otherwise accompanies this software in either electronic or hard copy form.
+ *
+ * You may obtain a copy of the License at
+ *
+ * https://developer.oculus.com/licenses/oculussdk/
+ *
+ * Unless required by applicable law or agreed to in writing, the Oculus SDK
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 using Oculus.Interaction.HandGrab.SnapSurfaces;
 using Oculus.Interaction.Input;
@@ -58,7 +66,7 @@ namespace Oculus.Interaction.HandGrab
         public HandPose HandPose => _usesHandPose ? _handPose : null;
         public float Scale => this.transform.lossyScale.x;
         public Transform RelativeTo { get => _relativeTo; set => _relativeTo = value; }
-        public Pose RelativeGrip => RelativeTo.RelativeOffset(this.transform);
+        public Pose RelativeGrip => RelativeTo.Delta(this.transform);
 
         #region editor events
 
@@ -91,7 +99,7 @@ namespace Oculus.Interaction.HandGrab
             {
                 handPose = new HandPose(_handPose),
                 scale = Scale,
-                gripPose = _relativeTo.RelativeOffset(this.transform)
+                gripPose = _relativeTo.Delta(this.transform)
             };
 
             return data;
@@ -108,22 +116,20 @@ namespace Oculus.Interaction.HandGrab
             }
         }
 
-        public virtual bool CalculateBestPose(Pose userPose, Handedness handedness,
-            ref HandPose bestHandPose, ref Pose bestSnapPoint, in PoseMeasureParameters scoringModifier,
-            out bool usesHandPose, out float score)
+        public virtual bool CalculateBestPose(Pose userPose, Handedness handedness, PoseMeasureParameters scoringModifier,
+            ref HandGrabResult result)
         {
-            usesHandPose = false;
+            result.HasHandPose = false;
             if (HandPose != null && HandPose.Handedness != handedness)
             {
-                score = float.NaN;
                 return false;
             }
 
-            score = CompareNearPoses(userPose, ref bestSnapPoint, scoringModifier);
+            result.Score = CompareNearPoses(userPose, scoringModifier, ref result.SnapPose);
             if (HandPose != null)
             {
-                usesHandPose = true;
-                bestHandPose.CopyFrom(HandPose);
+                result.HasHandPose = true;
+                result.HandPose.CopyFrom(HandPose);
             }
 
             return true;
@@ -135,7 +141,7 @@ namespace Oculus.Interaction.HandGrab
         /// <param name="worldPoint">The user current hand pose.</param>
         /// <param name="bestSnapPoint">The snap point hand pose within the surface (if any).</param>
         /// <returns>The adjusted best pose at the surface.</returns>
-        private float CompareNearPoses(in Pose worldPoint, ref Pose bestSnapPoint, in PoseMeasureParameters scoringModifier)
+        private float CompareNearPoses(in Pose worldPoint, PoseMeasureParameters scoringModifier, ref Pose bestSnapPoint)
         {
             Pose desired = worldPoint;
             Pose snap = this.transform.GetPose();
@@ -152,7 +158,7 @@ namespace Oculus.Interaction.HandGrab
                 bestScore = PoseUtils.Similarity(desired, snap, scoringModifier);
             }
 
-            _relativeTo.RelativeOffset(bestPlace, ref bestSnapPoint);
+            _relativeTo.Delta(bestPlace, ref bestSnapPoint);
 
             return bestScore;
         }
