@@ -9,6 +9,7 @@
 [Ll]ibrary/
 [Aa]pp/
 [Aa]pp.meta
+Logs/
 UserSettings/
 UWP/
 WindowsStoreApp/
@@ -72,11 +73,10 @@ _ReSharper.Caches
 # Project Specific List #
 # ===================== #
 artifacts/
-Assets/ThirdParty/
-Assets/ThirdParty.meta
 --Version/
 Oculus Unity-Integration/Assets/Oculus
 Oculus Unity-Integration/Assets/Plugins/OVR
 Oculus Unity-Integration/Assets/Plugins/OVR.meta
 Oculus Unity-Integration/Assets/Plugins.meta
-Logs/
+Oculus Unity-Integration/Assets/Plugins/ConsoleE.meta
+Oculus Unity-Integration/Assets/Plugins/ConsoleE
