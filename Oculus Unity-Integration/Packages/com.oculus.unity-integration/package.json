@@ -5,7 +5,7 @@
   "keywords": [],
   "version": "41.0.0",
   "unity": "2021.3",
-  "license": "MIT",
+  "license": "Oculus SDK License",
   "repository": {
     "type": "git",
     "repository": "https://github.com/RageAgainstThePixel/com.oculus.unity-integration.git"
